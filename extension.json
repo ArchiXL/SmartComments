@@ -1,0 +1,106 @@
+{
+	"name": "SmartComments",
+	"author": [
+		"Youri van den Bogert",
+		"Erwin Oord",
+		"Robin van der Wiel"
+	],
+	"version": "1.4.4",
+	"url": "https://www.archixl.nl",
+	"descriptionmsg": "sic-desc",
+	"license-name": "GPL-2.0+",
+	"type": "other",
+	"MessagesDirs": {
+		"SmartComments": [
+			"i18n"
+		]
+	},
+	"AutoloadNamespaces": {
+		"MediaWiki\\Extension\\SmartComments\\": "src"
+	},
+	"SpecialPages": {
+		"SmartComments": "MediaWiki\\Extension\\SmartComments\\SpecialPage\\Special"
+	},
+	"JobClasses": {
+		"SmartCommentsUpdateJob": "MediaWiki\\Extension\\SmartComments\\Jobs\\Update"
+	},
+	"APIModules": {
+		"smartcomments": "MediaWiki\\Extension\\SmartComments\\Api"
+	},
+	"Actions": {
+		"screfresh": "MediaWiki\\Extension\\SmartComments\\RefreshAction"
+	},
+	"Hooks": {
+		"LoadExtensionSchemaUpdates": "MediaWiki\\Extension\\SmartComments\\SchemaUpdates::onLoadExtensionSchemaUpdates",
+		"BeforePageDisplay": "MediaWiki\\Extension\\SmartComments\\Hooks::onBeforePageDisplay",
+		"SkinTemplateNavigation::Universal": "MediaWiki\\Extension\\SmartComments\\Hooks::onSkinTemplateNavigation",
+		"ResourceLoaderGetConfigVars": "MediaWiki\\Extension\\SmartComments\\Hooks::onResourceLoaderGetConfigVars",
+		"SMW::Property::initProperties": "MediaWiki\\Extension\\SmartComments\\SMWHandler::initProperties",
+		"BeforeDataUpdateComplete": "MediaWiki\\Extension\\SmartComments\\Hooks::addSubobjectsForComments",
+		"SMWStore::updateDataBefore": "MediaWiki\\Extension\\SmartComments\\Hooks::addSubobjectsForComments",
+		"ParserCacheSaveComplete": "MediaWiki\\Extension\\SmartComments\\Hooks::onParserCacheSaveComplete",
+		"MediaWikiServices": "MediaWiki\\Extension\\SmartComments\\Hooks::onMediaWikiServices",
+		"PageHistoryPager::getQueryInfo": "MediaWiki\\Extension\\SmartComments\\Hooks::onPageHistoryPagerGetQueryInfo",
+		"ModifyExportQuery": "MediaWiki\\Extension\\SmartComments\\Hooks::onModifyExportQuery",
+		"ArticleDeleteAfterSuccess": "MediaWiki\\Extension\\SmartComments\\Hooks::onArticleDeleteAfterSuccess",
+		"ResourceLoaderRegisterModules": "MediaWiki\\Extension\\SmartComments\\JavascriptLoader::register"
+	},
+	"ResourceModules": {
+		"ext.SmartComments.Special": {
+			"localBasePath": "",
+			"remoteExtPath": "SmartComments",
+			"scripts": [
+				"resources/js/SmartComments.special.js"
+			],
+			"messages": [
+				"sic-sp-adminbutton-confirm"
+			]
+		}
+	},
+	"AvailableRights": [
+		"add-inlinecomments",
+		"manage-inlinecomments"
+	],
+	"GroupPermissions": {
+		"user": {
+			"add-inlinecomments": true,
+			"manage-inlinecomments": false
+		},
+		"sysop": {
+			"add-inlinecomments": true,
+			"manage-inlinecomments": true
+		}
+	},
+	"config": {
+		"SmartCommentsBodyContainer": {
+			"value": "div#mw-content-text"
+		},
+		"SmartCommentsSelectLinksOnClick": {
+			"value": true
+		},
+		"SmartCommentsOpenPopupOnSelect": {
+			"value": false
+		},
+		"SmartCommentsDirectComment": {
+			"value": true
+		},
+		"SmartCommentsPopupTimeout": {
+			"value": 6500
+		},
+		"SmartCommentsSpecialMaxItems": {
+			"value": 25
+		},
+		"SmartCommentsEnabledAddons": {
+			"value": [
+				"SmartConnectArchiMate"
+			]
+		}
+	},
+	"requires": {
+		"MediaWiki": ">= 1.35",
+		"extensions": {
+			"SemanticMediaWiki": ">= 3.2"
+		}
+	},
+	"manifest_version": 2
+}

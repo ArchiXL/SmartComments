@@ -1,0 +1,1 @@
+ALTER TABLE /*_*/sic_anchor ADD COLUMN `posimg` varchar(255) NOT NULL;

@@ -1,0 +1,150 @@
+<p><br/>
+    Met de extensie <b>SmartComments</b> is het mogelijk om opmerkingen te maken bij tekstfragmenten op wikipagina's. De
+    functionaliteit van deze extensie is vergelijkbaar met de opmerkingen-functionaliteit van Microsoft Word, en
+    ondersteunt zo het reviewproces van wikipagina's binnen de wiki. De extensie maakt onderscheid tussen twee
+    verschillende soorten gebruikersgroepen: normale gebruikers en beheerders. Normale gebruikers hebben alleen de
+    mogelijkheid om opmerkingen aan te maken en op bestaande opmerkingen te reageren. Beheerders kunnen opmerkingen
+    afhandelen en heropenen, opmerkingen verwijderen, en de opmerkingenmodus voor iedereen aan- of uitzetten.
+</p>
+<h2><span id="Hoe_werkt_SmartComments.3F"></span><span class="mw-headline" id="Hoe_werkt_SmartComments?">Hoe werkt SmartComments?</span>
+</h2>
+<h3><span class="mw-headline" id="Opmerkingenmodus_inschakelen">Opmerkingenmodus inschakelen</span></h3>
+<p>Op elke reguliere wikipagina staat, mits ingelogd, een knop in de actiebalk met de tekst "Opmerkingen". Als u deze
+    knop niet ziet, kan het zijn dat de extensie niet op de wiki is ingeschakeld, of dat een beheerder ervoor heeft
+    gekozen de opmerkingenmodus op de wiki uit te schakelen. Als uw wiki gebruik maakt van een andere skin, kan de
+    opmerkingenmodus te vinden zijn in het menu "Acties" of "Weergaven". Klik op de knop om de opmerkingenmodus op deze
+    pagina in te schakelen.
+</p>
+<div class="thumb tnone">
+    <div class="thumbinner" style="width:828px;"><img
+            alt="Een schermafbeelding die de locatie van de knop voor de opmerkingenmodus toont"
+            src="/extensions/SmartComments/resources/documentation/Schermafbeelding_Actiebalk.png"
+            decoding="async" width="826" height="103" class="thumbimage"/>
+    </div>
+</div>
+<h3><span class="mw-headline" id="Nieuwe_opmerking_plaatsen">Nieuwe opmerking plaatsen</span></h3>
+<p>Als de opmerkingenmodus is ingeschakeld en deze pagina al opmerkingen bevat, zullen deze vanaf nu op de pagina
+    getoond worden. Tekst waarop een opmerking is geplaatst zal een gele highlight tonen, en in de rechtermarge van de
+    wikipagina zullen icoontjes verschijnen die corresponderen met een geplaatste opmerking op de pagina. Opmerkingen
+    kunnen alleen gemaakt worden op tekst die geen HTML bevat, op afbeeldingen, of op elementen in een ArchiMate-view.
+</p><p>
+    Om een nieuwe opmerking te maken selecteert u een gedeelte tekst, of klikt u op een afbeelding op de wikipagina.
+    Vervolgens zal er pop-up verschijnen met een knop om een opmerking te plaatsen. Als u op deze knop klikt, opent er
+    een nieuwe pop-up waarop u de opmerkingtekst kunt invullen en vervolgens de opmerking kan opslaan. Na het opslaan
+    van de opmerking wordt de pagina herladen, en wordt de opmerkingenmodus automatisch weer ingeschakeld; uw zojuist
+    gemaakte opmerking is vanaf nu op de pagina zien.</p>
+<div class="thumb tnone">
+    <div class="thumbinner" style="width:736px;"><img
+            alt="Een schermafbeelding die de knop toont om een nieuwe opmerking te plaatsen"
+            src="/extensions/SmartComments/resources/documentation/Opmerking_selectie.png" decoding="async"
+            width="734" height="259"
+            class="thumbimage"/>
+    </div>
+</div>
+<div class="thumb tnone">
+    <div class="thumbinner" style="width:507px;"><img
+            alt="Een schermafbeelding die het venster toont met een invoerveld om een nieuwe opmerking te plaatsen"
+            src="/extensions/SmartComments/resources/documentation/Opmerking_plaatsen.png" decoding="async"
+            width="505" height="280"
+            class="thumbimage"/>
+    </div>
+</div>
+<h3><span class="mw-headline" id="Opmerkingen_openen">Opmerkingen openen</span></h3>
+<p>Om een bestaande opmerkingen te openen klikt u op de gele gemarkeerde tekst, of op een opmerkingicoon in de
+    rechtermarge van de pagina. Een geel icoon betekent dat de opmerking geen reacties heeft, en een groen icoon
+    betekent dat de opmerking één of meer reacties heeft. Er zal nu een pop-up openen die de opmerkingentekst en
+    eventuele reacties toont. Deze pop-up geeft ook de mogelijkheid om een reactie op een opmerking te geven. Let op:
+    het is alleen mogelijk om op een opmerking te reageren als u de opmerking niet zelf heeft geplaatst, of als u niet
+    de laatste persoon bent die reageert op de opmerking.
+</p>
+<div class="thumb tnone">
+    <div class="thumbinner" style="width:817px;"><img
+            alt="Een schermafbeelding die een bestaande opmerking op een wikipagina toont"
+            src="/extensions/SmartComments/resources/documentation/Schermafbeelding_OpmerkingOpenen.png"
+            decoding="async" width="815" height="312" class="thumbimage"/>
+    </div>
+</div>
+<div class="thumb tnone">
+    <div class="thumbinner" style="width:818px;"><img
+            alt="Een schermafbeelding die de pop-up van een geopende opmerking toont"
+            src="/extensions/SmartComments/resources/documentation/Schermafbeelding_OpmerkingGeopend.png"
+            decoding="async" width="816" height="272" class="thumbimage"/>
+    </div>
+</div><p>De pop-up van een bestaande opmerking toont een aantal iconen in de balk aan de bovenkant. Normale gebruikers
+    zullen hier alleen het kruisje zien, waarmee de pop-up wordt gesloten. Beheerders zien naast het kruisje de volgende
+    iconen:
+</p>
+<ul>
+    <li>"Markeren als afgehandeld": met deze knop kunt u de opmerking als afgehandeld markeren, de opmerking zal
+        vervolgens niet meer geel gemarkeerd op de pagina getoond worden, maar zal nog wel blijven bestaan
+    </li>
+    <li>"Opmerking verwijderen": met deze knop verwijdert u de opmerking onherroepelijk</li>
+    <li>"Paginaoverzicht bekijken": met deze knop wordt u doorgeleid naar de speciale pagina van SmartComments, waarop u
+        een overzicht ziet van alle opmerkingen aanwezig op de pagina waarop u op de knop klikte
+    </li>
+</ul>
+<h2><span class="mw-headline" id="Speciale_pagina">Speciale pagina</span></h2>
+<p>Op de pagina <a href="/index.php/Speciaal:SmartComments" title="Speciaal:SmartComments">Speciaal:SmartComments</a>
+    vindt u de volgende functies:
+</p>
+<ul>
+    <li>een overzicht van alle opmerkingen op de wiki</li>
+    <li>beheerdersfuncties (alleen voor beheerders)</li>
+    <li>deze handleiding voor het gebruik van SmartComments</li>
+</ul>
+<h3><span class="mw-headline" id="Opmerkingenoverzicht">Opmerkingenoverzicht</span></h3>
+<p>U kunt in dit overzicht alle opmerkingen vinden die op de wiki staan: zowel afgehandelde als niet-afgehandelde
+    opmerkingen. U kunt de filters bovenaan de tabel gebruiken om opmerkingen op specifieke pagina's te bekijken, om te
+    filteren op status, of op auteur (persoon die de opmerking heeft aangemaakt). Als de wiki veel opmerkingen bevat,
+    kunt u de knoppen op de pagina gebruiken om door de opmerkingen heen te bladeren. In elke rij van de tabel ziet u in
+    de laatste kolom iconen staan. Normale gebruikers zien alleen het eerste icoon van een berichtenwolkje: deze knop
+    kunt u gebruiken om de opmerking te openen. Beheerders zien in dit overzicht tevens de iconen om een opmerking als
+    (niet-)afgehandeld te markeren en om een opmerking te verwijderen.
+</p>
+<div class="thumb tnone">
+    <div class="thumbinner" style="width:818px;"><img
+            alt="Een schermafbeelding die het opmerkingenoverzicht toont."
+            src="/extensions/SmartComments/resources/documentation/Schermafbeelding_Opmerkingentabel.png"
+            decoding="async" width="816" height="132" class="thumbimage"/>
+    </div>
+</div>
+<h3><span class="mw-headline" id="Beheerdersfuncties">Beheerdersfuncties</span></h3>
+<p>Beheerders zullen bovenaan de speciale pagina de onderstaande drie knoppen zien.
+</p>
+<ul>
+    <li>"Commentaar blokkeren": met deze knop kunt u de opmerkingenmodus voor de gehele wiki (en dus alle gebruikers)
+        uitschakelen. Er kunnen dan geen nieuwe opmerkingen geplaatst worden, of gereageerd worden op bestaande
+        opmerkingen. Als beheerder zal u wel bestaande opmerkingen kunnen afhandelen.
+    </li>
+    <li>"Alle afgehandelde opmerkingen verwijderen": met deze knop zullen alle opmerkingen die de status afgehandeld
+        ("completed") hebben verwijderd worden.
+    </li>
+    <li>"Alle opmerkingen verwijderen": met deze knop zullen alle opmerkingen op de wiki, ongeacht de status, verwijderd
+        worden.
+    </li>
+</ul>
+<div class="thumb tnone">
+    <div class="thumbinner" style="width:886px;"><img
+            alt="Een schermafbeelding die de knoppen van de beheerdersfuncties toont"
+            src="/extensions/SmartComments/resources/documentation/Schermafbeelding_Beheerdersfuncties.png"
+            decoding="async" width="884" height="59" class="thumbimage"/>
+    </div>
+</div>
+<p><br/>
+</p>
+<h2><span class="mw-headline" id="Bekende_beperkingen">Bekende beperkingen</span></h2>
+<ul>
+    <li>Het is alleen mogelijk om opmerkingen te plaatsen op tekst zonder HTML. Dat betekent dat het op het moment niet
+        mogelijk is om bijvoorbeeld een opmerking te plaatsen op tekst die vetgedrukt is.
+    </li>
+    <li>Alleen gebruikers met schrijfrecht kunnen reacties achterlaten.</li>
+    <li>Een gebruiker kan niet reageren op een opmerking van zicht zelf. Een gebruiker kan dus alleen reageren op een
+        opmerking van een andere gebruiker.
+    </li>
+    <li>Een reactie zorgt voor een wijziging op de pagina zelf, maar deze wijziging wordt verborgen in de
+        revisiegeschiedenis van de pagina.
+    </li>
+    <li>Bestaande opmerkingen kunnen niet tekstueel worden aangepast, alleen op afgehandeld worden gezet of
+        verwijderd.
+    </li>
+</ul>

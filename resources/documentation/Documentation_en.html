@@ -1,0 +1,140 @@
+<p><br/>
+    The <b>SmartComments</b> extension makes it possible to add comments to text fragments on wiki pages. The
+    functionality of this extension is similar to the comments functionality of Microsoft Word, and
+    thus supports the review process of wiki pages within the wiki. The extension distinguishes between two
+    different types of user groups: normal users and administrators. Normal users only have the
+    ability to create comments and respond to existing comments. Administrators can comment
+    handle and reopen, delete comments, and turn comment mode on or off for everyone.
+</p>
+<h2><span id="Hoe_werkt_SmartComments.3F"></span><span class="mw-headline" id="Hoe_werkt_SmartComments?">How does the extension work?</span>
+</h2>
+<h3><span class="mw-headline" id="Opmerkingenmodus_inschakelen">Enable comment mode</span></h3>
+<p>On every regular wiki page, if logged in, there is a button in the action bar with the text "Comments". If you don't
+    see this button, the extension may not be enabled on the wiki, or an administrator may have chosen to disable
+    the commenting mode on the wiki. If your wiki uses a different skin, comment mode can be found in the "Actions" or
+    "Views" menu. Click the button to enable comment mode on this page.
+</p>
+<div class="thumb tnone">
+    <div class="thumbinner" style="width:828px;"><img
+            alt="A screenshot showing the location of the comment mode button"
+            src="/extensions/SmartComments/resources/documentation/Schermafbeelding_Actiebalk.png"
+            decoding="async" width="826" height="103" class="thumbimage"/>
+    </div>
+</div>
+<h3><span class="mw-headline" id="Nieuwe_opmerking_plaatsen">Adding a new comment</span></h3>
+<p>If comment mode is enabled and this page already contains comments, they will now be shown on the page. Commented
+    text will display a yellow highlight, and icons corresponding to a comment left on the page will appear in the right
+    margin of the wiki page. Comments can only be made on text that does not contain HTML, on images, or on elements in
+    an ArchiMate view.
+</p><p>
+    To create a new comment, select a piece of text, or click an image on the wiki page. Then a pop-up will appear
+    with a button to post a comment. Clicking this button will open a new pop-up where you can enter the comment text
+    and then save the comment. After saving the comment, the page will be reloaded and comment mode will automatically
+    be enabled again; the comment you just added will now be visible on the page.</p>
+<div class="thumb tnone">
+    <div class="thumbinner" style="width:736px;"><img
+            alt="A screenshot showing the button to post a new comment"
+            src="/extensions/SmartComments/resources/documentation/Opmerking_selectie.png" decoding="async"
+            width="734" height="259"
+            class="thumbimage"/>
+    </div>
+</div>
+<div class="thumb tnone">
+    <div class="thumbinner" style="width:507px;"><img
+            alt="A screenshot showing the window with an input field to post a new comment"
+            src="/extensions/SmartComments/resources/documentation/Opmerking_plaatsen.png" decoding="async"
+            width="505" height="280"
+            class="thumbimage"/>
+    </div>
+</div>
+<h3><span class="mw-headline" id="Opmerkingen_openen">Opening comments</span></h3>
+<p>To open an existing comment, click on the yellow highlighted text, or on a comment icon in the right margin of the
+    page. A yellow icon means the comment has no replies, and a green icon means the comment has one or more replies.
+    A pop-up will now open showing the comment text and any replies. This pop-up also provides the option to reply to
+    a comment. Please note: It is only possible to reply to a comment if you did not post the comment yourself, or if
+    you are not the last person to reply to the comment.
+</p>
+<div class="thumb tnone">
+    <div class="thumbinner" style="width:817px;"><img
+            alt="A screenshot showing an existing comment on a wiki page"
+            src="/extensions/SmartComments/resources/documentation/Schermafbeelding_OpmerkingOpenen.png"
+            decoding="async" width="815" height="312" class="thumbimage"/>
+    </div>
+</div>
+<div class="thumb tnone">
+    <div class="thumbinner" style="width:818px;"><img
+            alt="A screenshot showing the popup of an open comment"
+            src="/extensions/SmartComments/resources/documentation/Schermafbeelding_OpmerkingGeopend.png"
+            decoding="async" width="816" height="272" class="thumbimage"/>
+    </div>
+</div><p>The pop-up of an existing comment shows a number of icons in the bar at the top. Normal users will only see an
+    X here, which closes the pop-up. Administrators will see the following icons next to the X:
+</p>
+<ul>
+    <li>"Mark as resolved": with this button you can mark the comment as resolved, the comment will then no longer be
+        shown highlighted in yellow on the page, but will still exist
+    </li>
+    <li>"Delete comment": this button irrevocably deletes the comment</li>
+    <li>"View page overview": this button will redirect you to the Special:SmartComments page, where you will see an
+        overview of all comments present on the page on which you clicked the button
+    </li>
+</ul>
+<h2><span class="mw-headline" id="Speciale_pagina">Special page</span></h2>
+<p>On this page <a href="/index.php/Speciaal:SmartComments" title="Speciaal:SmartComments">Speciaal:SmartComments</a>
+    you will find the following functionalities:
+</p>
+<ul>
+    <li>an overview of all comments on the wiki</li>
+    <li>administrative functions (only visible to administrators)</li>
+    <li>this manual for using SmartComments</li>
+</ul>
+<h3><span class="mw-headline" id="Opmerkingenoverzicht">Comment overview</span></h3>
+<p>In this overview you can find all comments that are on the wiki: both resolved and unresolved comments. You can use
+    the filters at the top of the table to view comments on specific pages, filter by status, or by author (person who
+    created the comment). If the wiki contains many comments, you can use the buttons on the page to scroll through the
+    comments. In each row of the table you will see icons in the last column. Normal users only see the first icon of a
+    message bubble: you can use this button to open the comment. In this overview, administrators also see the icons to
+    mark a comment as (un)resolved and to delete a comment.
+</p>
+<div class="thumb tnone">
+    <div class="thumbinner" style="width:818px;"><img
+            alt="A screenshot showing the comments overview."
+            src="/extensions/SmartComments/resources/documentation/Schermafbeelding_Opmerkingentabel.png"
+            decoding="async" width="816" height="132" class="thumbimage"/>
+    </div>
+</div>
+<h3><span class="mw-headline" id="Beheerdersfuncties">Admin functions</span></h3>
+<p>Administrators will see the three buttons below at the top of the dedicated page.
+</p>
+<ul>
+    <li>"Block Comments": This button allows you to disable comment mode for the entire wiki (and therefore all users).
+        No new comments can be posted or existing comments can be responded to. As an administrator you will be able to
+        resolve existing comments.
+    </li>
+    <li>"Delete all completed comments": this button will delete all comments that have completed status.
+    </li>
+    <li>"Delete all comments": This button will delete all comments on the wiki, regardless of status.
+    </li>
+</ul>
+<div class="thumb tnone">
+    <div class="thumbinner" style="width:886px;"><img
+            alt="A screenshot showing the buttons of the administrative functions"
+            src="/extensions/SmartComments/resources/documentation/Schermafbeelding_Beheerdersfuncties.png"
+            decoding="async" width="884" height="59" class="thumbimage"/>
+    </div>
+</div>
+<p><br/>
+</p>
+<h2><span class="mw-headline" id="Bekende_beperkingen">Known limitations</span></h2>
+<ul>
+    <li>It is only possible to post comments on text without HTML. This means that it is currently not possible to, for
+        example, post a comment on text that is in bold.
+    </li>
+    <li>Only users with edit-permissions can leave comments.</li>
+    <li>A user cannot reply to a comment directly. A user can only reply to a comment from another user.
+    </li>
+    <li>Adding a comment creates a page revision, but this revision is hidden from the page's revision history.
+    </li>
+    <li>Existing comments cannot be edited textually, but can only be set to resolved or unresolved.
+    </li>
+</ul>

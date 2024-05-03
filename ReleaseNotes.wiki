@@ -1,0 +1,37 @@
+; Version 1.4.3 (Mar 15, 2024)
+* Change color of comment icons of comments that have replies to green
+* Make a simplified version of the special page available to users that only have the "add comment" right
+* Add a manual to the special page
+* The "spinner" to indicate loading time will now start immediately when selecting text
+* Improvements to selection actions in JavaScript (positioning of screenshot, position of "add comment" pop-up)
+* Add fix for clicking the button "Go to page overview" when already on the special page
+* Fix a bug where a user was not able to make a new selection upon previously getting an error message due to an invalid selection
+
+; Version 1.4.2 (Feb 1, 2024)
+* Ensure that filter "status" remains set whenever a comment is resolved or unresolved
+
+; Version 1.4.1 (Dec 6, 2023)
+* Allow users to reply to comments on the SpecialPage
+
+; Version 1.4.0 (Oct 6, 2023)
+* First release with Release Notes at [[Special:SmartComments/ReleaseNotes]]
+* Improved resource loading, this should make the process of enabling SmartComments more stable
+* Minimum comment length reduced to 1 character
+* After placing a comment, the comment mode is automatically enabled again
+* Possibility to comment on an image
+* Make a clear distinction in UI between comments and replies
+* When a page with comments is deleted, the comments are automatically deleted as well
+* Users with the "manage-inlinecomments" right now see a new icon when opening a comment (Go to page overview). Clicking it will open the special page, with the filter set to the page the user was just on.
+* Resolving a comment is no longer visible on Special:RecentChanges
+* Improved highlighting of text that has a comment associated to it
+* Improved compatability with the Rijkshuisstijl
+* Improved positioning of comments of which the original text was removed
+* (Special page) Improved filtering mechanism
+* (Special page) Pagination system built in
+* (Special page) Special characters are now shown properly
+* (Special page) Creation and editing times are now shown in the local timezone of the user viewing the special page
+* (Special page) Clicking a page link inside the row of a comment, opens the page and immediately opens the selected comment
+* (Special page) Clicking the "open" button of a comment, now opens the comment pop-up on the special page
+* (Special page) Added button to toggle the creation of new comments
+* (Special page) Added button to delete all completed/resolved comments
+* (Special page) Added button to delete all comments
