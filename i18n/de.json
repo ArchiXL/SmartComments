@@ -1,14 +1,14 @@
 {
 	"@metadata": {
 		"authors": [
-			"Youri van den Bogert",
+			"Bernhard Krabina",
+			"McDutchie",
 			"Robin van der Wiel",
-			"Bernhard Krabina"
+			"Youri van den Bogert"
 		]
 	},
-	"smartcomments": "SmartComments",
 	"sic-manual": "Handbuch",
-	"sic-rn-backto" : "Zurück zu",
+	"sic-rn-backto": "Zurück zu",
 	"sic-desc": "Kommentarfunktion for MediaWiki/SemanticMediaWiki",
 	"sic-error-title": "Fehler",
 	"sic-error-dismiss": "Verwerfen",
@@ -51,7 +51,6 @@
 	"sic-sp-message-deleted": "Kommentar gelöscht",
 	"sic-sp-message-reopened": "Status des Kommentars auf 'offen' geändert",
 	"sic-sp-message-complete": "Status des Kommentars auf 'erledigt' geändert",
-
 	"sic-status-open": "offen",
 	"sic-status-completed": "erledigt",
 	"sic-property-id": "Id",
@@ -65,7 +64,6 @@
 	"sic-property-page": "Seite",
 	"sic-property-revision": "Version",
 	"sic-property-position": "Position auf der Seite",
-
 	"sic-popup-title": "Antworten",
 	"sic-popup-msg-single": "Es gibt einen <strong>#X#</strong> Kommentar in der aktuellen Revision dieser Seite. Um ihn zu sehen, bitte die Kommentarmodus aktivieren.",
 	"sic-popup-msg-multiple": "Es gibt <strong>#X#</strong> Kommentar in der aktuellen Revision dieser Seite. Um sie zu sehen, bitte die Kommentarmodus aktivieren.",
@@ -76,19 +74,14 @@
 	"sic-popup-closed": "Kommentar geschlossen",
 	"sic-popup-completed": "Kommentar aufgelöst",
 	"sic-popup-deleted": "Kommentar gelöscht",
-
 	"sic-unlocalized-comments-found": "Kommentare, die nicht mehr mit einer Textauswahl auf dieser Seite verbunden sind:",
 	"sic-unlocalized-comment": "Zuvor markierter Text, der gelöscht wurde.",
-
 	"sic-action-text": "Kommentare",
-
 	"sic-props-description": "Dieses Spezialattribut wurde von der SmartComments-Erweiterung hinzugefügt",
-	
 	"right-add-inlinecomments": "Kommentare zu Wikiseiten hinzufügen und auf Kommentare antworten",
 	"right-manage-inlinecomments": "Kommentare von Wiki-Seiten löschen oder den Status ändern",
 	"action-add-inlinecomments": "Kommentare hinzufügen",
 	"action-manage-inlinecomments": "Status der Kommentare ändern",
-	
 	"apihelp-smartcomments-description": "API zum Hinzufügen und Verwalten von Kommentaren",
 	"apihelp-smartcomments-param-method": "Auszuführende Aktion",
 	"apihelp-smartcomments-param-user": "Id des Autors des Kommentars",
@@ -99,15 +92,12 @@
 	"apihelp-smartcomments-param-text": "Text des Kommentars",
 	"apihelp-smartcomments-param-comment": "Id des Kommentars",
 	"apihelp-smartcomments-param-status": "Status des Kommentars, zum Filtern oder Verwalten von Kommentaren",
-
 	"sic-selection-error-title": "Fehler",
 	"sic-selection-error-1": "Die Auswahl enthält bereits einen kommentierten Block.",
 	"sic-selection-error-2": "Die Auswahl enthält einen dynamischen Block. Klicken Sie auf den Block, anstatt ihn auszuwählen.",
 	"sic-selection-error-3": "Die Auswahl enthält Zeilenumbrüche. Versuchen Sie, Ihre Auswahl auf ein Stück Text zu beschränken.",
 	"sic-selection-error-4": "Auswahl enthält HTML-Code, versuchen Sie, Ihre Auswahl auf ein Stück Text zu beschränken.",
 	"sic-selection-error-5": "Die Auswahl ist leer.",
-
 	"sic-added-comment": "Antwort hinzugefügt",
-	"sic-added-comment-refreshing":  "Bitte warten, die Seite wird aktualisiert ..."
+	"sic-added-comment-refreshing": "Bitte warten, die Seite wird aktualisiert ..."
 }
-

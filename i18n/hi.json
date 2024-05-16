@@ -1,0 +1,37 @@
+{
+	"@metadata": {
+		"authors": [
+			"Abijeet Patro"
+		]
+	},
+	"sic-manual": "मैन्युअल",
+	"sic-error-title": "त्रुटि",
+	"sic-error-dismiss": "रद्द करें",
+	"sic-error-empty": "टिप्पणी दर्ज करें",
+	"sic-title-new": "नई टिप्पणी",
+	"sic-button-new-comment": "टिप्पणी जोड़ें",
+	"sic-button-read-comment": "टिप्पणी पढ़ें",
+	"sic-button-new-reply": "उत्तर जोड़ें",
+	"sic-button-save": "सहेजें",
+	"sic-button-cancel": "रद्द करें",
+	"sic-button-open": "टिप्पणी देखें",
+	"sic-button-delete": "टिप्पणी हटाएँ",
+	"sic-button-edit": "सम्पादन",
+	"sic-input-newcomment": "टिप्पणी",
+	"sic-input-commenttext": "उत्तर दें",
+	"sic-date-justnow": "अभी-अभी",
+	"sic-sp-tab-help": "मैन्युअल",
+	"sic-sp-adminbutton-confirm": "क्या आप निश्चित हैं कि आप यह कार्य करना चाहते हैं?",
+	"sic-sp-adminbutton-delete-all": "सभी टिप्पणियाँ हटाएँ",
+	"sic-sp-message-deleted": "टिप्पणी हटा दी गई",
+	"sic-status-open": "खोलें",
+	"sic-property-status": "स्थिति",
+	"sic-property-author": "लेखक",
+	"sic-property-replies": "उत्तर",
+	"sic-property-datetime": "तिथि और समय",
+	"sic-property-page": "पृष्ठ",
+	"sic-popup-enabled-highlighting-title": "टिप्पणियाँ",
+	"sic-action-text": "टिप्पणियाँ",
+	"action-add-inlinecomments": "टिप्पणी जोड़ें",
+	"sic-selection-error-title": "त्रुटि"
+}

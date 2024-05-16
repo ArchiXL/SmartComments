@@ -1,0 +1,11 @@
+{
+	"@metadata": {
+		"authors": [
+			"Amire80",
+			"Sjoerddebruin"
+		]
+	},
+	"smartcomments": "{{name}}",
+	"sic-rn-backto": "Bug: it's a lego message. See https://github.com/ArchiXL/SmartComments/issues/4\n\nAt the moment, the code inserts <nowiki>[[Special:SmartComments]]</nowiki> after this message.",
+	"sic-selection-error-title": "Fout"
+}

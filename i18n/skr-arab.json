@@ -1,0 +1,32 @@
+{
+	"@metadata": {
+		"authors": [
+			"Saraiki"
+		]
+	},
+	"sic-manual": "کتابڑی",
+	"sic-error-title": "خرابی",
+	"sic-error-dismiss": "مکاؤ",
+	"sic-button-new-comment": "تبصرہ شامل کرو",
+	"sic-button-goto-link": "لنک تے ون٘ڄو",
+	"sic-button-save": "محفوظ کرو",
+	"sic-button-cancel": "منسوخ",
+	"sic-button-delete": "تبصرہ مٹاؤ",
+	"sic-button-edit": "لکھو",
+	"sic-input-newcomment": "تبصرہ",
+	"sic-input-commenttext": "جواب",
+	"sic-date-justnow": "ہُݨے ہُݨے",
+	"sic-sp-tab-overview": "اُتلی نظر",
+	"sic-sp-tab-help": "کتابڑی",
+	"sic-status-open": "کھولو",
+	"sic-property-id": "آئی ڈی",
+	"sic-property-status": "حیثیت",
+	"sic-property-author": "مصنف",
+	"sic-property-replies": "ڄواب",
+	"sic-property-page": "ورقہ",
+	"sic-property-revision": "نظر ثانی",
+	"sic-popup-title": "ڄواب",
+	"sic-popup-enabled-highlighting-title": "تبصرے",
+	"sic-action-text": "تبصرے",
+	"sic-selection-error-title": "خرابی"
+}

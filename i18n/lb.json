@@ -1,0 +1,31 @@
+{
+	"@metadata": {
+		"authors": [
+			"Volvox"
+		]
+	},
+	"sic-manual": "Handbuch",
+	"sic-error-title": "Feeler",
+	"sic-button-save": "Späicheren",
+	"sic-button-cancel": "Ofbriechen",
+	"sic-button-edit": "Änneren",
+	"sic-input-commenttext": "Äntweren",
+	"sic-date-justnow": "elo just",
+	"sic-sp-tab-overview": "Iwwersiicht",
+	"sic-sp-tab-help": "Handbuch",
+	"sic-sp-filter-author": "No Auteur filteren",
+	"sic-sp-filter-page": "No Säit filteren",
+	"sic-sp-filter-status": "No Status filteren",
+	"sic-status-open": "oppen",
+	"sic-property-status": "Status",
+	"sic-property-author": "Auteur",
+	"sic-property-datetime": "Datum an Auerzäit",
+	"sic-property-modifiedBy": "Geännert vum",
+	"sic-property-modifiedDateTime": "Geännert de(n)",
+	"sic-property-page": "Säit",
+	"sic-property-revision": "Versioun",
+	"sic-property-position": "Positioun op der Säit",
+	"sic-popup-title": "Äntwerten",
+	"sic-selection-error-title": "Feeler",
+	"sic-selection-error-5": "D'Auswiel ass eidel."
+}
