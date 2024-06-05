@@ -2,7 +2,6 @@
 	"@metadata": {
 		"authors": [
 			"Bernhard Krabina",
-			"Justman10000",
 			"McDutchie",
 			"Robin van der Wiel",
 			"Youri van den Bogert"
@@ -13,7 +12,7 @@
 	"sic-desc": "Kommentarfunktion for MediaWiki/SemanticMediaWiki",
 	"sic-error-title": "Fehler",
 	"sic-error-dismiss": "Verwerfen",
-	"sic-error-empty": "Einen Kommentar abgeben",
+	"sic-error-empty": "Kommentar fehlt",
 	"sic-title-new": "Neuer Kommentar",
 	"sic-button-new-comment": "Kommentar hinzufügen",
 	"sic-button-read-comment": "Kommentar lesen",
@@ -25,7 +24,7 @@
 	"sic-button-complete": "Als erledigt markieren",
 	"sic-button-open": "Kommentar ansehen",
 	"sic-button-delete": "Kommentar löschen",
-	"sic-button-overview": "Zur Seitenübersicht gehen",
+	"sic-button-overview": "Gehe zur Seite",
 	"sic-button-edit": "Bearbeiten",
 	"sic-button-reopen": "Als unerledigt markieren",
 	"sic-input-newcomment": "Kommentar",
