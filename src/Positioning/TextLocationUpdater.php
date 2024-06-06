@@ -121,7 +121,7 @@ class TextLocationUpdater {
 		$matches = 0;
 		$lines = explode( PHP_EOL, $againstText === null ? $this->oldText : $againstText );
 		foreach ( $lines as $lineNr => $line ) {
-			$matches += substr_count( $line, $this->location->getWord() );
+			$matches += substr_count( $line, htmlspecialchars_decode( $this->location->getWord() ) );
 			if ( $matches >= $this->location->getIndex() ) {
 				return [
 					'lineNr' => $lineNr,
@@ -140,7 +140,9 @@ class TextLocationUpdater {
 		$counter = 0;
 		$replaced = false;
 		$location = $this->location;
-		$safeWord = preg_quote( $location->getWord() );
+		$safeWord = preg_quote( htmlspecialchars_decode( $location->getWord() ) );
+		// for some reason / doesn't get escaped so do string replace for that character
+		$safeWord = str_replace( "/", "\/", $safeWord );
 
 		preg_replace_callback( "/{$safeWord}/", function( $m ) use ( &$counter, &$replaced, $location ) {
 			if ( $counter == $location->getIndex() ) {

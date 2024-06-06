@@ -1,3 +1,12 @@
+; Version 1.5.0 (May 31, 2024)
+* Allow comments to be made on HTML selections
+
+; Version 1.4.4 (May 3, 2024)
+* Translation updates
+* Refactored namespace
+* Removed vendor dir
+* Several other Improvements
+
 ; Version 1.4.3 (Mar 15, 2024)
 * Change color of comment icons of comments that have replies to green
 * Make a simplified version of the special page available to users that only have the "add comment" right

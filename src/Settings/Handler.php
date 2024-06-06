@@ -23,11 +23,6 @@ class Handler {
 	}
 
 	public static function isCommentModeBlocked() : bool {
-		if ( file_exists( self::getLockFilePath() ) ) {
-			return true;
-		} else {
-			return false;
-		}
+		return file_exists( self::getLockFilePath() );
 	}
-
 }

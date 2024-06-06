@@ -3,9 +3,10 @@
 	"author": [
 		"Youri van den Bogert",
 		"Erwin Oord",
-		"Robin van der Wiel"
+		"Robin van der Wiel",
+		"Yvar Nanlohy"
 	],
-	"version": "1.4.4",
+	"version": "1.5.0",
 	"url": "https://www.archixl.nl",
 	"descriptionmsg": "sic-desc",
 	"license-name": "GPL-2.0+",

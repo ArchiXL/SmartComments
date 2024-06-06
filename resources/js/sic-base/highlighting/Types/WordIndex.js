@@ -23,7 +23,7 @@ SmartComments.Highlighting.Types.WordIndex = {
      * @returns {boolean}
      */
     isCorrectType: function( ) {
-        return this.comment.pos.indexOf( '|' ) !== -1;
+        return ! /<[^>]*>/.test( this.comment.pos.replace( /&lt;/g, '<' ).replace( /&gt;/g, '>' ) ) && this.comment.pos.indexOf( '|' ) !== -1;
     },
 
     /**

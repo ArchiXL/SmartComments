@@ -10,8 +10,7 @@ SmartComments.Selection = {
         INVALID_SELECTION_ALREADY_COMMENTED: 1,
         INVALID_SELECTION_INCLUDES_DYNAMIC_CONTENT: 2,
         INVALID_SELECTION_CONTAINS_LINEBREAKS: 3,
-        INVALID_SELECTION_CONTAINS_HTML: 4,
-        INVALID_SELECTION_IS_EMPTY: 5
+        INVALID_SELECTION_IS_EMPTY: 4
     },
     lastPos: {
         x: 0,
@@ -138,10 +137,6 @@ SmartComments.Selection = {
         // The selection contains line breaks
         } else if ( selectionHTML.match( /[\n\r]/ ) ) {
             res = this.enums.INVALID_SELECTION_CONTAINS_LINEBREAKS;
-
-        // The selection contains HTML
-        } else if ( selectionHTML.match( /<[^>]*>/ ) ) {
-            res = this.enums.INVALID_SELECTION_CONTAINS_HTML;
         }
 
         // Show an error message to the user if the selection is invalid

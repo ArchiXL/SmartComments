@@ -21,6 +21,17 @@ SmartComments.Selection.TextSelection = {
         if ( SmartComments.Selection.validateSelection( selection ) === SmartComments.Selection.enums.SELECTION_VALID ) {
             var range = selection.getRangeAt( 0 );
 
+            /**
+             * Ensure that the start and end containers of the range are within the same parent node.
+             * If not, adjust the range accordingly to avoid errors.
+             */
+            if ( ! range.endContainer.parentNode.isSameNode( range.startContainer.parentNode ) && ! range.endContainer.parentNode.contains( range.startContainer.parentNode ) ) {
+                range.setEnd( range.endContainer, range.endContainer.length );
+            }
+            if ( ! range.startContainer.parentNode.contains( range.endContainer.parentNode ) ) {
+                range.setStart( range.startContainer, 0 );
+            }
+
             SmartComments.Selection.preSelection( range );
 
             this.getTextAndIndexAsync( range ).then( result => {
@@ -29,7 +40,7 @@ SmartComments.Selection.TextSelection = {
             }).catch( (e) => {
                 self.active = false;
                 console.log("Exception caught", e);
-            })
+            });
         } else {
             // The selection was not valid. Reset the selection, and allow the user to make a new selection
             self.active = false;
@@ -93,24 +104,42 @@ SmartComments.Selection.TextSelection = {
         return new Promise((resolve, reject) => {
             var baseEl = SmartComments.getNodeRoot(),
                 selectionPos = rangy.serializeRange( selectionRange ),
-                searchFor = selectionRange.toHtml(),
+                searchFor = selectionRange.toString(),
+                searchForHtml = selectionRange.toHtml(),
                 range = rangy.createRange(),
                 searchScopeRange = rangy.createRange(),
                 i = 0;
+            const asyncSearchHtml = () => {
+                let content = document.querySelectorAll( "#mw-content-text > .mw-parser-output" )[0],
+                    currentNode,
+                    currentText = searchForHtml,
+                    iterator = document.createNodeIterator( content, NodeFilter.SHOW_TEXT ),
+                    found = -1;
+                while( ( currentNode = iterator.nextNode() ) ) {
+                    for( let i = 0; i < currentNode.data.length; i++ ) {
+                        if ( currentNode.data[ i ] === currentText[ 0 ] ) {
+                            currentText = currentText.substring( 1 );
+                            if ( currentText.length === 0 ) {
+                                found++;
+                                if ( currentNode.parentNode.contains( selectionRange.endContainer ) ) {
+                                    res.index = found;
+                                    resolve(res);
+                                    return;
+                                }
+                            }
+                        } else {
+                            currentText = selectionRange.toString();
+                        }
+                    }
+                }
+                SmartComments.notifications.error(
+                    mw.msg( 'sic-selection-error-title' )
+                );
+            };
 
-            searchScopeRange.selectNodeContents(baseEl);
-
-            var options = {
-                    caseSensitive: true,
-                    withinRange: searchScopeRange
-                },
-                res = {
-                    text: searchFor,
-                    index: i,
-                };
 
             const asyncSearch = () => {
-                if (range.findText(searchFor, options)) {
+                if ( range.findText(searchFor, options ) ) {
                     if (rangy.serializeRange(range) === selectionPos) {
                         res.index = i;
                     }
@@ -123,7 +152,25 @@ SmartComments.Selection.TextSelection = {
                 }
             };
 
-            asyncSearch();
+            var res = {
+                index: i,
+            };
+
+            // if string contains html use different method
+            if ( /<[^>]*>/.test( searchForHtml ) ) {
+                res.text = searchForHtml;
+                asyncSearchHtml();
+            } else {
+                searchScopeRange.selectNodeContents(baseEl);
+
+                res.text = searchFor;
+                var options = {
+                    caseSensitive: true,
+                    withinRange: searchScopeRange
+                };
+
+                asyncSearch();
+            }
         });
     },
 
