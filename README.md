@@ -3,7 +3,6 @@
 ## Please note!
 * This is a beta release.
 * Unit tests are not working.
-* Selection containing HTML-tags are currently not allowed.
 * Comment images are not displayed correctly when using img_auth.php
 * The UI and JavaScript framework will be refactored to work with Codex.
 
