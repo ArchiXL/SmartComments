@@ -11,6 +11,7 @@
 	"sic-button-goto-link": "لنک تے ون٘ڄو",
 	"sic-button-save": "محفوظ کرو",
 	"sic-button-cancel": "منسوخ",
+	"sic-button-open": "تبصرہ ݙیکھو",
 	"sic-button-delete": "تبصرہ مٹاؤ",
 	"sic-button-edit": "لکھو",
 	"sic-input-newcomment": "تبصرہ",
@@ -28,5 +29,6 @@
 	"sic-popup-title": "ڄواب",
 	"sic-popup-enabled-highlighting-title": "تبصرے",
 	"sic-action-text": "تبصرے",
+	"action-add-inlinecomments": "تبصرے شامل کرو",
 	"sic-selection-error-title": "خرابی"
 }

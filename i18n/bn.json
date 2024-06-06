@@ -1,0 +1,35 @@
+{
+	"@metadata": {
+		"authors": [
+			"আফতাবুজ্জামান"
+		]
+	},
+	"sic-manual": "হাতদ্বারা",
+	"sic-error-title": "ত্রুটি",
+	"sic-error-dismiss": "খারিজ করুন",
+	"sic-error-empty": "একটি মন্তব্য লিখুন",
+	"sic-title-new": "নতুন মন্তব্য",
+	"sic-button-new-comment": "মন্তব্য যোগ করুন",
+	"sic-button-read-comment": "মন্তব্য পড়ুন",
+	"sic-button-new-reply": "উত্তর দিন",
+	"sic-button-save": "সংরক্ষণ করুন",
+	"sic-button-cancel": "বাতিল",
+	"sic-button-close": "পপ-আপ উইন্ডো বন্ধ করুন",
+	"sic-button-open": "মন্তব্য দেখুন",
+	"sic-button-delete": "মন্তব্য মুছুন",
+	"sic-button-edit": "সম্পাদনা",
+	"sic-input-newcomment": "মন্তব্য",
+	"sic-input-commenttext": "উত্তর দিন",
+	"sic-date-justnow": "এইমাত্র",
+	"sic-property-status": "স্থিতি",
+	"sic-property-author": "লেখক",
+	"sic-property-text": "মন্তব্যের পাঠ্য",
+	"sic-property-replies": "উত্তর",
+	"sic-property-datetime": "তারিখ ও সময়",
+	"sic-property-modifiedBy": "সংশোধন করেছেন",
+	"sic-property-modifiedDateTime": "সংশোধনের সময়",
+	"sic-property-page": "পাতা",
+	"sic-property-revision": "সংস্করণ",
+	"sic-popup-enabled-highlighting-title": "মন্তব্য",
+	"sic-selection-error-title": "ত্রুটি"
+}
