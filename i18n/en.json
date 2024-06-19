@@ -29,6 +29,8 @@
 	"sic-input-newcomment": "Comment",
 	"sic-input-commenttext": "Reply",
 	"sic-date-justnow": "just now",
+	"sic-sp-name": "SmartComments",
+	"sic-sp-title": "SmartComments",
 	"sic-sp-no-access": "You have no access to this page.",
 	"sic-sp-tab-overview": "Overview",
 	"sic-sp-tab-help": "Manual",
@@ -87,7 +89,7 @@
 	"right-manage-inlinecomments": "Delete comments from wiki pages or change status",
 	"action-add-inlinecomments": "add comments",
 	"action-manage-inlinecomments": "change the status of comments",
-	
+	"api-error": "An error occurred trying to save the data.",
 	"apihelp-smartcomments-description": "API for adding and managing inline comments",
 	"apihelp-smartcomments-param-method": "Action to perform",
 	"apihelp-smartcomments-param-user": "Id of the author of the comment",
