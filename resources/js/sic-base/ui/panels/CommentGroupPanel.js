@@ -195,8 +195,16 @@ SmartComments.Panels.CommentGroup = {
             }
             OO.inheritClass( overviewButton, OO.ui.Tool );
             overviewButton.static.name = 'overview';
-            overviewButton.static.icon = 'articles';
-            overviewButton.static.title = mw.msg('sic-button-overview');
+
+            // Adjust the icon and title of the button accordingly to an article or to the special page
+            if ( mw.config.get( 'wgCanonicalSpecialPageName' ) === 'SmartComments' ) {
+                overviewButton.static.icon = 'article';
+                overviewButton.static.title = mw.msg('sic-button-see-page');
+            } else {
+                overviewButton.static.icon = 'articles';
+                overviewButton.static.title = mw.msg('sic-button-overview');
+            }
+
             overviewButton.prototype.onSelect = function () {
                 SmartComments.Panels.CommentGroup.goToOverview( comment.id, comment.page );
                 this.setActive( false );

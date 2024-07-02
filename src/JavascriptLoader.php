@@ -78,6 +78,7 @@ class JavascriptLoader {
 				"sic-button-complete",
 				"sic-button-delete",
 				"sic-button-overview",
+				"sic-button-see-page",
 				"sic-button-edit",
 				"sic-button-reopen",
 				"sic-input-newcomment",
