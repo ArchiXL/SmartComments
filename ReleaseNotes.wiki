@@ -1,3 +1,6 @@
+; Version 1.5.2 (Jul 2, 2024)
+* Special:SmartComments: Show the displaytitle of the page that contains a comment, if it has one set
+
 ; Version 1.5.1 (Jun 25, 2024)
 * Fix missing i18n-strings
 * Replace deprecated "SMWStore::updateDataBefore" hook by "SMW::SQLStore::BeforeDataUpdateComplete"
