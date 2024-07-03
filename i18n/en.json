@@ -24,6 +24,7 @@
 	"sic-button-open": "View comment",
 	"sic-button-delete": "Delete comment",
 	"sic-button-overview": "Go to page overview",
+	"sic-button-see-page": "Go to comment on page",
 	"sic-button-edit": "Edit",
 	"sic-button-reopen": "Undo mark complete",
 	"sic-input-newcomment": "Comment",

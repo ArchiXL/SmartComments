@@ -80,7 +80,7 @@ The `JavascriptLoader` class handles the loading and inclusion of JavaScript fil
   - Inside this class, use the appropriate static $packageFiles to include or remove your new JavaScript file.
 
 ### Minification and Deployment
-Run the maintenance script 'minifier.php' if you made any changes to the JavaScript resources.. This is necessary to reflect any changes!
+Run the maintenance script 'minifier.php' if you made any changes to the JavaScript resources. This is necessary to reflect any changes!
 
 ### Debugging Mode
 You can enable debugging mode by appending `?debug=true` to the URL query parameters. When debugging mode is enabled, the individual script files will be loaded instead of the minified bundle. This can be useful for development and debugging purposes.

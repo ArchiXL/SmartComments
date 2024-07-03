@@ -3,6 +3,7 @@
 namespace MediaWiki\Extension\SmartComments\SpecialPage;
 
 use Html;
+use MediaWiki\Extension\SmartComments\Utils;
 use MediaWiki\MediaWikiServices;
 use MWException;
 use OOUI;
@@ -12,6 +13,7 @@ use RequestContext;
 use MediaWiki\Extension\SmartComments\DBHandler;
 use MediaWiki\Extension\SmartComments\SemanticInlineComment as SIC;
 use MediaWiki\Extension\SmartComments\Settings\Handler;
+use SMW\DIWikiPage;
 use SMW\Utils\HtmlTabs;
 use SpecialPage;
 use Title;
@@ -283,7 +285,11 @@ class Special extends SpecialPage {
 			$tableHtml .= Xml::closeElement( 'td' );
 			$tableHtml .= Xml::element( 'td', null, $sic->getModifiedDateTime( SIC::USER_TIMESTAMPFORMAT, $this->getUser() ) );
 			$tableHtml .= Xml::openElement( 'td' );
-			$tableHtml .= Xml::element( 'a', [ 'href' => $this->getPageUrlFocused( htmlspecialchars( $sic->getPage() ), $sic->getId() ) ], $sic->getPage() );
+			if ( $displayTitle = Utils::getPropertyValue( DIWikiPage::newFromText( $sic->getPage() ), "Display title of" ) ) {
+				$tableHtml .= Xml::element( 'a', [ 'href' => $this->getPageUrlFocused( htmlspecialchars( $sic->getPage() ), $sic->getId() ) ], $displayTitle );
+			} else {
+				$tableHtml .= Xml::element( 'a', [ 'href' => $this->getPageUrlFocused( htmlspecialchars( $sic->getPage() ), $sic->getId() ) ], $sic->getPage() );
+			}
 			$tableHtml .= Xml::closeElement( 'td' );
 
 			$openButton = new ButtonWidget([
