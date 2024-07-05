@@ -1,5 +1,44 @@
 {
+    "name": "mediawiki/smart-comments",
+    "type": "mediawiki-extension",
+    "description": "An extension that enables wiki users to post inline comments attached to text fragments on wiki pages, comparable to posting review comments in Microsoft Word and other word processors.",
+    "keywords":[
+        "Semantic MediaWiki",
+        "Wiki",
+        "MediaWiki",
+        "SmartComments"
+    ],
+    "homepage": "https://www.mediawiki.org/wiki/Extension:SmartComments",
+    "authors": [
+        {
+            "name": "Youri van den Bogert",
+            "homepage": "https://www.archixl.nl/",
+            "role": "Original author"
+        },
+        {
+            "name": "Erwin Oord",
+            "homepage": "https://www.archixl.nl/",
+            "role": "Original author"
+        },
+        {
+            "name": "Robin van der Wiel",
+            "homepage": "https://www.archixl.nl/",
+            "role": "Original author"
+        }
+    ],
     "require": {
+        "php": ">=7.4",
+        "mediawiki/semantic-media-wiki": "^4.0",
         "jfcherng/php-diff": "^6.10.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "MediaWiki\\Extension\\SmartComments\\": "src/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true
+        }
     }
 }

@@ -72,7 +72,6 @@ class TextLocationUpdater {
 		$newIndex += $newMatches;
 		$newIndex -= $deleteMatches;
 
-
 		// Update the index to set the new location
 		$this->location->setIndex( $newIndex );
 
