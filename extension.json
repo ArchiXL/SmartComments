@@ -6,7 +6,7 @@
 		"Robin van der Wiel",
 		"Yvar Nanlohij"
 	],
-	"version": "1.5.2",
+	"version": "1.5.3",
 	"url": "https://www.archixl.nl",
 	"descriptionmsg": "sic-desc",
 	"license-name": "GPL-2.0+",
@@ -97,10 +97,7 @@
 		}
 	},
 	"requires": {
-		"MediaWiki": ">= 1.35",
-		"extensions": {
-			"SemanticMediaWiki": ">= 3.2"
-		}
+		"MediaWiki": ">= 1.35"
 	},
 	"manifest_version": 2
 }

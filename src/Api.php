@@ -138,11 +138,13 @@ class Api extends ApiBase {
 				if ( !$result ) {
 					$this->addError('smartcomments-api-new-error-insert');
 				} else {
-					if ( !isset( $title ) || !$title ) {
-						$title = Title::newFromText($page);
+					if ( \ExtensionRegistry::getInstance()->isLoaded( 'SemanticMediaWiki' ) ) {
+						if ( !isset( $title ) || !$title ) {
+							$title = Title::newFromText($page);
+						}
+						//Force page update job to create a subobject for the new comment
+						SMWHandler::createPageUpdateJob($title);
 					}
-					//Force page update job to create a subobject for the new comment
-					SMWHandler::createPageUpdateJob($title);
 
 					$this->getResult()->addValue(self::RES_MODULE, self::RES_SUCCESS, '1');
 					$this->getResult()->addValue(self::RES_MODULE, self::RES_COMMENT, $result);
@@ -190,10 +192,12 @@ class Api extends ApiBase {
 		$result = DBHandler::updateComment($commentId, $this->getUser(), wfTimestampNow(), $field, $value);
 		if ($result === true) {
 			//Force page update job to modify the corresponding subobject, if page is provided
-			$page = $this->getRequest()->getVal(self::PARAM_PAGE);
-			if (!empty($page)) {
-				$title = Title::newFromText($page);
-				SMWHandler::createPageUpdateJob($title);
+			if ( \ExtensionRegistry::getInstance()->isLoaded( 'SemanticMediaWiki' ) ) {
+				$page = $this->getRequest()->getVal(self::PARAM_PAGE);
+				if (!empty($page)) {
+					$title = Title::newFromText($page);
+					SMWHandler::createPageUpdateJob($title);
+				}
 			}
 			$this->getResult()->addValue(self::RES_MODULE, self::RES_SUCCESS, '1');
 		} else {
@@ -224,10 +228,12 @@ class Api extends ApiBase {
 		$result = DBHandler::deleteComment($commentId);
 		if ($result === true) {
 			//Force page update job to delete the corresponding subobject, if page is provided
-			$page = $this->getRequest()->getVal(self::PARAM_PAGE);
-			if (!empty($page)) {
-				$title = Title::newFromText($page);
-				SMWHandler::createPageUpdateJob($title);
+			if ( \ExtensionRegistry::getInstance()->isLoaded( 'SemanticMediaWiki' ) ) {
+				$page = $this->getRequest()->getVal(self::PARAM_PAGE);
+				if (!empty($page)) {
+					$title = Title::newFromText($page);
+					SMWHandler::createPageUpdateJob($title);
+				}
 			}
 			$this->getResult()->addValue(self::RES_MODULE, self::RES_SUCCESS, '1');
 		} else {
