@@ -1,3 +1,6 @@
+; Version 1.5.3 (Jul 17, 2024)
+* Only use SMWHandler if SemanticMediaWiki is loaded.
+
 ; Version 1.5.2 (Jul 2, 2024)
 * Special:SmartComments: In the comment overview table, show the displaytitle of a page if it has one set
 * Special:SmartComments: Change the icon and button text of the button in a comment pop-up that takes you back to the page a comment was made on
