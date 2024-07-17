@@ -141,8 +141,10 @@ class Api extends ApiBase {
 					if ( !isset( $title ) || !$title ) {
 						$title = Title::newFromText($page);
 					}
-					//Force page update job to create a subobject for the new comment
-					SMWHandler::createPageUpdateJob($title);
+					if ( \ExtensionRegistry::getInstance()->isLoaded( 'SemanticMediaWiki' ) ) {
+						//Force page update job to create a subobject for the new comment
+						SMWHandler::createPageUpdateJob($title);
+					}
 
 					$this->getResult()->addValue(self::RES_MODULE, self::RES_SUCCESS, '1');
 					$this->getResult()->addValue(self::RES_MODULE, self::RES_COMMENT, $result);
@@ -193,7 +195,9 @@ class Api extends ApiBase {
 			$page = $this->getRequest()->getVal(self::PARAM_PAGE);
 			if (!empty($page)) {
 				$title = Title::newFromText($page);
-				SMWHandler::createPageUpdateJob($title);
+				if ( \ExtensionRegistry::getInstance()->isLoaded( 'SemanticMediaWiki' ) ) {
+					SMWHandler::createPageUpdateJob($title);
+				}
 			}
 			$this->getResult()->addValue(self::RES_MODULE, self::RES_SUCCESS, '1');
 		} else {
@@ -227,7 +231,9 @@ class Api extends ApiBase {
 			$page = $this->getRequest()->getVal(self::PARAM_PAGE);
 			if (!empty($page)) {
 				$title = Title::newFromText($page);
-				SMWHandler::createPageUpdateJob($title);
+				if ( \ExtensionRegistry::getInstance()->isLoaded( 'SemanticMediaWiki' ) ) {
+					SMWHandler::createPageUpdateJob($title);
+				}
 			}
 			$this->getResult()->addValue(self::RES_MODULE, self::RES_SUCCESS, '1');
 		} else {

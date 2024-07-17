@@ -97,10 +97,7 @@
 		}
 	},
 	"requires": {
-		"MediaWiki": ">= 1.35",
-		"extensions": {
-			"SemanticMediaWiki": ">= 3.2"
-		}
+		"MediaWiki": ">= 1.35"
 	},
 	"manifest_version": 2
 }
