@@ -17,6 +17,17 @@ To enable SmartComments, the following actions are needed:
 * Include the extension in the LocalSettings_wiki_extensions.php  
     `wfLoadExtension( 'SmartComments' );`
 
+* To enable Composer to discover and process the composer.json file that's included in the extensions, add this to $IP/composer.local.json
+  ```
+  "extra": {
+        "merge-plugin": {
+            "include": [
+                "extensions/SmartComments/composer.json"
+            ]
+        }
+    }
+  ```
+* Run `composer update` so that Composer will recalculate the dependencies and the changes will take effect
 * Run the MediaWiki 'update.php' maintenance script to add the database tables
 * Manage user permissions if needed (see below) 
 
