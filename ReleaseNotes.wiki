@@ -1,3 +1,6 @@
+; Version 1.5.4 (Jul 18, 2024)
+* Removed the use of SMW\HtmlTabs and created custom tabs. 
+
 ; Version 1.5.3 (Jul 17, 2024)
 * Removed hard requirement of SemanticMediaWiki in extension.json - fixes [https://github.com/ArchiXL/SmartComments/issues/10 #10]. 
 

@@ -3,6 +3,7 @@
 namespace MediaWiki\Extension\SmartComments\SpecialPage;
 
 use Html;
+use MediaWiki\Extension\SmartComments\SMWHandler;
 use MediaWiki\Extension\SmartComments\Utils;
 use MediaWiki\MediaWikiServices;
 use MWException;
@@ -13,8 +14,6 @@ use RequestContext;
 use MediaWiki\Extension\SmartComments\DBHandler;
 use MediaWiki\Extension\SmartComments\SemanticInlineComment as SIC;
 use MediaWiki\Extension\SmartComments\Settings\Handler;
-use SMW\DIWikiPage;
-use SMW\Utils\HtmlTabs;
 use SpecialPage;
 use Title;
 use Xml;
@@ -109,23 +108,18 @@ class Special extends SpecialPage {
 	private function showMain() : void {
 		$out = $this->getOutput();
 
-		$htmlTabs = new HtmlTabs();
-		$htmlTabs->setGroup( "smartcomments-special" );
-		$htmlTabs->setActiveTab( self::TAB_ID_OVERVIEW );
-
-		$htmlTabs->tab( self::TAB_ID_OVERVIEW, wfMessage( "sic-sp-tab-overview" )->text() );
-		$htmlTabs->content( self::TAB_ID_OVERVIEW, $this->showOverview() );
-
-		$htmlTabs->tab( self::TAB_ID_HELP, wfMessage( "sic-sp-tab-help" )->text() );
-		$htmlTabs->content( self::TAB_ID_HELP, $this->getHelpTab() );
-
-		$tabs = [ self::TAB_ID_OVERVIEW, self::TAB_ID_HELP ];
-		$inlineStyles = [];
-		foreach ( $tabs as $tabName ) {
-			$inlineStyles[] = ".smartcomments-special #tab-$tabName:checked ~ #tab-content-$tabName";
-		}
-		$out->addInlineStyle( implode( ',', $inlineStyles ) . ' {display: block;}' );
-		$out->addHTML( $htmlTabs->buildHTML( [ "class" => "smartcomments-special" ] ) );
+		$tabLabels = Xml::openElement( 'div', [ 'class' => 'sc-tabs' ] );
+		$tabLabels .= Xml::element( 'span', [ 'class' => 'sc-tab active', 'tab-reference' => "tab-" . self::TAB_ID_OVERVIEW ], wfMessage( "sic-sp-tab-overview" )->text() );
+		$tabLabels .= Xml::element( 'span', [ 'class' => 'sc-tab', 'tab-reference' => "tab-" . self::TAB_ID_HELP ], wfMessage( "sic-sp-tab-help" )->text() );
+		$tabLabels .= Xml::closeElement( 'div' );
+		$out->addhtml( $tabLabels );
+		$tabBody = Xml::openElement( "section", [ 'id' => 'tab-' . self::TAB_ID_OVERVIEW, 'class' => 'sc-tab-body' ] );
+		$tabBody .= $this->showOverview();
+		$tabBody .= Xml::closeElement( "section" );
+		$tabBody .= Xml::openElement( "section", [ 'id' => 'tab-' . self::TAB_ID_HELP, 'class' => 'sc-tab-body sc-hide' ] );
+		$tabBody .= $this->getHelpTab();
+		$tabBody .= Xml::closeElement( "section" );
+		$out->addHTML( $tabBody );
 	}
 
 	/**
@@ -285,11 +279,19 @@ class Special extends SpecialPage {
 			$tableHtml .= Xml::closeElement( 'td' );
 			$tableHtml .= Xml::element( 'td', null, $sic->getModifiedDateTime( SIC::USER_TIMESTAMPFORMAT, $this->getUser() ) );
 			$tableHtml .= Xml::openElement( 'td' );
-			if ( $displayTitle = Utils::getPropertyValue( DIWikiPage::newFromText( $sic->getPage() ), "Display title of" ) ) {
-				$tableHtml .= Xml::element( 'a', [ 'href' => $this->getPageUrlFocused( htmlspecialchars( $sic->getPage() ), $sic->getId() ) ], $displayTitle );
-			} else {
-				$tableHtml .= Xml::element( 'a', [ 'href' => $this->getPageUrlFocused( htmlspecialchars( $sic->getPage() ), $sic->getId() ) ], $sic->getPage() );
+			$linkTitle = $sic->getPage();
+			if ( \ExtensionRegistry::getInstance()->isLoaded( 'DisplayTitle' )) {
+				$title = \Title::newFromText( $linkTitle );
+				if ( version_compare( MW_VERSION, '1.38', '>' ) ) {
+					$displaytitle = \MediaWiki\MediaWikiServices::getInstance()->getPageProps()->getProperties( $title, 'displaytitle' );
+				} else {
+					$displaytitle = \PageProps::getInstance()->getProperties( $title, 'displaytitle' );
+				}
+				if ( !empty( $displaytitle ) ) {
+					$linkTitle = $displaytitle[ $title->getArticleID( ) ] ?? $linkTitle;
+				}
 			}
+			$tableHtml .= Xml::element( 'a', [ 'href' => $this->getPageUrlFocused( htmlspecialchars( $sic->getPage() ), $sic->getId() ) ], $linkTitle );
 			$tableHtml .= Xml::closeElement( 'td' );
 
 			$openButton = new ButtonWidget([

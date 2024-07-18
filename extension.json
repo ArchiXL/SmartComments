@@ -6,7 +6,7 @@
 		"Robin van der Wiel",
 		"Yvar Nanlohij"
 	],
-	"version": "1.5.3",
+	"version": "1.5.4",
 	"url": "https://www.archixl.nl",
 	"descriptionmsg": "sic-desc",
 	"license-name": "GPL-2.0+",
@@ -49,6 +49,9 @@
 		"ext.SmartComments.Special": {
 			"localBasePath": "",
 			"remoteExtPath": "SmartComments",
+			"styles": [
+				"resources/css/specialPage.less"
+			],
 			"scripts": [
 				"resources/js/SmartComments.special.js"
 			],

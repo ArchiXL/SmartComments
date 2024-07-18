@@ -27,6 +27,17 @@ $( document ).ready( function() {
         });
     });
 
+    $( document ).on( 'click', '.sc-tab', ( e ) => {
+        let tab =  $( e.target );
+        if ( tab.hasClass( 'active' ) ) {
+           return;
+        }
+        $( '.sc-tab.active' ).removeClass( 'active' );
+        tab.addClass( 'active' );
+        $( '.sc-tab-body' ).addClass( 'sc-hide' );
+        $( '#' + tab.attr( 'tab-reference' ) ).removeClass( 'sc-hide' );
+    } );
+
 });
 
 function buttonConfirm(e) {
