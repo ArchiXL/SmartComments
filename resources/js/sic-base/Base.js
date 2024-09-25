@@ -83,10 +83,8 @@ var SmartComments = {
      *
      * @returns {Node}
      */
-    getNodeRoot: function( nodeRoot ) {
-        return typeof nodeRoot === "undefined"
-            ? document.getElementById( 'mw-content-text' ).getRootNode()
-            : document.getElementById( 'mw-content-text' );
+    getNodeRoot: function() {
+        return document.getElementById( 'mw-content-text' );
     },
 
     /**

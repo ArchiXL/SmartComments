@@ -1,3 +1,7 @@
+; Version 1.5.5 (Sep 25, 2024)
+* Fixed bug where you could select everything in the page.
+* Fixed issue where selection would be put on the firstHeader in MW instead of the text 
+
 ; Version 1.5.4 (Jul 18, 2024)
 * Removed the use of SMW\HtmlTabs and created custom tabs. 
 
