@@ -183,7 +183,7 @@ SmartComments.Selection.TextSelection = {
         var self = this;
 
         // Record selection changes
-        $( document ).mouseup( function( event ) {
+        $( SmartComments.getNodeRoot() ).mouseup( function( event ) {
             if ( SmartComments.Selection.enabled ) {
                 // When clicking on a highlighted area, the value stays highlighted until after the mouseup event,
                 // and would therefore still be captured by getSelection. This micro-timeout solves the issue.
