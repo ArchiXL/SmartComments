@@ -93,7 +93,7 @@ class TextLocationUpdater {
 		preg_match_all( $regex, $text, $matches );
 		if ( $matches ) {
 			foreach ( $matches[2] as $line ) {
-				$nrOfActualMatches += substr_count( $line, $this->location->getWord() );
+				$nrOfActualMatches += substr_count( $text, $line );
 			}
 		}
 

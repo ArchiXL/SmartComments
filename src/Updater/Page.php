@@ -27,6 +27,8 @@ class Page {
 
 	public static bool $wasSaved = false;
 
+	public static bool $newContent = false;
+
 	public function __construct( WikiPage $page, ParserOutput $parserOutput = null ) {
 		$this->page = $page;
 		$this->parserOutput = $parserOutput;
@@ -85,11 +87,9 @@ class Page {
 			return false;
 		}
 
-		// Clean the parser transclusion shit from the parser output since we
-		// don't care about that
-		$currentContent = $this->cleanHTMLString(  $this->parserOutput->getText() );
+		// Clean the parser transclusion tags from the parser output since we don't want that in our content
+		$currentContent = $this->cleanHTMLString( $this->parserOutput->getText() );
 		$oldContent = $slot->getWikitextForTransclusion();
-
 		// Loop over each text location to update its location
 		foreach( $this->anchorStore->getTextLocations() as $textLocation ) {
 			$updater = new TextLocationUpdater( $oldContent, $currentContent, $textLocation );
@@ -108,6 +108,7 @@ class Page {
 		$this->updateSlotWithCurrentContents();
 
 		// Stops endless loops..
+		self::$newContent = false;
 		self::$wasSaved = true;
 
 		return true;
@@ -131,7 +132,7 @@ class Page {
 	 * @throws MWContentSerializationException
 	 * @throws MWException
 	 */
-	private function updateSlotWithCurrentContents( $stringToAppend = null ): void {
+	public function updateSlotWithCurrentContents( $stringToAppend = null ): void {
 		$pageUpdater = $this->page->newPageUpdater( \RequestContext::getMain()->getUser() );
 
 		$slotContent = \ContentHandler::makeContent(
@@ -143,6 +144,7 @@ class Page {
 
 		$pageUpdater->setContent( self::DATA_SLOT, $slotContent );
 		$pageUpdater->saveRevision( $commentStore, EDIT_SUPPRESS_RC );
+		self::$newContent = true;
 	}
 
 }

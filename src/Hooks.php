@@ -59,22 +59,14 @@ class Hooks {
 		return true;
 	}
 
-	/**
-	 * @param \WikiPage $wikiPage
-	 * @return bool
-	 */
-	public static function onParserCacheSaveComplete(
-		\ParserCache $parserCache,
-		\ParserOutput $parserOutput,
-		\Title $title,
-		\ParserOptions $parserOptions,
-		int $revId
-	) {
+	public static function onPageSaveComplete(\WikiPage $wikiPage, \MediaWiki\User\UserIdentity $user, string $summary, int $flags, \MediaWiki\Revision\RevisionRecord $revisionRecord, \MediaWiki\Storage\EditResult $editResult) {
+		$pageUpdater = new Page( $wikiPage , $wikiPage->getParserOutput() );
 		if ( !Page::$wasSaved ) {
-			$pageUpdater = new Page( \WikiPage::factory( $title ), $parserOutput );
 			$pageUpdater->updateComments();
 		}
-		return true;
+		if (!Page::$newContent) {
+			$pageUpdater->updateSlotWithCurrentContents();
+		}
 	}
 
 	/**
