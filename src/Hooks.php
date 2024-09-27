@@ -64,7 +64,7 @@ class Hooks {
 		if ( !Page::$wasSaved ) {
 			$pageUpdater->updateComments();
 		}
-		if (!Page::$newContent) {
+		if ( !Page::$newContent ) {
 			$pageUpdater->updateSlotWithCurrentContents();
 		}
 	}

@@ -1,0 +1,68 @@
+<testcase>
+    <text>
+        <old><![CDATA[
+Lorem ipsum '''dolor''' sit amet, consectetur adipiscing elit. Curabitur placerat ante mi, a ultrices sapien condimentum in. Aenean nulla sapien, varius sit amet ligula nec, aliquam imperdiet tellus. Donec ornare, mi in tristique accumsan, orci lectus congue purus, in placerat libero nunc et massa. Sed eu ornare felis. Nulla rutrum, ipsum non eleifend rutrum, nulla justo volutpat erat, non commodo enim risus ac ipsum. Praesent venenatis, augue sed dapibus tincidunt, lacus quam porttitor justo, sit amet finibus quam felis sed arcu. Nam eleifend a lacus sit amet laoreet. Nam quis purus eu mauris scelerisque sodales. Fusce odio arcu, placerat vel efficitur at, laoreet in justo. Sed tristique faucibus felis. Donec ultricies nibh eget facilisis pharetra. Proin quis metus ultrices, pulvinar dui sed, cursus risus. Nulla consectetur et elit sit amet porttitor.
+
+
+<div class="smartcomment-hl-60">
+    {{#ask:[[Categorie:Elementen]]|width=100%|format=table|limit=5|mainlabel=Element}}
+</div>
+
+Donec luctus dui eget magna pulvinar finibus. Morbi eleifend sem vehicula, sagittis lorem vel, luctus dui. Nulla nec tortor sed enim cursus dapibus rhoncus sed libero. Vestibulum eget lacus ante. Vivamus imperdiet non odio ac vehicula. Nulla pellentesque metus eget tortor tristique maximus. Nulla eu facilisis lectus, et hendrerit lectus. Suspendisse elementum arcu vel diam consequat euismod.
+
+Morbi consequat eu odio in ultrices. Nam feugiat arcu ut nisl mollis aliquet. Nam ut accumsan ante. Curabitur viverra, sapien quis lacinia egestas, dolor erat vulputate justo, vel maximus felis ipsum sit amet diam. Nullam ipsum arcu, molestie vitae diam ut, facilisis pharetra sem. Cras vel tincidunt nunc, malesuada bibendum dolor. Nunc commodo at nisl eu eleifend. In vel vestibulum sapien, id sagittis nibh. Fusce commodo velit sit amet tellus ullamcorper scelerisque.
+
+Curabitur a neque eu nunc tempus efficitur. Cras lacinia purus vel neque venenatis auctor. Praesent sapien lectus, aliquam eget elit convallis, posuere vestibulum neque. Fusce vel rhoncus nibh. Donec ex dolor, faucibus lacinia odio nec, hendrerit mollis purus. Aenean vel iaculis libero. In sit amet eleifend ex.
+
+{{
+#ask:
+[[Categorie:Elementen]]
+|width=100%
+|format=table
+|limit=100
+|mainlabel=Elementen
+}}
+
+In erat elit, semper sed imperdiet eu, finibus et tortor. In condimentum justo ut semper tempus. Quisque ultricies sollicitudin arcu non sodales. Sed hendrerit risus quis nisi porta, ut cursus justo aliquet. Vestibulum feugiat tincidunt lobortis. Aenean eu nisl iaculis, pretium tellus in, consequat dui. Praesent auctor ante posuere arcu ultrices pellentesque. Nunc ultricies hendrerit sapien, quis efficitur nisi. Aenean maximus, odio eget varius imperdiet, tortor tellus viverra enim, at interdum nulla tellus sit amet elit. Pellentesque sed aliquet lacus, nec accumsan nunc.
+
+Quisque id '''elementum massa''', vel ultricies turpis. In tempor libero eros, vitae pellentesque orci venenatis eu. Aliquam neque ante, commodo eu dolor id, volutpat tristique metus. Mauris id elementum nisl. In auctor porttitor dui, ut pharetra magna egestas eget. Sed condimentum ligula vitae mi consequat, vulputate scelerisque justo feugiat. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Morbi mollis rhoncus fermentum. Suspendisse lacinia vitae massa a tristique.
+            ]]>
+        </old>
+        <new><![CDATA[
+Lorem ipsum '''dolor''' sit amet, consectetur adipiscing elit. Curabitur placerat ante mi, a ultrices sapien condimentum in. Aenean nulla sapien, varius sit amet ligula nec, aliquam imperdiet tellus. Donec ornare, mi in tristique accumsan, orci lectus congue purus, in placerat libero nunc et massa. Sed eu ornare felis. Nulla rutrum, ipsum non eleifend rutrum, nulla justo volutpat erat, non commodo enim risus ac ipsum. Praesent venenatis, augue sed dapibus tincidunt, lacus quam porttitor justo, sit amet finibus quam felis sed arcu. Nam eleifend a lacus sit amet laoreet. Nam quis purus eu mauris scelerisque sodales. Fusce odio arcu, placerat vel efficitur at, laoreet in justo. Sed tristique faucibus felis. Donec ultricies nibh eget facilisis pharetra. Proin quis metus ultrices, pulvinar dui sed, cursus risus. Nulla consectetur et elit sit amet porttitor.
+
+<div class="smartcomment-hl-60">
+    {{#ask:[[Categorie:Elementen]]|width=100%|format=table|limit=5|mainlabel=Element}}
+</div>
+
+Donec luctus dui eget magna pulvinar finibus. Morbi eleifend sem vehicula, sagittis lorem vel, luctus dui. Nulla nec tortor sed enim cursus dapibus rhoncus sed libero. Vestibulum eget lacus ante. Vivamus imperdiet non odio ac vehicula. Nulla pellentesque metus eget tortor tristique maximus. Nulla eu facilisis lectus, et hendrerit lectus. Suspendisse elementum arcu vel diam consequat euismod.
+
+amet! Morbi consequat eu odio in ultrices. Nam feugiat arcu ut nisl mollis aliquet. Nam ut accumsan ante. Curabitur viverra, sapien quis lacinia egestas, dolor erat vulputate justo, vel maximus felis ipsum sit amet diam. Nullam ipsum arcu, molestie vitae diam ut, facilisis pharetra sem. Cras vel tincidunt nunc, malesuada bibendum dolor. Nunc commodo at nisl eu eleifend. In vel vestibulum sapien, id sagittis nibh. Fusce commodo velit sit amet tellus ullamcorper scelerisque.
+
+Curabitur a neque eu nunc tempus efficitur. Cras lacinia purus vel neque venenatis auctor. Praesent sapien lectus, aliquam eget elit convallis, posuere vestibulum neque. Fusce vel rhoncus nibh. Donec ex dolor, faucibus lacinia odio nec, hendrerit mollis purus. Aenean vel iaculis libero. In sit amet eleifend ex.
+
+{{
+#ask:
+[[Categorie:Elementen]]
+|width=100%
+|format=table
+|limit=100
+|mainlabel=Elementen
+}}
+
+Quisque id '''elementum massa''', vel ultricies turpis. In tempor libero eros, vitae pellentesque orci venenatis eu. Aliquam neque ante, commodo eu dolor id, volutpat tristique metus. Mauris id elementum nisl. In auctor porttitor dui, ut pharetra magna egestas eget. Sed condimentum ligula vitae mi consequat, vulputate scelerisque justo feugiat. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Morbi mollis rhoncus fermentum. Suspendisse lacinia vitae massa a tristique.
+        ]]></new>
+    </text>
+    <expected>
+        <testcase>
+            <string>amet</string>
+            <current>6</current>
+            <new>7</new>
+        </testcase>
+        <testcase>
+            <string>In erat elit, semper sed</string>
+            <current>0</current>
+            <deleted>true</deleted>
+        </testcase>
+    </expected>
+</testcase>

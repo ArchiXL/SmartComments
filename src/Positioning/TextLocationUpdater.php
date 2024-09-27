@@ -92,8 +92,12 @@ class TextLocationUpdater {
 		// Match all insertions and replacements
 		preg_match_all( $regex, $text, $matches );
 		if ( $matches ) {
-			foreach ( $matches[2] as $line ) {
-				$nrOfActualMatches += substr_count( $text, $line );
+			foreach ( $matches[2] as $changedString ) {
+				if ( $changedString !== $this->location->getWord() && $mode !== 'del' ) {
+					$nrOfActualMatches += substr_count( $text, $this->location->getWord() );
+				} else {
+					$nrOfActualMatches += substr_count( $text, $changedString );
+				}
 			}
 		}
 
