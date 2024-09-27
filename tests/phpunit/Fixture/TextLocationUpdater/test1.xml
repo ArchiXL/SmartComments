@@ -1,0 +1,44 @@
+<testcase>
+    <text>
+        <old>
+<![CDATA[
+Het Rijksmuseum is gevestigd in Amsterdam.
+Amsterdam is tevens ook de hoofdstad van Nederland.
+
+Lorem ipsum '''dolor''' sit amet, consectetur adipiscing elit, sit dan.
+
+Lorem ipsum '''dolor''' sit amet, consectetur adipiscing elit. Curabitur placerat ante mi, a ultrices sapien condimentum in. Aenean nulla sapien, varius sit amet ligula nec, aliquam imperdiet tellus. Donec ornare, mi in tristique accumsan, orci lectus congue purus, in placerat libero nunc et massa. Sed eu ornare felis. Nulla rutrum, ipsum non eleifend rutrum, nulla justo volutpat erat, non commodo enim risus ac ipsum. Praesent venenatis, augue sed dapibus tincidunt, lacus quam porttitor justo, sit amet finibus quam felis sed arcu. Nam eleifend a lacus sit amet laoreet. Nam quis purus eu mauris scelerisque sodales. Fusce odio arcu, placerat vel efficitur at, laoreet in justo. Sed tristique faucibus felis. Donec ultricies nibh eget facilisis pharetra. Proin quis metus ultrices, pulvinar dui sed, cursus risus. Nulla consectetur et elit sit amet porttitor.
+]]>
+        </old>
+        <new>
+<![CDATA[
+Het Rijksmuseum is gevestigd in Hoofdorp.
+Amsterdam is tevens ook de hoofdstad van Nederland.
+
+Lorem ipsum '''dolor''' amet, consectetur adipiscing elit.
+
+Lorem ipsum '''dolor''' sit amet, consectetur adipiscing elit. Curabitur ornare placerat ante mi, a ultrices sapien condimentum in. Aenean nulla sapien, varius sit amet ligula nec, aliquam imperdiet tellus. Donec ornare, mi in tristique accumsan, orci lectus congue purus, in placerat libero nunc et massa. Sed eu ornare felis. Nulla rutrum, ipsum non eleifend rutrum, nulla justo volutpat erat, non commodo enim risus ac ipsum. Praesent venenatis, augue sed dapibus tincidunt, lacus quam porttitor justo, sit amet finibus quam felis sed arcu. Nam eleifend a lacus sit amet laoreet. Nam quis purus eu mauris scelerisque sodales. Fusce odio arcu, placerat vel efficitur at, laoreet in justo. Sed tristique faucibus felis. Donec ultricies nibh eget facilisis pharetra. Proin quis metus ultrices, pulvinar dui sed, cursus risus. Nulla consectetur et elit sit amet porttitor.
+]]>
+        </new>
+    </text>
+    <expected>
+        <!-- The word has completely changed -->
+        <testcase>
+            <string>Amsterdam</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- The second word has been deleted -->
+        <testcase>
+            <string>sit</string>
+            <current>1</current>
+            <new>-1</new>
+        </testcase>
+        <!-- Another existing word has been added into the text, infront of the old word -->
+        <testcase>
+            <string>ornare</string>
+            <current>1</current>
+            <new>2</new>
+        </testcase>
+    </expected>
+</testcase>

@@ -24,40 +24,20 @@ class ParserhookUpdater extends TestCase
 	 */
 	public function testTextLocationUpdater( string $old, string $new, array $testcases ) {
 		foreach ( $testcases as $testcase ) {
-			if ( $testcase[ 'deleted' ] ?? false ) {
-				$this->doDeleteCase( $old, $new, $testcase );
-			} else {
-				$this->doChangedCase( $old, $new, $testcase );
-			}
+			$string = $testcase[ 'string' ];
+			$currentIndex = $testcase[ 'current' ];
+			$newIndex = $testcase[ 'new' ];
+
+			$location = new TextLocation( $string, $currentIndex, 0 );
+			$xyz = clone $location;
+			$this->assertEquals( $location->getIndex(), $currentIndex );
+			$this->assertEquals( $location->getWord(), $string );
+
+			$locationUpdater = $this->getLocationUpdater( $old, $new, $location );
+			$newLocation = $locationUpdater->getNewTextLocation();
+
+			$this->assertEquals( $newLocation->getIndex(), $newIndex );
 		}
-	}
-
-	private function doDeleteCase( $old, $new, $testcase ) {
-		$string = $testcase[ 'string' ];
-		$current = $testcase[ 'current' ];
-		$location = new TextLocation( $string, $current, 0 );
-		$this->assertEquals( $location->getIndex(), $current );
-		$this->assertEquals( $location->getWord(), $string );
-
-		$locationUpdater = $this->getLocationUpdater( $old, $new, $location );
-		$newLocation = $locationUpdater->getNewTextLocation();
-
-		$this->assertEquals( $newLocation->getIndex(), -1 );
-	}
-
-	private function doChangedCase( $old, $new, $testcase ) {
-		$string = $testcase[ 'string' ];
-		$currentIndex = $testcase[ 'current' ];
-		$newIndex = $testcase[ 'new' ];
-
-		$location = new TextLocation( $string, $currentIndex, 0 );
-		$this->assertEquals( $location->getIndex(), $currentIndex );
-		$this->assertEquals( $location->getWord(), $string );
-
-		$locationUpdater = $this->getLocationUpdater( $old, $new, $location );
-		$newLocation = $locationUpdater->getNewTextLocation();
-
-		$this->assertEquals( $newLocation->getIndex(), $newIndex );
 	}
 
 	public static function provideData(): Generator {

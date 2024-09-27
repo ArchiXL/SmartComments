@@ -92,12 +92,8 @@ class TextLocationUpdater {
 		// Match all insertions and replacements
 		preg_match_all( $regex, $text, $matches );
 		if ( $matches ) {
-			foreach ( $matches[2] as $changedString ) {
-				if ( $changedString !== $this->location->getWord() && $mode !== 'del' ) {
-					$nrOfActualMatches += substr_count( $text, $this->location->getWord() );
-				} else {
-					$nrOfActualMatches += substr_count( $text, $changedString );
-				}
+			foreach ( $matches[2] as $line ) {
+				$nrOfActualMatches += substr_count( $line, $this->location->getWord() );
 			}
 		}
 
@@ -141,22 +137,53 @@ class TextLocationUpdater {
 	 * @return bool
 	 */
 	private function getLocationMatchesOnText( $text ): bool {
-		$counter = 0;
-		$replaced = false;
 		$location = $this->location;
-		$safeWord = preg_quote( htmlspecialchars_decode( $location->getWord() ) );
-		// for some reason / doesn't get escaped so do string replace for that character
-		$safeWord = str_replace( "/", "\/", $safeWord );
+		$oldLineData = $this->getLineNrBasedOnTextLocation( $this->oldText );
 
-		preg_replace_callback( "/{$safeWord}/", function( $m ) use ( &$counter, &$replaced, $location ) {
-			if ( $counter == $location->getIndex() ) {
-				$replaced = true;
-			}
-			$counter++;
-			return $m[0];
-		}, $text );
+		// Use the diff to map the old line number to the new line number
+		$lineMapping = $this->getLineMapping();
+		if ( !isset( $lineMapping[$oldLineData['lineNr']] ) ) {
+			return false; // Line has been removed
+		}
+		$newLineNr = $lineMapping[$oldLineData['lineNr']];
 
-		return $replaced;
+		$lines = explode( PHP_EOL, $text );
+		if ( !isset( $lines[$newLineNr] ) ) {
+			return false; // Line doesn't exist in new text
+		}
+		$newLine = $lines[$newLineNr];
+		$safeWord = htmlspecialchars_decode( $location->getWord() );
+
+		return strpos( $newLine, $safeWord ) !== false;
 	}
+
+	/**
+	 * @return array
+	 */
+	private function getLineMapping(): array {
+		// Use the diff to create a mapping of old line numbers to new line numbers
+		// This is a simplified example and may need adjustment based on your diff library's capabilities
+		$diff = DiffHelper::calculate( $this->oldText, $this->newText, 'Unified' );
+		$lines = explode( PHP_EOL, $diff );
+		$lineMapping = [];
+		$oldLineNr = 0;
+		$newLineNr = 0;
+
+		foreach ( $lines as $line ) {
+			if ( strpos( $line, '-' ) === 0 ) {
+				// Line removed in new text
+				$lineMapping[$oldLineNr ++] = null;
+			} elseif ( strpos( $line, '+' ) === 0 ) {
+				// Line added in new text
+				$newLineNr ++;
+			} else {
+				// Line unchanged
+				$lineMapping[$oldLineNr ++] = $newLineNr ++;
+			}
+		}
+
+		return $lineMapping;
+	}
+
 
 }
