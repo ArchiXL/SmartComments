@@ -38,7 +38,7 @@
 		"ResourceLoaderGetConfigVars": "MediaWiki\\Extension\\SmartComments\\Hooks::onResourceLoaderGetConfigVars",
 		"SMW::Property::initProperties": "MediaWiki\\Extension\\SmartComments\\SMWHandler::initProperties",
 		"SMW::SQLStore::BeforeDataUpdateComplete": "MediaWiki\\Extension\\SmartComments\\Hooks::addSubobjectsForComments",
-		"PageSaveComplete": "MediaWiki\\Extension\\SmartComments\\Hooks::onPageSaveComplete",
+		"ParserCacheSaveComplete": "MediaWiki\\Extension\\SmartComments\\Hooks::onParserCacheSaveComplete",
 		"MediaWikiServices": "MediaWiki\\Extension\\SmartComments\\Hooks::onMediaWikiServices",
 		"PageHistoryPager::getQueryInfo": "MediaWiki\\Extension\\SmartComments\\Hooks::onPageHistoryPagerGetQueryInfo",
 		"ModifyExportQuery": "MediaWiki\\Extension\\SmartComments\\Hooks::onModifyExportQuery",

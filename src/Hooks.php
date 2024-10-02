@@ -2,6 +2,7 @@
 
 namespace MediaWiki\Extension\SmartComments;
 
+use MediaWiki\Page\WikiPageFactory;
 use OutputPage;
 use MediaWiki\Extension\SmartComments\Settings\Handler;
 use MediaWiki\Extension\SmartComments\Updater\Page;
@@ -28,20 +29,6 @@ class Hooks {
 				throw new \Exception( "Could not create directory for images (". self::$imageSaveDirectory .")." );
 			}
 		}
-
-		$services->addServiceManipulator( 'SlotRoleRegistry', function( \MediaWiki\Revision\SlotRoleRegistry $registry ) {
-			if ( ! $registry->isDefinedRole( Page::DATA_SLOT ) ) {
-				$registry->defineRoleWithModel(
-					Page::DATA_SLOT,
-					CONTENT_MODEL_WIKITEXT,
-					[
-						"display" => "none",
-						"region" => "center",
-						"placement" => "append"
-					]
-				);
-			}
-		} );
 	}
 
 	/**
@@ -59,14 +46,16 @@ class Hooks {
 		return true;
 	}
 
-	public static function onPageSaveComplete(\WikiPage $wikiPage, \MediaWiki\User\UserIdentity $user, string $summary, int $flags, \MediaWiki\Revision\RevisionRecord $revisionRecord, \MediaWiki\Storage\EditResult $editResult) {
-		$pageUpdater = new Page( $wikiPage , $wikiPage->getParserOutput() );
-		if ( !Page::$wasSaved ) {
-			$pageUpdater->updateComments();
-		}
-		if ( !Page::$newContent ) {
-			$pageUpdater->updateSlotWithCurrentContents();
-		}
+	public static function onParserCacheSaveComplete(
+		\ParserCache $parserCache,
+		\ParserOutput $parserOutput,
+		\Title $title,
+		\ParserOptions $parserOptions,
+		int $revId
+	) {
+		$page = \MediaWiki\MediaWikiServices::getInstance()->getWikiPageFactory()->newFromTitle( $title );
+		$pageUpdater = new Page( $page, $parserOutput );
+		$pageUpdater->updateComments();
 	}
 
 	/**

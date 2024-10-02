@@ -66,11 +66,17 @@ class TextLocationUpdater {
 		foreach ( array_merge(...$differencesList) as $difference ) {
 			$deleteMatches += $this->getNumMatches( implode( PHP_EOL, $difference['old']['lines'] ) );
 			$newMatches += $this->getNumMatches( implode( PHP_EOL, $difference['new']['lines'] ), 'new' );
-		}
 
-		$newIndex = $this->location->getIndex();
-		$newIndex += $newMatches;
-		$newIndex -= $deleteMatches;
+		}
+		//dd($deleteMatches, $newMatches, $this->location, $differencesList);
+
+		if ( $deleteMatches !== 1 ) {
+			$newIndex = $this->location->getIndex();
+			$newIndex += $newMatches;
+			$newIndex -= $deleteMatches;
+		} else {
+			$newIndex = -1;
+		}
 
 
 		// Update the index to set the new location
@@ -105,9 +111,10 @@ class TextLocationUpdater {
 	 */
 	public function getDiffArray(): array {
 		$renderOptions = [
-			'outputTagAsString' => true
+			'outputTagAsString' => true,
+			'detailLevel' => 'word'
 		];
-		$diffOptions = [];
+		$diffOptions = ['fullContextIfIdentical' => true];
 		$calculatedDiff = DiffHelper::calculate( $this->oldText, $this->newText, 'Json', $diffOptions, $renderOptions );
 		$differences = json_decode( $calculatedDiff, true );
 		return $differences;
