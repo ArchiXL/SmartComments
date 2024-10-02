@@ -16,7 +16,7 @@ class convertSICtoSQL extends Maintenance
 		$this->dbw = $this->getDB( DB_PRIMARY );
 		$this->dbr = $this->getDB( DB_REPLICA );
 
-		#$this->moveLastRevisionToSIC();
+		$this->moveLastRevisionToSIC();
 		$this->clearSicDataSlots();
 	}
 
@@ -65,7 +65,6 @@ class convertSICtoSQL extends Maintenance
 		foreach ( $res as $row ) {
 			$insertRows[] = [
 				'page_id' => $row->page_id,
-				'rev_id' => $row->page_latest,
 				'text' => $row->old_text
 			];
 		}
@@ -106,6 +105,9 @@ class convertSICtoSQL extends Maintenance
 					$output[$field][] = $row->$field;
 				}
 			}
+		}
+		if ( empty( $output ) ) {
+			return true;
 		}
 		$this->deleteFromContentTable( $output['slot_content_id'] );
 		$this->deleteFromTextTable( $output['slot_content_id'] );

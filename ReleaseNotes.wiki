@@ -1,3 +1,5 @@
+; Version 2.0.0 (Wed, Oct 2, 2024)
+* Deprecated use of data slots instead SmartComments now uses it's own table to write the old content to see [https://github.com/ArchiXL/SmartComments/blob/master/docs/migrating-to-v2.md Migration to v2]
 ; Version 1.5.5 (Sep 25, 2024)
 * Fixed bug where you could select everything in the page.
 * Fixed issue where selection would be put on the firstHeader in MW instead of the text 
