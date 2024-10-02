@@ -33,164 +33,134 @@ class TextLocationUpdater {
 	 * @return TextLocation
 	 */
 	public function getNewTextLocation(): TextLocation {
+
 		// Don't update locations that are unlocated
 		if ( $this->location->getIndex() === -1 ) {
 			return $this->location;
 		}
 
-		// Set index to -1 if the text can't be found in the new revision (can't be localised).
-		if ( ! $this->getLocationMatchesOnText( $this->newText ) ) {
+		$wordLocationInOldText = $this->getExactWordLocation();
+		if ( !$wordLocationInOldText ) {
+			throw new \InvalidArgumentException( "The given TextLocation could not be matched against old revision text" );
+		}
+
+		$lineNr = $wordLocationInOldText['lineNr'];
+		$charIndex = $wordLocationInOldText['charIndex'];
+
+		// Get the mapping of old lines to new lines
+		$lineMapping = $this->getWordMapping();
+
+		if ( !isset( $lineMapping[ $lineNr ] ) ) {
+			// The line has been removed
 			$this->location->setIndex( -1 );
 			return $this->location;
 		}
 
-		$wordOnCurrentLineNr = $this->getLineNrBasedOnTextLocation();
-		if ( !$wordOnCurrentLineNr ) {
-			throw new \InvalidArgumentException( "The given TextLocation could not be matched against old revision text" );
-		}
+		$newLineNr = $lineMapping[ $lineNr ];
 
-		$differencesList = $this->getDiffArray();
-		if ( count( $differencesList ) === 0 ) {
+		// Get the old and new lines
+		$oldLines = explode( PHP_EOL, $this->oldText );
+		$newLines = explode( PHP_EOL, $this->newText );
+
+		$oldLine = $oldLines[ $lineNr ];
+		$newLine = $newLines[ $newLineNr ];
+
+		$word = $this->location->getWord();
+
+		// Check if the word exists at the same position in the new line
+		$wordExistsInNewLine = substr( $newLine, $charIndex, strlen( $word ) ) === $word;
+
+		if ( !$wordExistsInNewLine ) {
+			// The word has been changed or removed
+			$this->location->setIndex( -1 );
 			return $this->location;
 		}
 
-		foreach( $differencesList as $listKey => $differenceItem ) {
-			// Filter all equal differences and remove offsets greater than the current location
-			$differencesList[ $listKey ] = array_filter( $differenceItem, function( $difference ) use ( $wordOnCurrentLineNr ) {
-				return $difference['tag'] !== 'eq' || $difference['old']['offset'] > $wordOnCurrentLineNr;
-			} );
-		}
-
-		$newMatches = 0;
-		$deleteMatches = 0;
-		foreach ( array_merge(...$differencesList) as $difference ) {
-			$deleteMatches += $this->getNumMatches( implode( PHP_EOL, $difference['old']['lines'] ) );
-			$newMatches += $this->getNumMatches( implode( PHP_EOL, $difference['new']['lines'] ), 'new' );
-
-		}
-		//dd($deleteMatches, $newMatches, $this->location, $differencesList);
-
-		if ( $deleteMatches !== 1 ) {
-			$newIndex = $this->location->getIndex();
-			$newIndex += $newMatches;
-			$newIndex -= $deleteMatches;
-		} else {
-			$newIndex = -1;
-		}
-
-
-		// Update the index to set the new location
-		$this->location->setIndex( $newIndex );
-
+		// The word exists at the same position, no change in index
 		return $this->location;
 	}
 
 	/**
-	 * @param $text
-	 * @return array
+	 * Finds the exact position (line number and character index) of the word in the old text.
+	 *
+	 * @return array|null
 	 */
-	private function getNumMatches( $text, $mode = 'del' ): int {
-		$nrOfActualMatches = 0;
-		$regex = $mode === 'del'
-			? '/\<(del)\>(.*)\<\/(del)\>/m'
-			: '/\<(ins|rep)\>(.*)\<\/(ins|rep)\>/m';
-
-		// Match all insertions and replacements
-		preg_match_all( $regex, $text, $matches );
-		if ( $matches ) {
-			foreach ( $matches[2] as $line ) {
-				$nrOfActualMatches += substr_count( $line, $this->location->getWord() );
-			}
-		}
-
-		return $nrOfActualMatches;
-	}
-
-	/**
-	 * @return false|string
-	 */
-	public function getDiffArray(): array {
-		$renderOptions = [
-			'outputTagAsString' => true,
-			'detailLevel' => 'word'
-		];
-		$diffOptions = ['fullContextIfIdentical' => true];
-		$calculatedDiff = DiffHelper::calculate( $this->oldText, $this->newText, 'Json', $diffOptions, $renderOptions );
-		$differences = json_decode( $calculatedDiff, true );
-		return $differences;
-	}
-
-	/**
-	 * @param string|null $againstText
-	 * @return array|false
-	 */
-	private function getLineNrBasedOnTextLocation( $againstText = null ): ?array {
+	private function getExactWordLocation(): ?array {
 		$matches = 0;
-		$lines = explode( PHP_EOL, $againstText === null ? $this->oldText : $againstText );
+		$lines = explode( PHP_EOL, $this->oldText );
+		$word = htmlspecialchars_decode( $this->location->getWord() );
+		$wordIndex = $this->location->getIndex();
+
 		foreach ( $lines as $lineNr => $line ) {
-			$matches += substr_count( $line, htmlspecialchars_decode( $this->location->getWord() ) );
-			if ( $matches >= $this->location->getIndex() ) {
-				return [
-					'lineNr' => $lineNr,
-					'context' => $line
-				];
+			$lineMatches = substr_count( $line, $word );
+			if ( $lineMatches > 0 ) {
+				$offset = 0;
+				while ( ( $pos = strpos( $line, $word, $offset ) ) !== false ) {
+					$matches++;
+					if ( $matches == $wordIndex + 1 ) {
+						// Found the exact occurrence
+						return [
+							'lineNr' => $lineNr,
+							'charIndex' => $pos,
+						];
+					}
+					$offset = $pos + strlen( $word );
+				}
 			}
 		}
 		return null;
 	}
 
 	/**
-	 * @param $text
-	 * @return bool
-	 */
-	private function getLocationMatchesOnText( $text ): bool {
-		$location = $this->location;
-		$oldLineData = $this->getLineNrBasedOnTextLocation( $this->oldText );
-
-		// Use the diff to map the old line number to the new line number
-		$lineMapping = $this->getLineMapping();
-		if ( !isset( $lineMapping[$oldLineData['lineNr']] ) ) {
-			return false; // Line has been removed
-		}
-		$newLineNr = $lineMapping[$oldLineData['lineNr']];
-
-		$lines = explode( PHP_EOL, $text );
-		if ( !isset( $lines[$newLineNr] ) ) {
-			return false; // Line doesn't exist in new text
-		}
-		$newLine = $lines[$newLineNr];
-		$safeWord = htmlspecialchars_decode( $location->getWord() );
-
-		return strpos( $newLine, $safeWord ) !== false;
-	}
-
-	/**
+	 * Creates a mapping of old line numbers to new line numbers based on the diff between old and new words in the text.
+	 *
 	 * @return array
 	 */
-	private function getLineMapping(): array {
-		// Use the diff to create a mapping of old line numbers to new line numbers
-		// This is a simplified example and may need adjustment based on your diff library's capabilities
-		$diff = DiffHelper::calculate( $this->oldText, $this->newText, 'Unified' );
-		$lines = explode( PHP_EOL, $diff );
+	private function getWordMapping(): array {
+		$diffOptions = [
+			'context' => 0,
+		];
+		$renderOptions = [
+			'detailLevel' => 'word',
+		];
+		$diff = DiffHelper::calculate( $this->oldText, $this->newText, 'Json', $diffOptions, $renderOptions );
+		$diffArray = json_decode( $diff, true );
+
 		$lineMapping = [];
 		$oldLineNr = 0;
 		$newLineNr = 0;
 
-		foreach ( $lines as $line ) {
-			if ( strpos( $line, '-' ) === 0 ) {
-				// Line removed in new text
-				$lineMapping[$oldLineNr ++] = null;
-			} elseif ( strpos( $line, '+' ) === 0 ) {
-				// Line added in new text
-				$newLineNr ++;
-			} else {
-				// Line unchanged
-				$lineMapping[$oldLineNr ++] = $newLineNr ++;
+		foreach ( array_merge( ...$diffArray ) as $difference ) {
+			$tag = $difference['tag'];
+			$oldLines = $difference['old']['lines'];
+			$newLines = $difference['new']['lines'];
+			$oldCount = count( $oldLines );
+			$newCount = count( $newLines );
+
+			if ( $tag === 'eq' ) {
+				for ( $i = 0; $i < $oldCount; $i++ ) {
+					$lineMapping[ $oldLineNr++ ] = $newLineNr++;
+				}
+			} elseif ( $tag === 'del' ) {
+				for ( $i = 0; $i < $oldCount; $i++ ) {
+					$lineMapping[ $oldLineNr++ ] = null; // Line deleted
+				}
+			} elseif ( $tag === 'ins' ) {
+				$newLineNr += $newCount;
+			} elseif ( $tag === 'rep' ) {
+				for ( $i = 0; $i < $oldCount; $i++ ) {
+					if ( $i < $newCount ) {
+						$lineMapping[ $oldLineNr++ ] = $newLineNr++;
+					} else {
+						$lineMapping[ $oldLineNr++ ] = null; // Line deleted
+					}
+				}
+				if ( $newCount > $oldCount ) {
+					$newLineNr += ( $newCount - $oldCount );
+				}
 			}
 		}
 
 		return $lineMapping;
 	}
-
-
 }

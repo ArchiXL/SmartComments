@@ -10,7 +10,6 @@ use MediaWiki\Extension\SmartComments\Positioning\TextLocation;
 
 class ParserhookUpdater extends TestCase
 {
-
 	private function getLocationUpdater( $old, $new, $location ): TextLocationUpdater {
 		return new TextLocationUpdater(
 			$old,
@@ -23,20 +22,32 @@ class ParserhookUpdater extends TestCase
 	 * @dataProvider provideData
 	 */
 	public function testTextLocationUpdater( string $old, string $new, array $testcases ) {
-		foreach ( $testcases as $testcase ) {
+		foreach ( $testcases as $index => $testcase ) {
 			$string = $testcase[ 'string' ];
 			$currentIndex = $testcase[ 'current' ];
 			$newIndex = $testcase[ 'new' ];
 
 			$location = new TextLocation( $string, $currentIndex, 0 );
-			$xyz = clone $location;
-			$this->assertEquals( $location->getIndex(), $currentIndex );
-			$this->assertEquals( $location->getWord(), $string );
+
+			$this->assertEquals(
+				$currentIndex,
+				$location->getIndex(),
+				"Test case #{$index}: Expected current index {$currentIndex} for string '{$string}', got {$location->getIndex()}"
+			);
+			$this->assertEquals(
+				$string,
+				$location->getWord(),
+				"Test case #{$index}: Expected word '{$string}', got {$location->getWord()}"
+			);
 
 			$locationUpdater = $this->getLocationUpdater( $old, $new, $location );
 			$newLocation = $locationUpdater->getNewTextLocation();
 
-			$this->assertEquals( $newLocation->getIndex(), $newIndex );
+			$this->assertEquals(
+				$newIndex,
+				$newLocation->getIndex(),
+				"Test case #{$index}: Expected new index {$newIndex} for string '{$string}', got {$newLocation->getIndex()}"
+			);
 		}
 	}
 
@@ -51,10 +62,13 @@ class ParserhookUpdater extends TestCase
 			$new = $text[ 'new' ];
 			$testcases = $testcase[ 'expected' ][ 'testcase' ];
 
-			yield [
+			// Extract a meaningful name from the file or test case
+			$testcaseName = basename( $file, '.xml' ); // Assuming .xml extension
+
+			yield $testcaseName => [
 				$old,
 				$new,
-				isset( $testcases[ 'string' ] ) ? [ $testcases ] : $testcases
+				isset( $testcases['string'] ) ? [ $testcases ] : $testcases
 			];
 		}
 	}
