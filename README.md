@@ -1,5 +1,7 @@
 # SmartComments
 
+## [Migrating to SmartComments 2.0.0](https://github.com/SemanticMediaWiki/SemanticMediaWiki/blob/master/docs/migrating-to-v2.md)
+
 ## Please note!
 * This is a beta release.
 * Unit tests are not working.

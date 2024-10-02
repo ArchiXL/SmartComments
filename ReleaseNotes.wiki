@@ -1,5 +1,5 @@
 ; Version 2.0.0 (Wed, Oct 2, 2024)
-* Deprecated use of data slots instead SmartComments now uses it's own table to write the old content to see [https://github.com/ArchiXL/SmartComments/blob/master/docs/migrating-to-v2.md Migration to v2]
+* Removed use of data slots instead SmartComments now uses it's own table to write the old content to see [https://github.com/ArchiXL/SmartComments/blob/master/docs/migrating-to-v2.md Migration to v2]
 * Refactored TextLocationUpdater
 * Added unit tests
 
