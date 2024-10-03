@@ -76,9 +76,9 @@ class convertSICtoSQL extends Maintenance
 				__METHOD__
 			);
 
-			echo "Inserted " . count( $insertRows ) . " rows into sic_diff_table.\n";
+			$this->output("Inserted " . count( $insertRows ) . " rows into sic_diff_table.\n ");
 		} else {
-			echo "No data found to be inserted.\n";
+			$this->output("No data found to be inserted.\n");
 		}
 	}
 
@@ -107,6 +107,7 @@ class convertSICtoSQL extends Maintenance
 			}
 		}
 		if ( empty( $output ) ) {
+			$this->output("No data found to be deleted.\n");
 			return true;
 		}
 		$this->deleteFromContentTable( $output['slot_content_id'] );
@@ -116,36 +117,51 @@ class convertSICtoSQL extends Maintenance
 	}
 
 	private function deleteFromContentTable( $ids ) {
-		$this->dbw->delete(
+		$res = $this->dbw->delete(
 			'content',
 			[
 				'content_id' => $ids
 			]
 		);
+		if ( $res ) {
+			$this->output( "Rows deleted from content table\n" );
+		} else {
+			$this->output( "No data found to be deleted\n" );
+		}
 	}
 
 	private function deleteFromSlotTables( $ids ) {
-		$this->dbw->delete(
+		$roles = $this->dbw->delete(
 			'slot_roles',
 			[
 				'role_id' => $ids
 			]
 		);
-		$this->dbw->delete(
+		$slots = $this->dbw->delete(
 			'slots',
 			[
 				'slot_role_id' => $ids
 			]
 		);
+		if ( $slots && $roles ) {
+			$this->output( "Rows deleted from slots tables\n" );
+		} else {
+			$this->output( "No data found to be deleted\n" );
+		}
 	}
 
 	private function deleteFromTextTable( $ids ) {
-		$this->dbw->delete(
+		$res = $this->dbw->delete(
 			'text',
 			[
 				'old_id' => $ids
 			]
 		);
+		if ( $res ) {
+			$this->output( "Rows deleted from text table\n" );
+		} else {
+			$this->output( "No data found to be deleted\n" );
+		}
 	}
 }
 
