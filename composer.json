@@ -1,5 +1,59 @@
 {
+    "name": "mediawiki/smart-comments",
+    "type": "mediawiki-extension",
+    "description": "Enables wiki users to post inline comments\nattached to text fragments on wiki pages, comparable to posting review comments\nin Microsoft Word and other word processors",
+    "keywords": [
+        "wiki",
+        "MediaWiki",
+        "extension",
+        "Semantic MediaWiki",
+        "comments",
+        "threads"
+    ],
+    "homepage": "https://www.mediawiki.org/wiki/Extension:SmartComments",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Youri van den Bogert",
+            "role": "Developer"
+        },
+        {
+            "name": "Erwin Oord",
+            "role": "Developer"
+        },
+        {
+            "name": "Robin van der Wiel",
+            "role": "Developer"
+        },
+        {
+            "name": "Yvar Nanlohij",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "email": "semediawiki-user@lists.sourceforge.net",
+        "wiki": "https://www.mediawiki.org/wiki/Extension:SmartComments",
+        "forum": "https://www.mediawiki.org/wiki/Extension_talk:SmartComments",
+        "source": "https://github.com/ArchiXL/SmartComments.git",
+        "issues": "https://github.com/ArchiXL/SmartComments/issues"
+    },
     "require": {
+        "php": ">=7.4",
         "jfcherng/php-diff": "^6.10.8"
+    },
+    "scripts": {
+        "test": [
+            "@phpunit"
+        ],
+        "test-coverage": [
+            "@phpunit-coverage"
+        ],
+        "fix": [
+            "@phpcs-fix"
+        ],
+        "phpunit-coverage": "php ${MW_INSTALL_PATH:-../..}/tests/phpunit/phpunit.php -c phpunit.xml.dist --testdox --coverage-text --coverage-html coverage/php --coverage-clover coverage/php/coverage.xml",
+        "phpunit": "php ${MW_INSTALL_PATH:-../..}/tests/phpunit/phpunit.php -c phpunit.xml.dist",
+        "phpcs": "phpcs -ps -d memory_limit=2G ${MW_INSTALL_PATH:-../..}/extensions/SmartComments",
+        "phpcs-fix": "phpcbf -p"
     }
 }
