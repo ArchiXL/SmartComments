@@ -1,10 +1,7 @@
 # SmartComments
 
-## [Migrating to SmartComments 2.0.0](https://github.com/SemanticMediaWiki/SemanticMediaWiki/blob/master/docs/migrating-to-v2.md)
-
 ## Please note!
 * This is a beta release.
-* Unit tests are not working.
 * Comment images are not displayed correctly when using img_auth.php
 * The UI and JavaScript framework will be refactored to work with Codex.
 
@@ -32,6 +29,9 @@ To enable SmartComments, the following actions are needed:
 * Run `composer update` so that Composer will recalculate the dependencies and the changes will take effect
 * Run the MediaWiki 'update.php' maintenance script to add the database tables
 * Manage user permissions if needed (see below) 
+
+### Migration to 2.0.0
+See [Migrating to SmartComments 2.0.0](docs/migrating-to-v2.md)
 
 ## Wiki manual
 Please consult the manual under the "Manual"-tab on the page Special:SmartComments.
