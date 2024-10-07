@@ -62,6 +62,11 @@ class Page {
 			return true;
 		}
 
+		// No content changes so need to go through with this
+		if ( $currentContent === $oldContent ) {
+			return true;
+		}
+
 		// Loop over each text location to update its location
 		foreach( $this->anchorStore->getTextLocations() as $textLocation ) {
 			$updater = new TextLocationUpdater( $oldContent, $currentContent, $textLocation );

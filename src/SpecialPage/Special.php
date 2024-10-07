@@ -282,16 +282,24 @@ class Special extends SpecialPage {
 			$linkTitle = $sic->getPage();
 			if ( \ExtensionRegistry::getInstance()->isLoaded( 'DisplayTitle' )) {
 				$title = \Title::newFromText( $linkTitle );
-				if ( version_compare( MW_VERSION, '1.38', '>' ) ) {
-					$displaytitle = \MediaWiki\MediaWikiServices::getInstance()->getPageProps()->getProperties( $title, 'displaytitle' );
-				} else {
-					$displaytitle = \PageProps::getInstance()->getProperties( $title, 'displaytitle' );
+				$displaytitle = null;
+				if ( $title instanceof  \Title ) {
+					if ( version_compare( MW_VERSION, '1.38', '>' ) ) {
+						$displaytitle = \MediaWiki\MediaWikiServices::getInstance()->getPageProps()->getProperties( $title, 'displaytitle' );
+					} else {
+						$displaytitle = \PageProps::getInstance()->getProperties( $title, 'displaytitle' );
+					}
 				}
 				if ( !empty( $displaytitle ) ) {
 					$linkTitle = $displaytitle[ $title->getArticleID( ) ] ?? $linkTitle;
 				}
 			}
-			$tableHtml .= Xml::element( 'a', [ 'href' => $this->getPageUrlFocused( htmlspecialchars( $sic->getPage() ), $sic->getId() ) ], $linkTitle );
+
+			if ( empty( $linkTitle ) ) {
+				$tableHtml .= Xml::element( 'p', [], wfMessage( 'sic-page-not-found' )->text() );
+			} else {
+				$tableHtml .= Xml::element( 'a', [ 'href' => $this->getPageUrlFocused( htmlspecialchars( $sic->getPage() ), $sic->getId() ) ], $linkTitle );
+			}
 			$tableHtml .= Xml::closeElement( 'td' );
 
 			$openButton = new ButtonWidget([

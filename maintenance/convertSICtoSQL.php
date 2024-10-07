@@ -62,11 +62,13 @@ class convertSICtoSQL extends Maintenance
 		);
 
 		$insertRows = [];
+		$page_ids = [];
 		foreach ( $res as $row ) {
 			$insertRows[] = [
 				'page_id' => $row->page_id,
 				'text' => $row->old_text
 			];
+			$page_ids[] = $row->page_id;
 		}
 
 		if ( !empty( $insertRows ) ) {
@@ -76,7 +78,7 @@ class convertSICtoSQL extends Maintenance
 				__METHOD__
 			);
 
-			$this->output("Inserted " . count( $insertRows ) . " rows into sic_diff_table.\n ");
+			$this->output("Inserted " . count( $insertRows ) . " rows with page_ids: " . implode( ', ', $page_ids ) . "into sic_diff_table.\n ");
 		} else {
 			$this->output("No data found to be inserted.\n");
 		}
@@ -123,8 +125,9 @@ class convertSICtoSQL extends Maintenance
 				'content_id' => $ids
 			]
 		);
+		$ids = implode( ', ', $ids );
 		if ( $res ) {
-			$this->output( "Rows deleted from content table\n" );
+			$this->output( "Rows with the ids of {$ids} deleted from content table\n" );
 		} else {
 			$this->output( "No data found to be deleted\n" );
 		}
@@ -143,8 +146,9 @@ class convertSICtoSQL extends Maintenance
 				'slot_role_id' => $ids
 			]
 		);
+		$ids = implode( ', ', $ids );
 		if ( $slots && $roles ) {
-			$this->output( "Rows deleted from slots tables\n" );
+			$this->output( "Rows with the ids of {$ids} deleted from slots tables\n" );
 		} else {
 			$this->output( "No data found to be deleted\n" );
 		}
@@ -157,8 +161,9 @@ class convertSICtoSQL extends Maintenance
 				'old_id' => $ids
 			]
 		);
+		$ids = implode( ', ', $ids );
 		if ( $res ) {
-			$this->output( "Rows deleted from text table\n" );
+			$this->output( "Rows with the ids of {$ids} deleted from text table\n" );
 		} else {
 			$this->output( "No data found to be deleted\n" );
 		}
