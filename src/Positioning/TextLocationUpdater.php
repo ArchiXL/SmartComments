@@ -16,6 +16,11 @@ class TextLocationUpdater {
 	 */
 	private $location;
 
+	/** @var string */
+	private $lineNr;
+	/** @var string */
+	private $charIndex;
+
 	/**
 	 * @param string $oldText
 	 * @param string $newText
@@ -25,6 +30,9 @@ class TextLocationUpdater {
 		$this->oldText = $oldText;
 		$this->newText = $newText;
 		$this->location = $location;
+		$lines = $this->getExactWordLocation();
+		$this->lineNr = $lines['lineNr'] ?? 0;
+		$this->charIndex = $lines['charIndex'] ?? 0;
 	}
 
 	/**
@@ -39,36 +47,55 @@ class TextLocationUpdater {
 			return $this->location;
 		}
 
-		$wordLocationInOldText = $this->getExactWordLocation();
-		if ( !$wordLocationInOldText ) {
-			throw new \InvalidArgumentException( "The given TextLocation could not be matched against old revision text" );
+		if ( substr_count( $this->newText, $this->location->getWord() ) < 1 ) {
+			$this->location->setIndex( -1 );
+			return $this->location;
 		}
 
-		$lineNr = $wordLocationInOldText['lineNr'];
-		$charIndex = $wordLocationInOldText['charIndex'];
+		if (
+			substr_count( $this->newText, $this->location->getWord() ) === 1 &&
+			substr_count( $this->oldText, $this->location->getWord() ) === 1
+		) {
+			return $this->location;
+		}
 
+		if ( $newIndex = $this->test() !== 0 ) {
+			$this->location->setIndex( $this->location->getIndex() + $newIndex);
+			return $this->location;
+		}
 		// Get the mapping of old lines to new lines
 		$lineMapping = $this->getWordMapping();
+		if ( is_string( $lineMapping ) ) {
+			return $this->location;
+		}
 
-		if ( !isset( $lineMapping[ $lineNr ] ) ) {
+		if ( !isset( $lineMapping[ $this->lineNr ] ) ) {
 			// The line has been removed
 			$this->location->setIndex( -1 );
 			return $this->location;
 		}
 
-		$newLineNr = $lineMapping[ $lineNr ];
+
+		$newLineNr = $lineMapping[ $this->lineNr ];
 
 		// Get the old and new lines
 		$oldLines = explode( PHP_EOL, $this->oldText );
 		$newLines = explode( PHP_EOL, $this->newText );
 
-		$oldLine = $oldLines[ $lineNr ];
+		$oldLine = $oldLines[ $this->lineNr ];
 		$newLine = $newLines[ $newLineNr ];
 
 		$word = $this->location->getWord();
 
 		// Check if the word exists at the same position in the new line
-		$wordExistsInNewLine = substr( $newLine, $charIndex, strlen( $word ) ) === $word;
+		if ( substr_count( $oldLine, $word ) <= 1 ) {
+			$wordExistsInNewLine = substr_count( $newLine, $word ) !== 0;
+		} else if ( substr_count( $oldLine, $word ) === substr_count( $newLine, $word ) ) {
+			$wordExistsInNewLine = true;
+		} else {
+			$wordExistsInNewLine = substr( $newLine, $this->charIndex, strlen( $word ) ) === $word;
+		}
+
 
 		if ( !$wordExistsInNewLine ) {
 			// The word has been changed or removed
@@ -111,17 +138,49 @@ class TextLocationUpdater {
 		return null;
 	}
 
+	// TODO: NAME THE FUNCTION
+	private function test() {
+		$diffOptions = [
+		];
+		$renderOptions = [
+			'detailLevel' => 'word',
+			'outputTagAsString' => true
+		];
+		$diff = DiffHelper::calculate( $this->oldText, $this->newText, 'Json', $diffOptions, $renderOptions );
+		$diffArray = json_decode( $diff, true )[0] ?? [];
+		$oldIndexCount = 0;
+		$newIndexCount = 0;
+		foreach( $diffArray as $line ) {
+			if ( ( $line['old']['offset'] >= $this->lineNr - 1 ) ) {
+				break;
+			}
+			foreach( $line[ 'old' ][ 'lines' ] as $oldLine ) {
+				$oldIndexCount += substr_count( $oldLine, $this->location->getWord() );
+			}
+			foreach( $line[ 'new' ][ 'lines' ] as $newLine ) {
+				$newIndexCount += substr_count( $newLine, $this->location->getWord() );
+			}
+		}
+		if ( $newIndexCount < $oldIndexCount ) {
+			return $newIndexCount - $oldIndexCount;
+		} else if ( $newIndexCount > $oldIndexCount ) {
+			return $oldIndexCount - $newIndexCount;
+		}
+		return $newIndexCount;
+	}
+
 	/**
 	 * Creates a mapping of old line numbers to new line numbers based on the diff between old and new words in the text.
 	 *
 	 * @return array
 	 */
-	private function getWordMapping(): array {
+	private function getWordMapping() {
 		$diffOptions = [
 			'context' => 0,
 		];
 		$renderOptions = [
 			'detailLevel' => 'word',
+			'outputTagAsString' => true
 		];
 		$diff = DiffHelper::calculate( $this->oldText, $this->newText, 'Json', $diffOptions, $renderOptions );
 		$diffArray = json_decode( $diff, true );
@@ -134,8 +193,8 @@ class TextLocationUpdater {
 			$tag = $difference['tag'];
 			$oldLines = $difference['old']['lines'];
 			$newLines = $difference['new']['lines'];
-			$oldCount = count( $oldLines );
-			$newCount = count( $newLines );
+			$oldCount = $difference['old']['offset'];
+			$newCount = $difference['new']['offset'];
 
 			if ( $tag === 'eq' ) {
 				for ( $i = 0; $i < $oldCount; $i++ ) {
@@ -148,8 +207,8 @@ class TextLocationUpdater {
 			} elseif ( $tag === 'ins' ) {
 				$newLineNr += $newCount;
 			} elseif ( $tag === 'rep' ) {
-				for ( $i = 0; $i < $oldCount; $i++ ) {
-					if ( $i < $newCount ) {
+				for ( $i = 0; $i <= $oldCount; $i++ ) {
+					if ( $i <= $newCount ) {
 						$lineMapping[ $oldLineNr++ ] = $newLineNr++;
 					} else {
 						$lineMapping[ $oldLineNr++ ] = null; // Line deleted

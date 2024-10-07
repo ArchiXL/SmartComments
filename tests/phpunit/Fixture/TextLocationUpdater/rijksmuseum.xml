@@ -20,17 +20,17 @@ It's still unknown wetter the Rijksmuseum is located in Amsterdam, or in Hoofddo
         </new>
     </text>
     <expected>
-        <!-- The word has completely changed, but the word itself also exists on another line -->
-        <testcase>
-            <string>Amsterdam</string>
-            <current>0</current>
-            <new>-1</new>
-        </testcase>
         <!-- The word has been changed partly -->
         <testcase>
 			<string>unknown</string>
 			<current>1</current>
 			<new>-1</new>
 		</testcase>
+        <!-- The word has completely changed, but the word itself also exists on another line -->
+        <testcase>
+            <string>Amsterdam</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
     </expected>
 </testcase>
