@@ -13,6 +13,8 @@ class TextLocation {
 	/** @var int */
 	private $dbId;
 
+	public const INDEX_DELETED = -1;
+
 	public function __construct( $word, int $index, int $dbId ) {
 		$this->word = $word;
 		$this->index = $index;
@@ -22,7 +24,7 @@ class TextLocation {
 	/**
 	 * @return string
 	 */
-	public function getWord(): string {
+	public function getString(): string {
 		return $this->word;
 	}
 
