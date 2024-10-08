@@ -412,12 +412,15 @@ class DBHandler {
 
 	public static function deleteDiffTableEntry( $page_id ) {
 		$dbw = wfGetDB( DB_PRIMARY );
-		return $dbw->delete(
+		$dbw->startAtomic( __METHOD__ );
+		$res = $dbw->delete(
 			'sic_diff_table',
 			[
 				'page_id' => self::sqlSafe( $page_id ),
 			]
 		);
+		$dbw->endAtomic( __METHOD__ );
+		return $res;
 	}
 
 	public static function insertDiffTableEntry( $page_id, $text ) {

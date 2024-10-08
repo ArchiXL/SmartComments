@@ -166,6 +166,7 @@ class Hooks {
 
 		if ( $pageId != 0 ) {
 			$sics = DBHandler::selectCommentsByPageId( $pageId );
+			DBHandler::deleteDiffTableEntry( $pageId );
 
 			/* @var SemanticInlineComment $sic */
 			foreach ( $sics as $sic ) {
