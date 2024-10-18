@@ -284,11 +284,7 @@ class Special extends SpecialPage {
 				$title = \Title::newFromText( $linkTitle );
 				$displaytitle = null;
 				if ( $title instanceof  \Title ) {
-					if ( version_compare( MW_VERSION, '1.38', '>' ) ) {
-						$displaytitle = \MediaWiki\MediaWikiServices::getInstance()->getPageProps()->getProperties( $title, 'displaytitle' );
-					} else {
-						$displaytitle = \PageProps::getInstance()->getProperties( $title, 'displaytitle' );
-					}
+					$displaytitle = \MediaWiki\MediaWikiServices::getInstance()->getPageProps()->getProperties( $title, 'displaytitle' );
 				}
 				if ( !empty( $displaytitle ) ) {
 					$linkTitle = $displaytitle[ $title->getArticleID( ) ] ?? $linkTitle;
