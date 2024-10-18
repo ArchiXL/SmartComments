@@ -36,8 +36,8 @@ class ParserhookUpdater extends TestCase
 			);
 			$this->assertEquals(
 				$string,
-				$location->getWord(),
-				"Test case #{$index}: Expected word '{$string}', got {$location->getWord()}"
+				$location->getString(),
+				"Test case #{$index}: Expected word '{$string}', got {$location->getString()}"
 			);
 
 			$locationUpdater = $this->getLocationUpdater( $old, $new, $location );

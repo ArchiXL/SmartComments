@@ -39,7 +39,7 @@
     },
     "require": {
         "php": ">=7.4",
-        "jfcherng/php-diff": "^6.10.8"
+        "jfcherng/php-diff": "^6"
     },
     "scripts": {
         "test": [
