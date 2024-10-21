@@ -2,7 +2,7 @@
 
 namespace MediaWiki\Extension\SmartComments\Positioning;
 
-use Jfcherng\Diff\DiffHelper;
+use Jfcherng\Diff\SequenceMatcher;
 
 class TextLocationUpdater {
 
@@ -11,9 +11,8 @@ class TextLocationUpdater {
 
 	/** @var string */
 	private $newText;
-	/**
-	 * @var TextLocation
-	 */
+
+	/** @var TextLocation */
 	private $location;
 
 	/**
@@ -21,138 +20,121 @@ class TextLocationUpdater {
 	 * @param string $newText
 	 * @param TextLocation $location
 	 */
-	public function __construct( $oldText, $newText, TextLocation $location) {
+	public function __construct( $oldText, $newText, TextLocation $location ) {
 		$this->oldText = $oldText;
 		$this->newText = $newText;
 		$this->location = $location;
 	}
 
 	/**
-	 * Returns the updated text location based on the old and new text
+	 * Returns the updated text location based on the old and new text.
 	 *
 	 * @return TextLocation
 	 */
 	public function getNewTextLocation(): TextLocation {
-		// Don't update locations that are unlocated
-		if ( $this->location->getIndex() === -1 ) {
+		if ( $this->location->getIndex() === TextLocation::INDEX_DELETED ) {
 			return $this->location;
 		}
 
-		// Set index to -1 if the text can't be found in the new revision (can't be localised).
-		if ( ! $this->getLocationMatchesOnText( $this->newText ) ) {
-			$this->location->setIndex( -1 );
+		$annotatedString = $this->location->getString();
+		$annotatedIndex = $this->location->getIndex();
+
+		// Find positions of the annotated string in the old text
+		$oldPositions = $this->findStringPositions( $this->oldText, $annotatedString );
+		if ( !isset( $oldPositions[ $annotatedIndex ] ) ) {
+			// Annotated string not found at the specified index in old text
+			$this->location->setIndex( TextLocation::INDEX_DELETED );
 			return $this->location;
 		}
 
-		$wordOnCurrentLineNr = $this->getLineNrBasedOnTextLocation();
-		if ( !$wordOnCurrentLineNr ) {
-			throw new \InvalidArgumentException( "The given TextLocation could not be matched against old revision text" );
-		}
+		// Get the start position of the annotated string in the old text
+		$oldStartPos = $oldPositions[ $annotatedIndex ];
 
-		$differencesList = $this->getDiffArray();
-		if ( count( $differencesList ) === 0 ) {
+		// Split texts into arrays of characters
+		$oldChars = $this->splitIntoCharacters( $this->oldText );
+		$newChars = $this->splitIntoCharacters( $this->newText );
+
+		// Use SequenceMatcher to compute the differences between the old and new texts
+		$matcher = new SequenceMatcher( $oldChars, $newChars );
+		$matchingBlocks = $matcher->getMatchingBlocks();
+
+		// Build mapping from old text positions to new text positions
+		$positionMapping = $this->buildPositionMapping( $matchingBlocks );
+
+		// Map the old start position to the new text
+		if ( isset( $positionMapping[ $oldStartPos ] ) ) {
+			$newStartPos = $positionMapping[ $oldStartPos ];
+
+			// Check if the annotated string exists at the new position
+			$substring = mb_substr( $this->newText, $newStartPos, mb_strlen( $annotatedString ) );
+			if ( $substring === $annotatedString ) {
+				// Find the new index (occurrence number) of the annotated string
+				$newPositions = $this->findStringPositions( $this->newText, $annotatedString );
+				$newIndex = array_search( $newStartPos, $newPositions );
+				$this->location->setIndex( $newIndex );
+				return $this->location;
+			} else {
+				// Annotated string was modified
+				$this->location->setIndex( TextLocation::INDEX_DELETED );
+				return $this->location;
+			}
+		} else {
+			// Annotated string was deleted
+			$this->location->setIndex( TextLocation::INDEX_DELETED );
 			return $this->location;
 		}
-
-		foreach( $differencesList as $listKey => $differenceItem ) {
-			// Filter all equal differences and remove offsets greater than the current location
-			$differencesList[ $listKey ] = array_filter( $differenceItem, function( $difference ) use ( $wordOnCurrentLineNr ) {
-				return $difference['tag'] !== 'eq' || $difference['old']['offset'] > $wordOnCurrentLineNr;
-			} );
-		}
-
-		$newMatches = 0;
-		$deleteMatches = 0;
-		foreach ( array_merge(...$differencesList) as $difference ) {
-			$deleteMatches += $this->getNumMatches( implode( PHP_EOL, $difference['old']['lines'] ) );
-			$newMatches += $this->getNumMatches( implode( PHP_EOL, $difference['new']['lines'] ), 'new' );
-		}
-
-		$newIndex = $this->location->getIndex();
-		$newIndex += $newMatches;
-		$newIndex -= $deleteMatches;
-
-
-		// Update the index to set the new location
-		$this->location->setIndex( $newIndex );
-
-		return $this->location;
 	}
 
 	/**
-	 * @param $text
+	 * Splits a string into an array of characters.
+	 *
+	 * @param string $text
 	 * @return array
 	 */
-	private function getNumMatches( $text, $mode = 'del' ): int {
-		$nrOfActualMatches = 0;
-		$regex = $mode === 'del'
-			? '/\<(del)\>(.*)\<\/(del)\>/m'
-			: '/\<(ins|rep)\>(.*)\<\/(ins|rep)\>/m';
+	private function splitIntoCharacters( $text ): array {
+		// Use mb_str_split if available (PHP 7.4+)
+		if ( function_exists( 'mb_str_split' ) ) {
+			return mb_str_split( $text );
+		}
+		// Fallback for earlier PHP versions
+		return preg_split( '//u', $text, -1, PREG_SPLIT_NO_EMPTY );
+	}
 
-		// Match all insertions and replacements
-		preg_match_all( $regex, $text, $matches );
-		if ( $matches ) {
-			foreach ( $matches[2] as $line ) {
-				$nrOfActualMatches += substr_count( $line, $this->location->getWord() );
+	/**
+	 * Builds a mapping from old text positions to new text positions based on matching blocks.
+	 *
+	 * @param array $matchingBlocks
+	 * @return array
+	 */
+	private function buildPositionMapping( $matchingBlocks ): array {
+		$mapping = [];
+
+		foreach ( $matchingBlocks as $block ) {
+			list ( $oldStart, $newStart, $length ) = $block;
+
+			for ( $i = 0; $i < $length; $i++ ) {
+				$mapping[ $oldStart + $i ] = $newStart + $i;
 			}
 		}
 
-		return $nrOfActualMatches;
+		return $mapping;
 	}
 
 	/**
-	 * @return false|string
+	 * Finds all positions of a string within the text.
+	 *
+	 * @param string $text
+	 * @param string $string
+	 * @return array
 	 */
-	public function getDiffArray(): array {
-		$renderOptions = [
-			'outputTagAsString' => true
-		];
-		$diffOptions = [];
-		$calculatedDiff = DiffHelper::calculate( $this->oldText, $this->newText, 'Json', $diffOptions, $renderOptions );
-		$differences = json_decode( $calculatedDiff, true );
-		return $differences;
-	}
-
-	/**
-	 * @param string|null $againstText
-	 * @return array|false
-	 */
-	private function getLineNrBasedOnTextLocation( $againstText = null ): ?array {
-		$matches = 0;
-		$lines = explode( PHP_EOL, $againstText === null ? $this->oldText : $againstText );
-		foreach ( $lines as $lineNr => $line ) {
-			$matches += substr_count( $line, htmlspecialchars_decode( $this->location->getWord() ) );
-			if ( $matches >= $this->location->getIndex() ) {
-				return [
-					'lineNr' => $lineNr,
-					'context' => $line
-				];
-			}
+	private function findStringPositions( $text, $string ): array {
+		$positions = [];
+		$offset = 0;
+		$stringLength = mb_strlen( $string );
+		while ( ( $pos = mb_strpos( $text, $string, $offset ) ) !== false ) {
+			$positions[] = $pos;
+			$offset = $pos + $stringLength; // Move past this occurrence
 		}
-		return null;
+		return $positions;
 	}
-
-	/**
-	 * @param $text
-	 * @return bool
-	 */
-	private function getLocationMatchesOnText( $text ): bool {
-		$counter = 0;
-		$replaced = false;
-		$location = $this->location;
-		$safeWord = preg_quote( htmlspecialchars_decode( $location->getWord() ) );
-		// for some reason / doesn't get escaped so do string replace for that character
-		$safeWord = str_replace( "/", "\/", $safeWord );
-
-		preg_replace_callback( "/{$safeWord}/", function( $m ) use ( &$counter, &$replaced, $location ) {
-			if ( $counter == $location->getIndex() ) {
-				$replaced = true;
-			}
-			$counter++;
-			return $m[0];
-		}, $text );
-
-		return $replaced;
-	}
-
 }

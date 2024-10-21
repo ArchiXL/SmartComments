@@ -102,5 +102,6 @@
 	"sic-selection-error-4": "Selectie bevat HTML-code, probeer je selectie te beperken tot alleen stukje tekst.",
 	"sic-selection-error-5": "Selectie is leeg.",
 	"sic-added-comment": "Reactie toegevoegd",
-	"sic-added-comment-refreshing": "De pagina wordt vernieuwd..."
+	"sic-added-comment-refreshing": "De pagina wordt vernieuwd...",
+	"sic-page-not-found": "Pagina niet gevonden"
 }

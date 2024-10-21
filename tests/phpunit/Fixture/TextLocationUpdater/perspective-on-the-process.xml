@@ -1,0 +1,56 @@
+<testcase>
+    <text>
+        <old>
+            <![CDATA[
+    <div class="mw-parser-output">
+       <h2><span class="mw-headline" id="Introduction">Introduction</span><span class="mw-editsection"><span class="mw-editsection-bracket">[</span><a href="/index.php?title=Test1&amp;action=edit&amp;section=1" title="Edit section: Introduction">edit</a><span class="mw-editsection-bracket">]</span></span></h2>
+       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur vitae neque at felis placerat consequat. This is described in the <a href="/index.php?title=Introduction_Architecture&amp;action=edit&amp;redlink=1" class="new" title="Introduction Architecture (page does not exist)">introduction of the themes and principles</a>. However, the scope is not isolated and can be challenging to delineate.
+          This chapter describes the process, positioning, and particularly the collaboration in more detail. This is important as a starting point for further elaboration of the business architecture.
+       </p>
+       <h2><span class="mw-headline" id="Perspectives_on_the_Process">Perspectives on the Process</span><span class="mw-editsection"><span class="mw-editsection-bracket">[</span><a href="/index.php?title=Test1&amp;action=edit&amp;section=2" title="Edit section: Perspectives on the Process">edit</a><span class="mw-editsection-bracket">]</span></span></h2>
+       <p>The process can be described and defined from various perspectives. These perspectives largely coincide, although some inconsistencies may arise. The business architecture approaches this pragmatically.</p>
+       <p>Below, we highlight some common perspectives on the process.</p>
+       <p>e
+          tsd
+          ad
+          asdd
+          dsasda
+       </p>
+    </div>
+    ]]>
+        </old>
+        <new>
+            <![CDATA[
+    <div class="mw-parser-output">
+       <h2><span class="mw-headline" id="Introduction">Introduction</span><span class="mw-editsection"><span class="mw-editsection-bracket">[</span><a href="/index.php?title=Test1&amp;action=edit&amp;section=1" title="Edit section: Introduction">edit</a><span class="mw-editsection-bracket">]</span></span></h2>
+       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur vitae neque at felis placerat consequat. This is outlined in the <a href="/index.php?title=Introduction_Architecture&amp;action=edit&amp;redlink=1" class="new" title="Introduction Architecture (page does not exist)">introduction of the themes and principles</a>. However, the scope is not isolated and can be challenging to delineate.
+          This chapter describes the process, positioning, and particularly the collaboration in more detail. This is important as a starting point for further elaboration of the business architecture.
+       </p>
+       <h2><span class="mw-headline" id="Perspectives_on_the_Process">Perspectives on the Process</span><span class="mw-editsection"><span class="mw-editsection-bracket">[</span><a href="/index.php?title=Test1&amp;action=edit&amp;section=2" title="Edit section: Perspectives on the Process">edit</a><span class="mw-editsection-bracket">]</span></span></h2>
+       <p>The process can be described and defined from various perspectives. The business architecture approaches this pragmatically.</p>
+       <p>Below, we highlight some common perspectives on the process.</p>
+       <p>e
+          tsd
+          ad
+          asdd
+          dsasda
+       </p>
+    </div>
+    ]]>
+        </new>
+    </text>
+    <expected>
+        <!-- Described becomes outlined -->
+        <testcase>
+            <string>described</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- A longer string has been removed -->
+        <testcase>
+            <string>These perspectives largely coincide, although some inconsistencies may arise.</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+    </expected>
+</testcase>

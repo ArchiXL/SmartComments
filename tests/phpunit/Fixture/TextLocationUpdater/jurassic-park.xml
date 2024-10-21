@@ -1,0 +1,172 @@
+<testcase>
+    <text>
+        <old><![CDATA[
+In the heart of the Pacific Ocean lies a remote island known as Isla Nublar.
+The island is famous for its lush tropical forests and diverse wildlife.
+In 1993, a billionaire entrepreneur named John Hammond opened a revolutionary theme park called Jurassic Park on this island.
+The park featured cloned dinosaurs, bringing prehistoric creatures back to life.
+
+However, due to a catastrophic system failure, the dinosaurs escaped their enclosures, leading to disastrous consequences.
+The incident led to the abandonment of the park and the island becoming a restricted area.
+Over the years, nature reclaimed the island, and the dinosaurs roamed free.
+
+In recent times, there has been renewed interest in the island's potential.
+Scientists believe that studying the dinosaurs in their natural habitat could lead to significant advancements in genetics and ecology.
+Despite the dangers, expeditions are being planned to explore Isla Nublar once again.
+        ]]></old>
+        <new><![CDATA[
+In the depths of the Pacific Ocean lies a secluded island known as Isla Nublar.
+The island is renowned for its dense tropical jungles and unique wildlife.
+In 1993, an ambitious billionaire named John Hammond established an extraordinary theme park called Jurassic World on this island.
+The park showcased genetically engineered dinosaurs, resurrecting extinct species.
+
+Unfortunately, after a critical system malfunction, the dinosaurs broke free from their confinements, resulting in devastating outcomes.
+The disaster forced the closure of the park, and the island was declared off-limits.
+Over time, nature took over the abandoned facilities, and the dinosaurs lived undisturbed.
+
+Recently, there has been a resurgence of interest in the island's untapped potential.
+Researchers believe that observing the dinosaurs in their natural environment could lead to groundbreaking discoveries in genetics and environmental science.
+\Despite the inherent risks, new expeditions are being organized to venture into Isla Nublar once more.
+        ]]></new>
+    </text>
+    <expected>
+        <!-- "heart" changed to "depths" -->
+        <testcase>
+            <string>heart</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "remote" changed to "secluded" -->
+        <testcase>
+            <string>remote</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "famous" changed to "renowned" -->
+        <testcase>
+            <string>famous</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "lush tropical forests" changed to "dense tropical jungles" -->
+        <testcase>
+            <string>lush tropical forests</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "diverse wildlife" changed to "unique wildlife" -->
+        <testcase>
+            <string>diverse wildlife</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "Jurassic Park" changed to "Jurassic World" -->
+        <testcase>
+            <string>Jurassic Park</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "cloned dinosaurs" changed to "genetically engineered dinosaurs" -->
+        <testcase>
+            <string>cloned dinosaurs</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "prehistoric creatures" changed to "extinct species" -->
+        <testcase>
+            <string>prehistoric creatures</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "catastrophic system failure" changed to "critical system malfunction" -->
+        <testcase>
+            <string>catastrophic system failure</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "escaped their enclosures" changed to "broke free from their confinements" -->
+        <testcase>
+            <string>escaped their enclosures</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "disastrous consequences" changed to "devastating outcomes" -->
+        <testcase>
+            <string>disastrous consequences</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "abandonment of the park" changed to "closure of the park" -->
+        <testcase>
+            <string>abandonment of the park</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "restricted area" changed to "declared off-limits" -->
+        <testcase>
+            <string>restricted area</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "nature reclaimed the island" changed to "nature took over the abandoned facilities" -->
+        <testcase>
+            <string>nature reclaimed the island</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "dinosaurs roamed free" changed to "dinosaurs lived undisturbed" -->
+        <testcase>
+            <string>dinosaurs roamed free</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "In recent times" changed to "Recently" -->
+        <testcase>
+            <string>In recent times</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "renewed interest" changed to "resurgence of interest" -->
+        <testcase>
+            <string>renewed interest</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "island's potential" changed to "island's untapped potential" -->
+        <testcase>
+            <string>island's potential</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "significant advancements in genetics and ecology" changed to "groundbreaking discoveries in genetics and environmental science" -->
+        <testcase>
+            <string>significant advancements in genetics and ecology</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "Scientists believe that studying the dinosaurs" changed to "Researchers believe that observing the dinosaurs" -->
+        <testcase>
+            <string>Scientists believe that studying the dinosaurs</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "Despite the dangers" changed to "Despite the inherent risks" -->
+        <testcase>
+            <string>Despite the dangers</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "expeditions are being planned" changed to "new expeditions are being organized" -->
+        <testcase>
+            <string>expeditions are being planned</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+        <!-- "explore Isla Nublar once again" changed to "venture into Isla Nublar once more" -->
+        <testcase>
+            <string>explore Isla Nublar once again</string>
+            <current>0</current>
+            <new>-1</new>
+        </testcase>
+    </expected>
+</testcase>

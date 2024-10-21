@@ -1,0 +1,21 @@
+<testcase>
+    <text>
+        <old>
+<![CDATA[The Rijksmuseum has been unknown for a long time. And it is still unknown.
+It's still unknown wetter the Rijksmuseum is located in Amsterdam, or in Hoofddorp.
+]]>
+        </old>
+        <new>
+<![CDATA[The Rijksmuseum has been known for a long time. And it is still unknown.
+It's still unknown wetter the Rijksmuseum is located in Amsterdam, or in Hoofddorp.
+]]>
+        </new>
+    </text>
+    <expected>
+        <testcase>
+            <string>unknown</string>
+            <current>1</current>
+            <new>0</new>
+        </testcase>
+    </expected>
+</testcase>

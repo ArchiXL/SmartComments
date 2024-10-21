@@ -15,6 +15,7 @@ class SchemaUpdates {
 		// Init tables
 		$updater->addExtensionUpdate(["addTable", "sic_data", "{$schemaDirectory}/sic_data.sql", true]);
 		$updater->addExtensionUpdate(["addTable", "sic_anchor", "{$schemaDirectory}/sic_anchor.sql", true]);
+		$updater->addExtensionUpdate(["addTable", "sic_diff_table", "{$schemaDirectory}/sic_diff_table.sql", true]);
 		// Change tables
 		$updater->modifyExtensionField(
 			"sic_data",

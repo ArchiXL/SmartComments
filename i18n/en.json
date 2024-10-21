@@ -110,6 +110,7 @@
 	"sic-selection-error-5": "Selection is empty.",
 
 	"sic-added-comment": "Added reply",
-	"sic-added-comment-refreshing":  "Please wait while the page is refreshing..."
+	"sic-added-comment-refreshing":  "Please wait while the page is refreshing...",
+	"sic-page-not-found": "Page not found"
 }
 

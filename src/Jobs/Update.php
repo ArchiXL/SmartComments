@@ -2,6 +2,7 @@
 
 namespace MediaWiki\Extension\SmartComments\Jobs;
 
+use MediaWiki\Extension\SmartComments\DBHandler;
 use MediaWiki\Extension\SmartComments\Updater\Page;
 
 class Update extends \Job {
@@ -25,8 +26,8 @@ class Update extends \Job {
 			$pageUpdater = new Page( $wikiPage );
 			$hasComments = $pageUpdater->hasComments();
 			if ( !$pageUpdater->hasComments() ) {
-				$pageUpdater->destroyDataSlot();
-				$this->setMetadata( 'destroyedDataSlot', 'yes' );
+				DBHandler::deleteDiffTableEntry( $wikiPage->getId() );
+				$this->setMetadata( 'removedFromTable', 'yes' );
 			}
 			$this->setMetadata('hasComments', $hasComments ? 'yes' : 'no' );
 		}

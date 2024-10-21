@@ -55,7 +55,7 @@ class AnchorStore {
 	public function updateTextLocation( TextLocation $textLocation ) {
 		DBHandler::updateAnchor(
 			$textLocation->getDbId(),
-			$textLocation->getWord(),
+			$textLocation->getString(),
 			$textLocation->getIndex()
 		);
 	}
