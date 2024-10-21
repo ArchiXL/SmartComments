@@ -14,5 +14,5 @@ This script ensures that all database schemas are up-to-date with the latest cha
 ### Step 2: Run the Maintenance Script
 Next, you will need to convert the data from the old structure to the new SQL-table. To do this, run the provided maintenance script:
 ```bash
-php extensions/SmartComments/maintenance/convertSicToSql.php
+php extensions/SmartComments/maintenance/convertSICtoSQL.php
 ```
