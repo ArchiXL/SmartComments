@@ -132,7 +132,7 @@ class convertSICtoSQL extends Maintenance
 		$this->deleteFromSlotTables( $output['slot_role_id'] );
 		$this->dbw->endAtomic( __METHOD__ );
 		$this->dbr->endAtomic( __METHOD__ );
-		$this->purgePages( $page_ids );
+		$this->purgePages();
 		return true;
 	}
 
@@ -187,7 +187,7 @@ class convertSICtoSQL extends Maintenance
 		}
 	}
 
-	private function purgePages( $page_ids ) {
+	private function purgePages() {
 		foreach ( $this->page_ids as $page_id ) {
 			$page = MediaWikiServices::getInstance()->getWikiPageFactory()->newFromID( $page_id );
 			$page->doPurge();
