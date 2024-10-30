@@ -137,8 +137,8 @@ class convertSICtoSQL extends Maintenance
 			$this->output("No data found to be deleted.\n");
 			return true;
 		}
-		$this->deleteFromContentTable( $output['slot_content_id'] );
 		$this->deleteFromTextTable( $output['slot_content_id'] );
+		$this->deleteFromContentTable( $output['slot_content_id'] );
 		$this->deleteFromSlotTables( $output['slot_role_id'] );
 		$this->purgePages();
 		return true;
@@ -181,10 +181,30 @@ class convertSICtoSQL extends Maintenance
 	}
 
 	private function deleteFromTextTable( $ids ) {
+		// select content from db where content_id in (ids)
+		$texts = $this->dbr->select(
+			'content',
+			'*',
+			[
+				'content_id' => $ids
+			]
+		);
+
+		$text_ids = [];
+		foreach ( $texts as $text ) {
+			$address = \MediaWiki\Storage\SqlBlobStore::splitBlobAddress( $text->content_address );
+			if ( empty( $address ) ||  $address[ 0 ] !== 'tt' ) {
+				// we only support tt: content_address no externalStorage
+				continue;
+			}
+			// remove first 3 letters from the content_address
+			$text_ids[] = $address[ 1 ];
+		}
+
 		$res = $this->dbw->delete(
 			'text',
 			[
-				'old_id' => $ids
+				'old_id' => $text_ids
 			]
 		);
 		$ids = implode( ', ', $ids );
