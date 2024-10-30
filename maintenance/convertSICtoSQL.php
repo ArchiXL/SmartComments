@@ -19,7 +19,14 @@ class convertSICtoSQL extends Maintenance
 		$this->dbr = $this->getDB( DB_REPLICA );
 
 		$this->moveLastRevisionToSIC();
-		$this->clearSicDataSlots();
+		$this->dbw->startAtomic( __METHOD__ );
+		$this->dbr->startAtomic( __METHOD__ );
+		try {
+			$this->clearSicDataSlots();
+		} finally {
+			$this->dbw->endAtomic( __METHOD__ );
+			$this->dbr->endAtomic( __METHOD__ );
+		}
 	}
 
 	/*
@@ -81,7 +88,7 @@ class convertSICtoSQL extends Maintenance
 			try {
 				$insertRows[ $row->page_latest ] = [
 					'page_id' => $row->page_id,
-					'text' => serialize($page->getRevisionRecord()->getContent( 'sic-data-slot' )->getText()),
+					'text' => serialize( $page->getRevisionRecord()->getContent( 'sic-data-slot' )->getText() ),
 				];
 			} catch ( Exception $e ) {
 				// skip it if its gives an exeception
@@ -103,8 +110,6 @@ class convertSICtoSQL extends Maintenance
 	}
 
 	private function clearSicDataSlots() {
-		$this->dbw->startAtomic( __METHOD__ );
-		$this->dbr->startAtomic( __METHOD__ );
 		$slot_role = $this->dbr->tableName( 'slot_roles' );
 		$slots = $this->dbr->select(
 			[
@@ -135,8 +140,6 @@ class convertSICtoSQL extends Maintenance
 		$this->deleteFromContentTable( $output['slot_content_id'] );
 		$this->deleteFromTextTable( $output['slot_content_id'] );
 		$this->deleteFromSlotTables( $output['slot_role_id'] );
-		$this->dbw->endAtomic( __METHOD__ );
-		$this->dbr->endAtomic( __METHOD__ );
 		$this->purgePages();
 		return true;
 	}
