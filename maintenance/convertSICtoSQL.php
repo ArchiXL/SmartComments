@@ -188,7 +188,7 @@ class convertSICtoSQL extends Maintenance
 	}
 
 	private function purgePages( $page_ids ) {
-		foreach ( $page_ids as $page_id ) {
+		foreach ( $this->page_ids as $page_id ) {
 			$page = MediaWikiServices::getInstance()->getWikiPageFactory()->newFromID( $page_id );
 			$page->doPurge();
 		}
