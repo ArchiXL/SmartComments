@@ -12,6 +12,8 @@ class convertSICtoSQL extends Maintenance
 	private \Wikimedia\Rdbms\IMaintainableDatabase $dbw;
 	private \Wikimedia\Rdbms\IMaintainableDatabase $dbr;
 
+	private $page_ids = [];
+
 	public function execute() {
 		$this->dbw = $this->getDB( DB_PRIMARY );
 		$this->dbr = $this->getDB( DB_REPLICA );
@@ -72,10 +74,10 @@ class convertSICtoSQL extends Maintenance
 			]
 		);
 
-		$rev_ids = [];
 		$page_ids = [];
 		foreach ($res as $row) {
 			$page = MediaWikiServices::getInstance()->getWikiPageFactory()->newFromID( $row->page_id );
+			$page_ids[] = $row->page_id;
 			$insertRows[ $row->page_latest ] = [
 				'page_id' => $row->page_id,
 				'text' => serialize($page->getRevisionRecord()->getContent( 'sic-data-slot' )->getText()),
@@ -88,7 +90,8 @@ class convertSICtoSQL extends Maintenance
 				__METHOD__
 			);
 
-			$this->output("Inserted " . count( $insertRows ) . " rows with page_ids: " . implode( ', ', $page_ids ) . "into sic_diff_table.\n ");
+			$this->output("Inserted " . count( $insertRows ) . " rows with page_ids: " . implode( ', ', $page_ids ) . " into sic_diff_table.\n ");
+			$this->page_ids = $page_ids;
 		} else {
 			$this->output("No data found to be inserted.\n");
 		}
@@ -129,6 +132,7 @@ class convertSICtoSQL extends Maintenance
 		$this->deleteFromSlotTables( $output['slot_role_id'] );
 		$this->dbw->endAtomic( __METHOD__ );
 		$this->dbr->endAtomic( __METHOD__ );
+		$this->purgePages( $page_ids );
 		return true;
 	}
 
@@ -180,6 +184,13 @@ class convertSICtoSQL extends Maintenance
 			$this->output( "Rows with the ids of {$ids} deleted from text table\n" );
 		} else {
 			$this->output( "No data found to be deleted\n" );
+		}
+	}
+
+	private function purgePages( $page_ids ) {
+		foreach ( $page_ids as $page_id ) {
+			$page = MediaWikiServices::getInstance()->getWikiPageFactory()->newFromID( $page_id );
+			$page->doPurge();
 		}
 	}
 }
