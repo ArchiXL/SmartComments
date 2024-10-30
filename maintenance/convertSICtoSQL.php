@@ -78,10 +78,15 @@ class convertSICtoSQL extends Maintenance
 		foreach ($res as $row) {
 			$page = MediaWikiServices::getInstance()->getWikiPageFactory()->newFromID( $row->page_id );
 			$page_ids[] = $row->page_id;
-			$insertRows[ $row->page_latest ] = [
-				'page_id' => $row->page_id,
-				'text' => serialize($page->getRevisionRecord()->getContent( 'sic-data-slot' )->getText()),
-			];
+			try {
+				$insertRows[ $row->page_latest ] = [
+					'page_id' => $row->page_id,
+					'text' => serialize($page->getRevisionRecord()->getContent( 'sic-data-slot' )->getText()),
+				];
+			} catch ( Exception $e ) {
+				// skip it if its gives an exeception
+				// it means there is no slot found in the recent revision
+			}
 		}
 		if ( !empty( $insertRows ) ) {
 			$this->dbw->insert(
