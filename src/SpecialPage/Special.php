@@ -3,7 +3,6 @@
 namespace MediaWiki\Extension\SmartComments\SpecialPage;
 
 use Html;
-use MediaWiki\Extension\SmartComments\SMWHandler;
 use MediaWiki\Extension\SmartComments\Utils;
 use MediaWiki\MediaWikiServices;
 use MWException;
@@ -280,18 +279,22 @@ class Special extends SpecialPage {
 			$tableHtml .= Xml::element( 'td', null, $sic->getModifiedDateTime( SIC::USER_TIMESTAMPFORMAT, $this->getUser() ) );
 			$tableHtml .= Xml::openElement( 'td' );
 			$linkTitle = $sic->getPage();
-			if ( \ExtensionRegistry::getInstance()->isLoaded( 'DisplayTitle' )) {
+			if ( \ExtensionRegistry::getInstance()->isLoaded( 'DisplayTitle' ) ) {
 				$title = \Title::newFromText( $linkTitle );
-				if ( version_compare( MW_VERSION, '1.38', '>' ) ) {
+				$displaytitle = null;
+				if ( $title instanceof \Title ) {
 					$displaytitle = \MediaWiki\MediaWikiServices::getInstance()->getPageProps()->getProperties( $title, 'displaytitle' );
-				} else {
-					$displaytitle = \PageProps::getInstance()->getProperties( $title, 'displaytitle' );
 				}
 				if ( !empty( $displaytitle ) ) {
 					$linkTitle = $displaytitle[ $title->getArticleID( ) ] ?? $linkTitle;
 				}
 			}
-			$tableHtml .= Xml::element( 'a', [ 'href' => $this->getPageUrlFocused( htmlspecialchars( $sic->getPage() ), $sic->getId() ) ], $linkTitle );
+
+			if ( empty( $linkTitle ) ) {
+				$tableHtml .= Xml::element( 'p', [], wfMessage( 'sic-page-not-found' )->text() );
+			} else {
+				$tableHtml .= Xml::element( 'a', [ 'href' => $this->getPageUrlFocused( htmlspecialchars( $sic->getPage() ), $sic->getId() ) ], $linkTitle );
+			}
 			$tableHtml .= Xml::closeElement( 'td' );
 
 			$openButton = new ButtonWidget([

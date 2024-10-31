@@ -7,7 +7,6 @@ use Title, User;
 use SMW\ApplicationFactory;
 use SMW\Subobject;
 use SMW\DIProperty;
-use SMW\DIWikiPage;
 use SMW\DataValueFactory;
 use SMW\MediaWiki\Jobs\UpdateJob;
 use MediaWiki\Extension\SmartComments\SemanticInlineComment as SIC;

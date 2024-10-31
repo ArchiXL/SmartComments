@@ -9,6 +9,7 @@ use MediaWiki\Extension\SmartComments\SpecialPage\CommentsFilter;
 class DBHandler {
 	const DB_TABLE_SIC_DATA = 'sic_data';
 	const DB_TABLE_SIC_ANCHOR = 'sic_anchor';
+	const DB_TABLE_SIC_DIFF = 'sic_diff_table';
 	const DB_COLUMN_DATAID = 'data_id';
 	const DB_COLUMN_ANCHORID = 'anchor_id';
 	const DB_COLUMN_PAGEID = 'page_id';
@@ -74,7 +75,7 @@ class DBHandler {
 
 		return ($result) ? $sic->getId() : false;
 	}
-	
+
 	public static function updateComment($unsafeCommentId, $modifier, $datetime, $field, $value) {
 		$commentId = self::sqlSafe(intval($unsafeCommentId));
 		$modifierId = ($modifier instanceof User) ? $modifier->getId() : self::INVALIDUSER;
@@ -401,6 +402,70 @@ class DBHandler {
 		);
 
 		return $count > 0;
+	}
+
+	public static function updateDiffTable( $page_id,  $content ) {
+		return ( self::getDiffTableEntryText( $page_id ) === null )
+			? self::insertDiffTableEntry( $page_id, $content )
+			: self::updateDiffTableEntry( $page_id, $content );
+	}
+
+	public static function deleteDiffTableEntry( $page_id ) {
+		$dbw = wfGetDB( DB_PRIMARY );
+		$dbw->startAtomic( __METHOD__ );
+		$res = $dbw->delete(
+			'sic_diff_table',
+			[
+				'page_id' => self::sqlSafe( $page_id ),
+			]
+		);
+		$dbw->endAtomic( __METHOD__ );
+		return $res;
+	}
+
+	public static function insertDiffTableEntry( $page_id, $text ) {
+		$dbw = wfGetDB( DB_PRIMARY );
+
+		$dbw->startAtomic( __METHOD__ );
+		$res = $dbw->insert(
+			'sic_diff_table',
+			[
+				'page_id' => self::sqlSafe( $page_id ),
+				'text' => serialize( $text )
+			]
+		);
+		$dbw->endAtomic( __METHOD__ );
+		return $res;
+	}
+
+	public static function updateDiffTableEntry( $page_id, $text ) {
+		$dbw = wfGetDB( DB_PRIMARY );
+		$dbw->startAtomic( __METHOD__ );
+		$res =  $dbw->update(
+			'sic_diff_table',
+			[
+				'text' => serialize( $text )
+			],
+			[
+				'page_id' => self::sqlSafe( $page_id )
+			],
+			__METHOD__
+		);
+		$dbw->endAtomic( __METHOD__ );
+		return $res;
+	}
+
+	public static function getDiffTableEntryText( int $page_id ) : ?string {
+		$dbr = wfGetDB( DB_REPLICA );
+		$result = $dbr->select(
+			'sic_diff_table',
+			'*',
+			[
+				'page_id' => self::sqlSafe( $page_id )
+			]
+		);
+		$obj = $result->fetchObject();
+		return ( $obj === false ) ? null : unserialize( $obj->text );
 	}
 }
 

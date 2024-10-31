@@ -1,0 +1,21 @@
+<testcase>
+    <text>
+        <old>
+<![CDATA[
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vel ipsum pulvinar tortor, eu ultrices lectus. Praesent sodales dui justo, venenatis finibus leo convallis a. Quisque posuere imperdiet libero, eu sodales mi imperdiet at. Integer commodo id arcu a placerat. Fusce ipsum quis imperdiet tortor. Nulla at ipsum et dolor molestie ultrices in ut lorem. Maecenas molestie molestie dictum. Vestibulum consequat scelerisque est eget maximus. Sed id odio quis orci dictum sodales at sed justo. Vivamus sit amet velit eget ex malesuada faucibus at id lectus. Cras sit amet maximus ligula. Fusce gravida ante diam, nec tincidunt nulla lobortis id. Integer nisl enim, rutrum a volutpat vitae, pharetra in odio. Maecenas bibendum velit vitae turpis malesuada, sed convallis nisl efficitur. Curabitur ac facilisis tellus.
+]]>
+        </old>
+        <new>
+<![CDATA[
+Lorem ipsum dolor sit amet, consectetur ipsum adipiscing elit. Donec vel ipsum pulvinar tortor, eu ultrices lectus. Praesent sodales dui justo, venenatis finibus leo convallis a. Quisque posuere imperdiet libero, eu sodales mi imperdiet at. Integer commodo id arcu a placerat. Fusce ipsum quis imperdiet tortor. Nulla at ipsum et dolor molestie ultrices in ut lorem. Maecenas molestie molestie dictum. Vestibulum consequat scelerisque est eget maximus. Sed id odio quis orci dictum sodales at sed justo. Vivamus sit amet velit eget ex malesuada faucibus at id lectus. Cras sit amet maximus ligula. Fusce gravida ante diam, nec tincidunt nulla lobortis id. Integer nisl enim, rutrum a volutpat vitae, pharetra in odio. Maecenas bibendum velit vitae turpis malesuada, sed convallis nisl efficitur. Curabitur ac facilisis tellus.
+]]>
+        </new>
+    </text>
+    <expected>
+        <testcase>
+            <string>ipsum</string>
+            <current>1</current>
+            <new>2</new>
+        </testcase>
+    </expected>
+</testcase>

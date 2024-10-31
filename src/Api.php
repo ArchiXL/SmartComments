@@ -227,12 +227,12 @@ class Api extends ApiBase {
 
 		$result = DBHandler::deleteComment($commentId);
 		if ($result === true) {
-			//Force page update job to delete the corresponding subobject, if page is provided
-			if ( \ExtensionRegistry::getInstance()->isLoaded( 'SemanticMediaWiki' ) ) {
-				$page = $this->getRequest()->getVal(self::PARAM_PAGE);
-				if (!empty($page)) {
-					$title = Title::newFromText($page);
-					SMWHandler::createPageUpdateJob($title);
+			$page = $this->getRequest()->getVal(self::PARAM_PAGE);
+			if (!empty($page)) {
+				$title = Title::newFromText($page);
+				if ( count( DBHandler::selectCommentsByPage( $page ) ) < 1 ) {
+					$page = \MediaWiki\MediaWikiServices::getInstance()->getWikiPageFactory()->newFromTitle( $title );
+					DBHandler::deleteDiffTableEntry( $page->getId() );
 				}
 			}
 			$this->getResult()->addValue(self::RES_MODULE, self::RES_SUCCESS, '1');

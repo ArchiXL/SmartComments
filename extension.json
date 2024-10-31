@@ -6,7 +6,7 @@
 		"Robin van der Wiel",
 		"Yvar Nanlohij"
 	],
-	"version": "1.5.5",
+	"version": "2.0.0",
 	"url": "https://www.archixl.nl",
 	"descriptionmsg": "sic-desc",
 	"license-name": "GPL-2.0+",
@@ -40,8 +40,6 @@
 		"SMW::SQLStore::BeforeDataUpdateComplete": "MediaWiki\\Extension\\SmartComments\\Hooks::addSubobjectsForComments",
 		"ParserCacheSaveComplete": "MediaWiki\\Extension\\SmartComments\\Hooks::onParserCacheSaveComplete",
 		"MediaWikiServices": "MediaWiki\\Extension\\SmartComments\\Hooks::onMediaWikiServices",
-		"PageHistoryPager::getQueryInfo": "MediaWiki\\Extension\\SmartComments\\Hooks::onPageHistoryPagerGetQueryInfo",
-		"ModifyExportQuery": "MediaWiki\\Extension\\SmartComments\\Hooks::onModifyExportQuery",
 		"ArticleDeleteAfterSuccess": "MediaWiki\\Extension\\SmartComments\\Hooks::onArticleDeleteAfterSuccess",
 		"ResourceLoaderRegisterModules": "MediaWiki\\Extension\\SmartComments\\JavascriptLoader::register"
 	},
@@ -100,7 +98,8 @@
 		}
 	},
 	"requires": {
-		"MediaWiki": ">= 1.35"
+		"MediaWiki": ">= 1.39"
 	},
+	"load_composer_autoloader": true,
 	"manifest_version": 2
 }

@@ -28,20 +28,6 @@ class Hooks {
 				throw new \Exception( "Could not create directory for images (". self::$imageSaveDirectory .")." );
 			}
 		}
-
-		$services->addServiceManipulator( 'SlotRoleRegistry', function( \MediaWiki\Revision\SlotRoleRegistry $registry ) {
-			if ( ! $registry->isDefinedRole( Page::DATA_SLOT ) ) {
-				$registry->defineRoleWithModel(
-					Page::DATA_SLOT,
-					CONTENT_MODEL_WIKITEXT,
-					[
-						"display" => "none",
-						"region" => "center",
-						"placement" => "append"
-					]
-				);
-			}
-		} );
 	}
 
 	/**
@@ -59,10 +45,6 @@ class Hooks {
 		return true;
 	}
 
-	/**
-	 * @param \WikiPage $wikiPage
-	 * @return bool
-	 */
 	public static function onParserCacheSaveComplete(
 		\ParserCache $parserCache,
 		\ParserOutput $parserOutput,
@@ -70,11 +52,9 @@ class Hooks {
 		\ParserOptions $parserOptions,
 		int $revId
 	) {
-		if ( !Page::$wasSaved ) {
-			$pageUpdater = new Page( \WikiPage::factory( $title ), $parserOutput );
-			$pageUpdater->updateComments();
-		}
-		return true;
+		$page = \MediaWiki\MediaWikiServices::getInstance()->getWikiPageFactory()->newFromTitle( $title );
+		$pageUpdater = new Page( $page, $parserOutput );
+		$pageUpdater->updateComments();
 	}
 
 	/**
@@ -154,30 +134,6 @@ class Hooks {
 		return true;
 	}
 
-	/**
-	 * @param \HistoryPager $pager
-	 * @param $queryInfo
-	 * @return void
-	 */
-	public static function onPageHistoryPagerGetQueryInfo( \HistoryPager $pager, &$queryInfo ) {
-		$queryInfo['conds'][] = 'comment_text != "'. Page::UPDATE_COMMENT_TEXT.'"';
-		$queryInfo['conds'][] = 'comment_text != "'. Page::DELETE_COMMENT_TEXT.'"';
-	}
-
-	/**
-	 * @param $db
-	 * @param $tables
-	 * @param $cond
-	 * @param $opts
-	 * @param $join_conds
-	 * @param $conds
-	 * @return void
-	 */
-	public static function onModifyExportQuery( $db, &$tables, &$cond, &$opts, &$join_conds, &$conds) {
-		$conds[] = 'comment_text != "' . Page::UPDATE_COMMENT_TEXT . '"';
-		$conds[] = 'comment_text != "' . Page::DELETE_COMMENT_TEXT . '"';
-	}
-
 	public static function onArticleDeleteAfterSuccess( Title $title, OutputPage $output ) {
 		$titleText = $title->getText();
 		$titleNS = $title->getNamespace();
@@ -185,6 +141,7 @@ class Hooks {
 
 		if ( $pageId != 0 ) {
 			$sics = DBHandler::selectCommentsByPageId( $pageId );
+			DBHandler::deleteDiffTableEntry( $pageId );
 
 			/* @var SemanticInlineComment $sic */
 			foreach ( $sics as $sic ) {
