@@ -55,7 +55,7 @@ class Page {
 		}
 
 		// Clean the parser transclusion tags from the parser output since we don't want that in our content
-		$currentContent = $this->cleanHTMLString( $this->parserOutput->getText() );
+		$currentContent = $this->removeHTMLCommentsFromString( $this->parserOutput->getText() );
 		$oldContent = DBHandler::getDiffTableEntryText( $this->page->getId() );
 		if ( $oldContent === null ) {
 			DBHandler::updateDiffTable( $this->page->getId(), $currentContent );
@@ -93,7 +93,7 @@ class Page {
 	 * @param $string
 	 * @return string
 	 */
-	private function cleanHTMLString( $string ): string {
+	private function removeHTMLCommentsFromString( $string ): string {
 		return preg_replace( '/<!--(.|\s)*?-->/', '', $string );
 	}
 }
