@@ -40,8 +40,6 @@
 		"SMW::SQLStore::BeforeDataUpdateComplete": "MediaWiki\\Extension\\SmartComments\\Hooks::addSubobjectsForComments",
 		"ParserCacheSaveComplete": "MediaWiki\\Extension\\SmartComments\\Hooks::onParserCacheSaveComplete",
 		"MediaWikiServices": "MediaWiki\\Extension\\SmartComments\\Hooks::onMediaWikiServices",
-		"PageHistoryPager::getQueryInfo": "MediaWiki\\Extension\\SmartComments\\Hooks::onPageHistoryPagerGetQueryInfo",
-		"ModifyExportQuery": "MediaWiki\\Extension\\SmartComments\\Hooks::onModifyExportQuery",
 		"ArticleDeleteAfterSuccess": "MediaWiki\\Extension\\SmartComments\\Hooks::onArticleDeleteAfterSuccess",
 		"ResourceLoaderRegisterModules": "MediaWiki\\Extension\\SmartComments\\JavascriptLoader::register"
 	},

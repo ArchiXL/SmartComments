@@ -20,12 +20,10 @@ class convertSICtoSQL extends Maintenance
 
 		$this->moveLastRevisionToSIC();
 		$this->dbw->startAtomic( __METHOD__ );
-		$this->dbr->startAtomic( __METHOD__ );
 		try {
 			$this->clearSicDataSlots();
 		} finally {
 			$this->dbw->endAtomic( __METHOD__ );
-			$this->dbr->endAtomic( __METHOD__ );
 		}
 	}
 
@@ -46,8 +44,8 @@ class convertSICtoSQL extends Maintenance
 			__METHOD__
 		);
 
-		if (!$slotRoleId) {
-			$this->output("No slot role found for 'sic-data-slot'.\n");
+		if ( !$slotRoleId ) {
+			$this->output( "No slot role found for 'sic-data-slot'.\n" );
 			return;
 		}
 
@@ -60,19 +58,19 @@ class convertSICtoSQL extends Maintenance
 		);
 
 		$revisionIds = [];
-		foreach ($slots as $slot) {
+		foreach ( $slots as $slot ) {
 			$revisionIds[] = $slot->slot_revision_id;
 		}
 
-		if (empty($revisionIds)) {
-			$this->output("No slots found for the given slot role.\n");
+		if ( empty( $revisionIds ) ) {
+			$this->output( "No slots found for the given slot role.\n" );
 			return;
 		}
 
 		// Get all unique pages from the revisions
 		$res = $this->dbr->select(
-			[ 'r' => $revisionTable, 'p' => $pageTable],
-			[ 'DISTINCT p.page_id', 'p.page_latest'],
+			[ 'r' => $revisionTable, 'p' => $pageTable ],
+			[ 'DISTINCT p.page_id', 'p.page_latest' ],
 			[ 'r.rev_id' => $revisionIds ],
 			__METHOD__,
 			[],
@@ -82,7 +80,7 @@ class convertSICtoSQL extends Maintenance
 		);
 
 		$page_ids = [];
-		foreach ($res as $row) {
+		foreach ( $res as $row ) {
 			$page = MediaWikiServices::getInstance()->getWikiPageFactory()->newFromID( $row->page_id );
 			$page_ids[] = $row->page_id;
 			try {
@@ -102,10 +100,10 @@ class convertSICtoSQL extends Maintenance
 				__METHOD__
 			);
 
-			$this->output("Inserted " . count( $insertRows ) . " rows with page_ids: " . implode( ', ', $page_ids ) . " into sic_diff_table.\n ");
+			$this->output( "Inserted " . count( $insertRows ) . " rows with page_ids: " . implode( ', ', $page_ids ) . " into sic_diff_table.\n " );
 			$this->page_ids = $page_ids;
 		} else {
-			$this->output("No data found to be inserted.\n");
+			$this->output( "No data found to be inserted.\n" );
 		}
 	}
 
@@ -128,18 +126,18 @@ class convertSICtoSQL extends Maintenance
 		];
 		foreach ( $slots as $row ) {
 			foreach ( $fields as $field ) {
-				if (!in_array($row->$field, $output[$field] ?? [])) {
-					$output[$field][] = $row->$field;
+				if ( !in_array( $row->$field, $output[ $field ] ?? [] ) ) {
+					$output[ $field ][] = $row->$field;
 				}
 			}
 		}
 		if ( empty( $output ) ) {
-			$this->output("No data found to be deleted.\n");
+			$this->output( "No data found to be deleted.\n" );
 			return true;
 		}
-		$this->deleteFromTextTable( $output['slot_content_id'] );
-		$this->deleteFromContentTable( $output['slot_content_id'] );
-		$this->deleteFromSlotTables( $output['slot_role_id'] );
+		$this->deleteFromTextTable( $output[ 'slot_content_id' ] );
+		$this->deleteFromContentTable( $output[ 'slot_content_id' ] );
+		$this->deleteFromSlotTables( $output[ 'slot_role_id' ] );
 		$this->purgePages();
 		return true;
 	}
@@ -193,8 +191,8 @@ class convertSICtoSQL extends Maintenance
 		$text_ids = [];
 		foreach ( $texts as $text ) {
 			$address = \MediaWiki\Storage\SqlBlobStore::splitBlobAddress( $text->content_address );
-			if ( empty( $address ) ||  $address[ 0 ] !== 'tt' ) {
-				// we only support tt: content_address no externalStorage
+			if ( empty( $address ) || $address[ 0 ] !== 'tt' ) {
+				// we only support tt: content_address no es: externalStorage
 				continue;
 			}
 			// remove first 3 letters from the content_address

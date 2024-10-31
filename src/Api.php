@@ -230,7 +230,7 @@ class Api extends ApiBase {
 			$page = $this->getRequest()->getVal(self::PARAM_PAGE);
 			if (!empty($page)) {
 				$title = Title::newFromText($page);
-				if ( count( DBHandler::selectCommentsByPage( $page ) ) < 1) {
+				if ( count( DBHandler::selectCommentsByPage( $page ) ) < 1 ) {
 					$page = \MediaWiki\MediaWikiServices::getInstance()->getWikiPageFactory()->newFromTitle( $title );
 					DBHandler::deleteDiffTableEntry( $page->getId() );
 				}

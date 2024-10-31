@@ -264,7 +264,7 @@ class Special extends SpecialPage {
 			$tableHtml .= Xml::openElement( 'tr', [
 				'class' => "$rowClass",
 				'data-author' => $sic->getAuthor()->getName(),
-				'data-page' => $sic->getPage(),
+				'data-page' => $sic->getPage()
 				'data-status' => $sic->getStatus()
 			]);
 			$tableHtml .= Xml::element( 'td', null, $sic->getStatus() );
@@ -280,10 +280,10 @@ class Special extends SpecialPage {
 			$tableHtml .= Xml::element( 'td', null, $sic->getModifiedDateTime( SIC::USER_TIMESTAMPFORMAT, $this->getUser() ) );
 			$tableHtml .= Xml::openElement( 'td' );
 			$linkTitle = $sic->getPage();
-			if ( \ExtensionRegistry::getInstance()->isLoaded( 'DisplayTitle' )) {
+			if ( \ExtensionRegistry::getInstance()->isLoaded( 'DisplayTitle' ) ) {
 				$title = \Title::newFromText( $linkTitle );
 				$displaytitle = null;
-				if ( $title instanceof  \Title ) {
+				if ( $title instanceof \Title ) {
 					$displaytitle = \MediaWiki\MediaWikiServices::getInstance()->getPageProps()->getProperties( $title, 'displaytitle' );
 				}
 				if ( !empty( $displaytitle ) ) {
