@@ -264,7 +264,7 @@ class Special extends SpecialPage {
 			$tableHtml .= Xml::openElement( 'tr', [
 				'class' => "$rowClass",
 				'data-author' => $sic->getAuthor()->getName(),
-				'data-page' => $sic->getPage()
+				'data-page' => $sic->getPage(),
 				'data-status' => $sic->getStatus()
 			]);
 			$tableHtml .= Xml::element( 'td', null, $sic->getStatus() );
