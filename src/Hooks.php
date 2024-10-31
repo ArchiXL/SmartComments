@@ -2,7 +2,6 @@
 
 namespace MediaWiki\Extension\SmartComments;
 
-use MediaWiki\Page\WikiPageFactory;
 use OutputPage;
 use MediaWiki\Extension\SmartComments\Settings\Handler;
 use MediaWiki\Extension\SmartComments\Updater\Page;
@@ -133,30 +132,6 @@ class Hooks {
 		}
 
 		return true;
-	}
-
-	/**
-	 * @param \HistoryPager $pager
-	 * @param $queryInfo
-	 * @return void
-	 */
-	public static function onPageHistoryPagerGetQueryInfo( \HistoryPager $pager, &$queryInfo ) {
-		$queryInfo['conds'][] = 'comment_text != "'. Page::UPDATE_COMMENT_TEXT.'"';
-		$queryInfo['conds'][] = 'comment_text != "'. Page::DELETE_COMMENT_TEXT.'"';
-	}
-
-	/**
-	 * @param $db
-	 * @param $tables
-	 * @param $cond
-	 * @param $opts
-	 * @param $join_conds
-	 * @param $conds
-	 * @return void
-	 */
-	public static function onModifyExportQuery( $db, &$tables, &$cond, &$opts, &$join_conds, &$conds) {
-		$conds[] = 'comment_text != "' . Page::UPDATE_COMMENT_TEXT . '"';
-		$conds[] = 'comment_text != "' . Page::DELETE_COMMENT_TEXT . '"';
 	}
 
 	public static function onArticleDeleteAfterSuccess( Title $title, OutputPage $output ) {

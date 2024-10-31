@@ -3,7 +3,6 @@
 namespace MediaWiki\Extension\SmartComments\SpecialPage;
 
 use Html;
-use MediaWiki\Extension\SmartComments\SMWHandler;
 use MediaWiki\Extension\SmartComments\Utils;
 use MediaWiki\MediaWikiServices;
 use MWException;
