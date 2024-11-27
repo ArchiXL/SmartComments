@@ -1,3 +1,6 @@
+; Version 2.0.1 (November 27, 2024)
+* Minor fix in RHS-skin compatability
+
 ; Version 2.0.0 (Oct 31, 2024)
 * Removed use of data slots instead SmartComments now uses it's own table to write the old content to see [https://github.com/ArchiXL/SmartComments/blob/master/docs/migrating-to-v2.md Migration to v2]
 * Refactored TextLocationUpdater
