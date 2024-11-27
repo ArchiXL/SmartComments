@@ -25,7 +25,7 @@ SmartComments.Panels.CommentTimeline = {
     skinSelectors: {
         vector: $( '.mw-body' ),
         gemmaonline: $( 'section#mainContent' ),
-        rhswiki: $( 'main#content' ),
+        rhswiki: $( 'main.mainContainer' ),
 
         getSelector: function() {
             if ( SmartComments.activeSkin === 'gemmaonline' ) {
