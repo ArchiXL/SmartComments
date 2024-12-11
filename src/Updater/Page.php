@@ -68,15 +68,15 @@ class Page {
 		}
 
 		// Loop over each text location to update its location
+		$updater = new TextLocationUpdater( $oldContent, $currentContent );
 		foreach( $this->anchorStore->getTextLocations() as $textLocation ) {
-			$updater = new TextLocationUpdater( $oldContent, $currentContent, $textLocation );
 			try {
-				$newTextLocation = $updater->getNewTextLocation();
+				$newTextLocation = $updater->getNewTextLocation( $textLocation );
 			} catch ( \Exception $e ) {
-				//
+				continue;
 			}
 
-			if ( $newTextLocation instanceof TextLocation ) {
+			if ( $newTextLocation instanceof TextLocation && !$newTextLocation->equals( $textLocation ) ) {
 				$this->anchorStore->updateTextLocation( $newTextLocation );
 			}
 		}
