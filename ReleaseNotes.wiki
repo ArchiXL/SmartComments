@@ -1,3 +1,7 @@
+; Version 2.0.2 (Dec 17, 2024)
+* Minor label changes in specialPage
+* Changed logic to prevent max executiontime error
+
 ; Version 2.0.1 (November 27, 2024)
 * Minor fix in RHS-skin compatability
 
