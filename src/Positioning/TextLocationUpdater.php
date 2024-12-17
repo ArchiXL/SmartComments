@@ -12,18 +12,30 @@ class TextLocationUpdater {
 	/** @var string */
 	private $newText;
 
-	/** @var TextLocation */
-	private $location;
+	private SequenceMatcher $matcher;
+
+	private array $positionMapping;
 
 	/**
 	 * @param string $oldText
 	 * @param string $newText
 	 * @param TextLocation $location
 	 */
-	public function __construct( $oldText, $newText, TextLocation $location ) {
+	public function __construct( $oldText, $newText ) {
 		$this->oldText = $oldText;
 		$this->newText = $newText;
-		$this->location = $location;
+
+
+		// Split texts into arrays of characters
+		$oldChars = $this->splitIntoCharacters( $this->oldText );
+		$newChars = $this->splitIntoCharacters( $this->newText );
+		// Use SequenceMatcher to compute the differences between the old and new texts
+
+		$this->matcher = new SequenceMatcher( $oldChars, $newChars );
+		$matchingBlocks = $this->matcher->getMatchingBlocks();
+
+		// Build mapping from old text positions to new text positions
+		$this->positionMapping = $this->buildPositionMapping( $matchingBlocks );
 	}
 
 	/**
@@ -31,39 +43,28 @@ class TextLocationUpdater {
 	 *
 	 * @return TextLocation
 	 */
-	public function getNewTextLocation(): TextLocation {
-		if ( $this->location->getIndex() === TextLocation::INDEX_DELETED ) {
-			return $this->location;
+	public function getNewTextLocation( TextLocation $location ): TextLocation {
+		if ( $location->getIndex() === TextLocation::INDEX_DELETED ) {
+			return $location;
 		}
 
-		$annotatedString = $this->location->getString();
-		$annotatedIndex = $this->location->getIndex();
+		$annotatedString = $location->getString();
+		$annotatedIndex = $location->getIndex();
 
 		// Find positions of the annotated string in the old text
 		$oldPositions = $this->findStringPositions( $this->oldText, $annotatedString );
 		if ( !isset( $oldPositions[ $annotatedIndex ] ) ) {
 			// Annotated string not found at the specified index in old text
-			$this->location->setIndex( TextLocation::INDEX_DELETED );
-			return $this->location;
+			$location->setIndex( TextLocation::INDEX_DELETED );
+			return $location;
 		}
 
 		// Get the start position of the annotated string in the old text
 		$oldStartPos = $oldPositions[ $annotatedIndex ];
 
-		// Split texts into arrays of characters
-		$oldChars = $this->splitIntoCharacters( $this->oldText );
-		$newChars = $this->splitIntoCharacters( $this->newText );
-
-		// Use SequenceMatcher to compute the differences between the old and new texts
-		$matcher = new SequenceMatcher( $oldChars, $newChars );
-		$matchingBlocks = $matcher->getMatchingBlocks();
-
-		// Build mapping from old text positions to new text positions
-		$positionMapping = $this->buildPositionMapping( $matchingBlocks );
-
 		// Map the old start position to the new text
-		if ( isset( $positionMapping[ $oldStartPos ] ) ) {
-			$newStartPos = $positionMapping[ $oldStartPos ];
+		if ( isset( $this->positionMapping[ $oldStartPos ] ) ) {
+			$newStartPos = $this->positionMapping[ $oldStartPos ];
 
 			// Check if the annotated string exists at the new position
 			$substring = mb_substr( $this->newText, $newStartPos, mb_strlen( $annotatedString ) );
@@ -71,17 +72,17 @@ class TextLocationUpdater {
 				// Find the new index (occurrence number) of the annotated string
 				$newPositions = $this->findStringPositions( $this->newText, $annotatedString );
 				$newIndex = array_search( $newStartPos, $newPositions );
-				$this->location->setIndex( $newIndex );
-				return $this->location;
+				$location->setIndex( $newIndex );
+				return $location;
 			} else {
 				// Annotated string was modified
-				$this->location->setIndex( TextLocation::INDEX_DELETED );
-				return $this->location;
+				$location->setIndex( TextLocation::INDEX_DELETED );
+				return $location;
 			}
 		} else {
 			// Annotated string was deleted
-			$this->location->setIndex( TextLocation::INDEX_DELETED );
-			return $this->location;
+			$location->setIndex( TextLocation::INDEX_DELETED );
+			return $location;
 		}
 	}
 

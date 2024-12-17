@@ -50,4 +50,13 @@ class TextLocation {
 		return $this->dbId;
 	}
 
+	/**
+	 * checks if the given location is equal to this location
+	 *
+	 * @param TextLocation $location
+	 * @return bool
+	 */
+	public function equals( TextLocation $location ): bool {
+		return $this->word === $location->word && $this->index === $location->index && $this->dbId === $location->dbId;
+	}
 }

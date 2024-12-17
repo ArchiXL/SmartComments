@@ -10,11 +10,10 @@ use MediaWiki\Extension\SmartComments\Positioning\TextLocation;
 
 class ParserhookUpdater extends TestCase
 {
-	private function getLocationUpdater( $old, $new, $location ): TextLocationUpdater {
+	private function getLocationUpdater( $old, $new ): TextLocationUpdater {
 		return new TextLocationUpdater(
 			$old,
 			$new,
-			$location
 		);
 	}
 
@@ -40,8 +39,8 @@ class ParserhookUpdater extends TestCase
 				"Test case #{$index}: Expected word '{$string}', got {$location->getString()}"
 			);
 
-			$locationUpdater = $this->getLocationUpdater( $old, $new, $location );
-			$newLocation = $locationUpdater->getNewTextLocation();
+			$locationUpdater = $this->getLocationUpdater( $old, $new, );
+			$newLocation = $locationUpdater->getNewTextLocation( $location );
 
 			$this->assertEquals(
 				$newIndex,
