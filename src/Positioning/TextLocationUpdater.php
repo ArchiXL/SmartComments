@@ -12,10 +12,9 @@ class TextLocationUpdater {
 	/** @var string */
 	private $newText;
 
-	/** @var TextLocation */
-	private $matcher;
+	private SequenceMatcher $matcher;
 
-	private $positionMapping;
+	private array $positionMapping;
 
 	/**
 	 * @param string $oldText
