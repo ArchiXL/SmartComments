@@ -39,7 +39,7 @@ class DBHandler {
 		$modifiedDateTimeString = $modifiedDateTime->format(self::DB_TIMESTAMPFORMAT);
 		//Note: we use UTC for dates in the database, and convert to localtime in api
 
-		$dbr = wfGetDB(DB_MASTER);
+		$dbr = wfGetDB(DB_PRIMARY);
 		//First insert comment data
 		$columns = [self::DB_COLUMN_TEXT, self::DB_COLUMN_AUTHOR, self::DB_COLUMN_DATETIME, self::DB_COLUMN_MODIFIEDBY, self::DB_COLUMN_MODIFIEDDATETIME];
 		$values = [$text, $authorId, $dateTimeString, $modifierId, $modifiedDateTimeString];
