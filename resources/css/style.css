@@ -223,7 +223,7 @@ div.smartcomment-commentgroup .oo-ui-toolbar-position-top {
 div.smartcomment-commentgroup > div.oo-ui-toolbar > div.oo-ui-toolbar-bar {
   background-color: #ffe;
 }
-div.smartcomment-commentgroup > div.container {
+div.smartcomment-commentgroup > div.sic-container {
   max-width: 100%;
   width: 100%;
   overflow-y: auto;
@@ -239,14 +239,14 @@ div.smartcomment-commentgroup > div.container {
     }
   */
 }
-div.smartcomment-commentgroup > div.container hr {
+div.smartcomment-commentgroup > div.sic-container hr {
   margin: 0.5rem 0 1rem 0;
   color: #e6e6e6;
 }
-div.smartcomment-commentgroup > div.container div.smartcomment-comment, div.smartcomment-commentgroup > div.container div.smartcomment-comment-reply {
+div.smartcomment-commentgroup > div.sic-container div.smartcomment-comment, div.smartcomment-commentgroup > div.sic-container div.smartcomment-comment-reply {
   padding: 1em 0.5em !important;
 }
-div.smartcomment-commentgroup > div.container div.smartcomment-comment div.meta, div.smartcomment-commentgroup > div.container div.smartcomment-comment-reply div.meta {
+div.smartcomment-commentgroup > div.sic-container div.smartcomment-comment div.meta, div.smartcomment-commentgroup > div.sic-container div.smartcomment-comment-reply div.meta {
   display: flex;
   flex-direction: row;
   align-content: center;
@@ -255,38 +255,38 @@ div.smartcomment-commentgroup > div.container div.smartcomment-comment div.meta,
   padding-bottom: 5px;
   padding-top: 0.5em;
 }
-div.smartcomment-commentgroup > div.container div.smartcomment-comment div.meta h5, div.smartcomment-commentgroup > div.container div.smartcomment-comment-reply div.meta h5 {
+div.smartcomment-commentgroup > div.sic-container div.smartcomment-comment div.meta h5, div.smartcomment-commentgroup > div.sic-container div.smartcomment-comment-reply div.meta h5 {
   width: 58%;
   font-weight: bold;
   color: #0070ff;
   margin: 0;
 }
-div.smartcomment-commentgroup > div.container div.smartcomment-comment div.meta span.date, div.smartcomment-commentgroup > div.container div.smartcomment-comment-reply div.meta span.date {
+div.smartcomment-commentgroup > div.sic-container div.smartcomment-comment div.meta span.date, div.smartcomment-commentgroup > div.sic-container div.smartcomment-comment-reply div.meta span.date {
   width: 42%;
   text-align: right;
   font-size: 1em;
   color: #999;
 }
-div.smartcomment-commentgroup > div.container div.smartcomment-comment div.comment, div.smartcomment-commentgroup > div.container div.smartcomment-comment-reply div.comment {
+div.smartcomment-commentgroup > div.sic-container div.smartcomment-comment div.comment, div.smartcomment-commentgroup > div.sic-container div.smartcomment-comment-reply div.comment {
   padding: 5px 0;
 }
-div.smartcomment-commentgroup > div.container div.smartcomment-reply {
+div.smartcomment-commentgroup > div.sic-container div.smartcomment-reply {
   margin-top: 1em;
   margin-bottom: -0.35em;
 }
-div.smartcomment-commentgroup > div.container div.smartcomment-reply fieldset {
+div.smartcomment-commentgroup > div.sic-container div.smartcomment-reply fieldset {
   background: #f9f9f9 !important;
   margin: -2em -3em !important;
   padding: 1em !important;
   border-top: 1px solid #ccc;
 }
-div.smartcomment-commentgroup > div.container div.smartcomment-comment {
+div.smartcomment-commentgroup > div.sic-container div.smartcomment-comment {
   margin: -1em;
   background: #ffffee;
   padding: 0.5em 1em 1em;
   border-bottom: 1px solid #c3c30e;
 }
-div.smartcomment-commentgroup > div.container div.smartcomment-comment-reply {
+div.smartcomment-commentgroup > div.sic-container div.smartcomment-comment-reply {
   border-bottom: 1px solid #cecece;
   margin: -1em;
 }
@@ -363,11 +363,11 @@ table.sic-tb-allcomments th {
 body.skin-vector .mw-body {
   position: relative;
 }
-body.skin-vector div.smartcomment-panel div.smartcomment-commentgroup div.container {
+body.skin-vector div.smartcomment-panel div.smartcomment-commentgroup div.sic-container {
   width: 89% !important;
   border-top: 1px solid #ccc;
 }
-body.skin-vector div.smartcomment-panel div.smartcomment-commentgroup > div.container div.smartcomment-reply fieldset {
+body.skin-vector div.smartcomment-panel div.smartcomment-commentgroup > div.sic-container div.smartcomment-reply fieldset {
   margin: -1em -2.3em -2em !important;
 }
 body.skin-vector div.smartcomment-panel .sc-broken img {
@@ -433,24 +433,24 @@ body.skin-HetWaterschapshuis #vanillatoasts-container {
 body.skin-HetWaterschapshuis .smartcomment-panel {
   z-index: 99;
 }
-body.skin-HetWaterschapshuis div.smartcomment-commentgroup > div.container {
+body.skin-HetWaterschapshuis div.smartcomment-commentgroup > div.sic-container {
   padding: 1em;
 }
-body.skin-HetWaterschapshuis div.smartcomment-commentgroup > div.container h5 {
+body.skin-HetWaterschapshuis div.smartcomment-commentgroup > div.sic-container h5 {
   font-size: 1.1em;
 }
-body.skin-HetWaterschapshuis div.smartcomment-commentgroup > div.container div.smartcomment-reply fieldset {
+body.skin-HetWaterschapshuis div.smartcomment-commentgroup > div.sic-container div.smartcomment-reply fieldset {
   margin: -2em -2em !important;
 }
 
 body.skin-Chicago .smartcomment-panel {
   right: calc(1.2em + 1px);
 }
-body.skin-Chicago .smartcomment-panel .container.sc-plh {
+body.skin-Chicago .smartcomment-panel .sic-container.sc-plh {
   overflow-x: hidden;
 }
 
-body.skin-gemmaonline div.smartcomment-commentgroup > div.container div.smartcomment-reply {
+body.skin-gemmaonline div.smartcomment-commentgroup > div.sic-container div.smartcomment-reply {
   margin-top: 1em;
   margin-bottom: -0.1em;
   margin-left: 0.5em;

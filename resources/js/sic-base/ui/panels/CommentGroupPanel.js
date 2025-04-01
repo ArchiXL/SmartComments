@@ -232,7 +232,7 @@ SmartComments.Panels.CommentGroup = {
         var contentFrame = new OO.ui.PanelLayout( {
             expanded: false,
             padded: true,
-            classes: [ 'container sc-plh']
+            classes: [ 'sic-container sc-plh']
         } );
 
         if ( this.isBroken ) {
