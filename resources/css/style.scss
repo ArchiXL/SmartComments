@@ -222,7 +222,7 @@ div.smartcomment-commentgroup {
     background-color: #ffe;
   }
   
-  > div.container {
+  > div.sic-container {
     max-width: 100%;
     width: 100%;
     overflow-y: auto;
@@ -379,11 +379,11 @@ body.skin-vector {
     position: relative;
   }
   div.smartcomment-panel {
-    div.smartcomment-commentgroup div.container {
+    div.smartcomment-commentgroup div.sic-container {
       width: 89% !important;
       border-top: 1px solid #ccc;
     }
-    div.smartcomment-commentgroup > div.container div.smartcomment-reply fieldset{
+    div.smartcomment-commentgroup > div.sic-container div.smartcomment-reply fieldset{
       margin: -1em -2.3em -2em !important;
     }
     .sc-broken {
@@ -456,13 +456,13 @@ body.skin-HetWaterschapshuis {
   .smartcomment-panel {
     z-index: 99;
   }
-  div.smartcomment-commentgroup > div.container {
+  div.smartcomment-commentgroup > div.sic-container {
     padding: 1em;
     h5 {
       font-size: 1.1em;
     }
   }
-  div.smartcomment-commentgroup > div.container div.smartcomment-reply fieldset {
+  div.smartcomment-commentgroup > div.sic-container div.smartcomment-reply fieldset {
     margin: -2em -2em !important;
   }
 }
@@ -470,14 +470,14 @@ body.skin-HetWaterschapshuis {
 body.skin-Chicago {
   .smartcomment-panel {
     right: calc(1.2em + 1px);
-    .container.sc-plh {
+    .sic-container.sc-plh {
       overflow-x: hidden;
     }
   }
 }
 
 body.skin-gemmaonline {
-  div.smartcomment-commentgroup > div.container div.smartcomment-reply {
+  div.smartcomment-commentgroup > div.sic-container div.smartcomment-reply {
     margin-top: 1em;
     margin-bottom: -0.1em;
     margin-left: 0.5em;
