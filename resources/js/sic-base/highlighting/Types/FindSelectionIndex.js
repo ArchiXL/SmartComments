@@ -31,9 +31,10 @@ SmartComments.Highlighting.Types.FindSelectionIndex = {
 	 * @return {*}
 	 */
 	highlight: function () {
-		var pos = this.comment.pos.split( '|' ),
-			word = pos[ 0 ].replace( /&lt;/g, '<' ).replace( /&gt;/g, '>' ),
-			index = parseInt( pos[ 1 ] ),
+		var lastPipePos = this.comment.pos.lastIndexOf( '|' ),
+			text = this.comment.pos.substring(0, lastPipePos),
+			index = parseInt( this.comment.pos.substring( lastPipePos + 1 ), 10 ),
+			word = text.replace(/&lt;/g, '<').replace(/&gt;/g, '>'),
 			baseEl = SmartComments.getNodeRoot(),
 			range = rangy.createRange(),
 			searchScopeRange = rangy.createRange(),
