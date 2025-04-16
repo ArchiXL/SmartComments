@@ -1,0 +1,30 @@
+<testcase>
+    <testcase>
+        <data>
+            <anchor_id>18</anchor_id>
+            <data_id>23</data_id>
+            <page_id>13639</page_id>
+            <rev_id>75816</rev_id>
+            <pos>{{Afbeelding|Afbeeldingnaam.png|links|200px}}|0</pos>
+            <status>open</status>
+            <posimg>/images/nora2//sic-images//678ef5a2bd.jpeg</posimg>
+            <hasReplies>false</hasReplies>
+        </data>
+        <pos>0</pos>
+        <word>{{Afbeelding|Afbeeldingnaam.png|links|200px}}</word>
+    </testcase>
+    <testcase>
+        <data>
+            <anchor_id>18</anchor_id>
+            <data_id>23</data_id>
+            <page_id>13639</page_id>
+            <rev_id>75816</rev_id>
+            <pos>The Rijksmuseum|0</pos>
+            <status>open</status>
+            <posimg>/images/nora2//sic-images//678ef5a2bd.jpeg</posimg>
+            <hasReplies>false</hasReplies>
+        </data>
+        <pos>0</pos>
+        <word>The Rijksmuseum</word>
+    </testcase>
+</testcase>
