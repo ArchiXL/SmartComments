@@ -35,8 +35,11 @@ class AnchorStore {
 	 * @return void
 	 */
 	private function addTextLocation( array $anchor ): void {
-		$posExploded = explode( '|', $anchor['pos'] );
-		$this->textLocations[] = new TextLocation( $posExploded[0], $posExploded[1], $anchor['anchor_id'] );
+		$lastPipePos = strrpos( $anchor['pos'], '|' );
+		$position = substr( $anchor['pos'], $lastPipePos + 1 );
+		$text = substr( $anchor['pos'], 0, $lastPipePos );
+
+		$this->textLocations[] = new TextLocation( htmlspecialchars_decode( $text, ENT_QUOTES ), (int)$position, $anchor['anchor_id'] );
 	}
 
 	/**

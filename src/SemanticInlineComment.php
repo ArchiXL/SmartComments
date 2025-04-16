@@ -286,7 +286,7 @@ Class SemanticInlineComment {
 	 * @return void
 	 */
 	public function setPosition($position) {
-		$this->position = $position;
+		$this->position = htmlspecialchars_decode( $position, ENT_QUOTES );
 	}
 
 	/**

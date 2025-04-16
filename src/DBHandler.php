@@ -282,7 +282,7 @@ class DBHandler {
 					self::DB_COLUMN_DATAID => $id,
 					self::DB_COLUMN_PAGEID => $dbResult->{self::DB_COLUMN_PAGEID}, 
 					self::DB_COLUMN_REVID => $dbResult->{self::DB_COLUMN_REVID},
-					self::DB_COLUMN_POS => $dbResult->{self::DB_COLUMN_POS}, 
+					self::DB_COLUMN_POS => htmlspecialchars_decode( $dbResult->{self::DB_COLUMN_POS}, ENT_QUOTES ),
 					self::DB_COLUMN_STATUS => $dbResult->{self::DB_COLUMN_STATUS},
 					self::DB_COLUMN_POSIMG => $dbResult->{self::DB_COLUMN_POSIMG},
 					self::FIELD_HASREPLIES => self::commentHasReplies( $id ) ? 'true' : 'false'
