@@ -1,3 +1,6 @@
+; Version 2.0.4 (Apr 16, 2025)
+* Fixed an issue for selections that contained an pipe char
+
 ; Version 2.0.3 (Apr 1, 2025)
 * Minor changes to naming of SmartComments css classes
 
