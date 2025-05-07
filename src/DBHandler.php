@@ -5,6 +5,7 @@ namespace MediaWiki\Extension\SmartComments;
 use DateTime, User, Title;
 use MediaWiki\Extension\SmartComments\SemanticInlineComment as SIC;
 use MediaWiki\Extension\SmartComments\SpecialPage\CommentsFilter;
+use MediaWiki\MediaWikiServices;
 
 class DBHandler {
 	const DB_TABLE_SIC_DATA = 'sic_data';
@@ -39,7 +40,7 @@ class DBHandler {
 		$modifiedDateTimeString = $modifiedDateTime->format(self::DB_TIMESTAMPFORMAT);
 		//Note: we use UTC for dates in the database, and convert to localtime in api
 
-		$dbr = wfGetDB(DB_PRIMARY);
+		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_PRIMARY );
 		//First insert comment data
 		$columns = [self::DB_COLUMN_TEXT, self::DB_COLUMN_AUTHOR, self::DB_COLUMN_DATETIME, self::DB_COLUMN_MODIFIEDBY, self::DB_COLUMN_MODIFIEDDATETIME];
 		$values = [$text, $authorId, $dateTimeString, $modifierId, $modifiedDateTimeString];
@@ -82,7 +83,7 @@ class DBHandler {
 		$modifiedDateTime = new DateTime($datetime);
 		$modifiedDateTimeString = $modifiedDateTime->format(self::DB_TIMESTAMPFORMAT);
 
-		$dbr = wfGetDB(DB_PRIMARY);
+		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_PRIMARY );
 		$cl_dataId = self::DB_COLUMN_DATAID;
 		$cl_modBy = self::DB_COLUMN_MODIFIEDBY;
 		$cl_modDT = self::DB_COLUMN_MODIFIEDDATETIME;
@@ -112,7 +113,7 @@ class DBHandler {
 		$anchorId = (int) $unsafeAnchorId;
 		$pos = "{$word}|{$index}";
 		$cl_anchorId = self::DB_COLUMN_ANCHORID;
-		$dbr = wfGetDB( DB_PRIMARY );
+		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_PRIMARY );
 		$result = $dbr->update(
 			self::DB_TABLE_SIC_ANCHOR,
 			[ self::DB_COLUMN_POS => $pos ],
@@ -122,8 +123,8 @@ class DBHandler {
 	
 	public static function deleteComment($unsafeCommentId) {
 		$commentId = self::sqlSafe(intval($unsafeCommentId));
-		$dbr = wfGetDB(DB_PRIMARY);
-		
+		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_PRIMARY );
+
 		//Delete the comment data and any replies to the comment
 		$cl_dataId = self::DB_COLUMN_DATAID;
 		$cl_parent = self::DB_COLUMN_PARENT;
@@ -139,7 +140,7 @@ class DBHandler {
 	public static function selectCommentById($unsafeCommentId) {
 		$commentId = self::sqlSafe(intval($unsafeCommentId));
 		global $wgDBprefix;
-		$dbr = wfGetDB(DB_PRIMARY);
+		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_PRIMARY );
 		$tb_data = $wgDBprefix . self::DB_TABLE_SIC_DATA;
 		$tb_anchor = $wgDBprefix . self::DB_TABLE_SIC_ANCHOR;
 		$cl_dataId = self::DB_COLUMN_DATAID;
@@ -227,7 +228,7 @@ class DBHandler {
 	//Keep this function private as it does not validate user input
 	private static function selectCommentsFiltered($filters = null, $author = null) {
 		global $wgDBprefix;
-		$dbr = wfGetDB(DB_PRIMARY);
+		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_PRIMARY );
 		$tb_data = $wgDBprefix . self::DB_TABLE_SIC_DATA;
 		$tb_anchor = $wgDBprefix . self::DB_TABLE_SIC_ANCHOR;
 		$cl_dataId = self::DB_COLUMN_DATAID;
@@ -264,7 +265,7 @@ class DBHandler {
 			$pageId = $title->getArticleID();
 
 			global $wgDBprefix;
-			$dbr = wfGetDB(DB_PRIMARY);
+			$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_PRIMARY );
 			$tb_anchor = $wgDBprefix . self::DB_TABLE_SIC_ANCHOR;
 			$cl_pageid = self::DB_COLUMN_PAGEID;
 			$qs = "SELECT * FROM $tb_anchor WHERE $cl_pageid=$pageId";
@@ -335,7 +336,7 @@ class DBHandler {
 	 * @return array
 	 */
 	public static function getPageIdFromArchive( string $title, int $namespace ): int {
-		$dbr = wfGetDB( DB_REPLICA );
+		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_REPLICA );
 
 		$res = $dbr->newSelectQueryBuilder()
 			->select( [ 'ar_page_id' ] )
@@ -353,7 +354,7 @@ class DBHandler {
 	}
 
 	public static function selectAllAuthors() : array {
-		$dbr = wfGetDB( DB_REPLICA );
+		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_REPLICA );
 
 		$res = $dbr->newSelectQueryBuilder()
 			->select( self::DB_COLUMN_AUTHOR )
@@ -371,7 +372,7 @@ class DBHandler {
 	}
 
 	public static function selectAllPages() : array {
-		$dbr = wfGetDB( DB_REPLICA );
+		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_REPLICA );
 
 		$res = $dbr->newSelectQueryBuilder()
 			->select( self::DB_COLUMN_PAGEID )
@@ -392,7 +393,7 @@ class DBHandler {
 	}
 
 	private static function commentHasReplies( int $commentId ) : bool {
-		$dbr = wfGetDB( DB_REPLICA );
+		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_REPLICA );
 
 		$count = $dbr->selectRowCount(
 			self::DB_TABLE_SIC_DATA,
@@ -411,7 +412,7 @@ class DBHandler {
 	}
 
 	public static function deleteDiffTableEntry( $page_id ) {
-		$dbw = wfGetDB( DB_PRIMARY );
+		$dbw = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_PRIMARY );
 		$dbw->startAtomic( __METHOD__ );
 		$res = $dbw->delete(
 			'sic_diff_table',
@@ -424,7 +425,7 @@ class DBHandler {
 	}
 
 	public static function insertDiffTableEntry( $page_id, $text ) {
-		$dbw = wfGetDB( DB_PRIMARY );
+		$dbw = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_PRIMARY );
 
 		$dbw->startAtomic( __METHOD__ );
 		$res = $dbw->insert(
@@ -439,7 +440,7 @@ class DBHandler {
 	}
 
 	public static function updateDiffTableEntry( $page_id, $text ) {
-		$dbw = wfGetDB( DB_PRIMARY );
+		$dbw = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_PRIMARY );
 		$dbw->startAtomic( __METHOD__ );
 		$res =  $dbw->update(
 			'sic_diff_table',
@@ -456,7 +457,7 @@ class DBHandler {
 	}
 
 	public static function getDiffTableEntryText( int $page_id ) : ?string {
-		$dbr = wfGetDB( DB_REPLICA );
+		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_REPLICA );
 		$result = $dbr->select(
 			'sic_diff_table',
 			'*',

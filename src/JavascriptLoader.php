@@ -2,8 +2,6 @@
 
 namespace MediaWiki\Extension\SmartComments;
 
-use \ResourceLoader;
-
 class JavascriptLoader {
 
 	public static $packageFilesMinified = [
@@ -54,7 +52,7 @@ class JavascriptLoader {
 		"resources/js/sic-base/addons/highlighting/SmartConnectArchiMate.js"
 	];
 
-	public static function register( ResourceLoader $resourceLoader ) {
+	public static function register( $resourceLoader ) {
 		$packageFiles = \RequestContext::getMain()->getRequest()->getText('debug')
 			? self::$packageFiles
 			: self::$packageFilesMinified;
