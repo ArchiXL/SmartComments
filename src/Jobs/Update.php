@@ -22,7 +22,7 @@ class Update extends \Job {
 	 */
 	public function run() {
 		if ( $this->title && $this->title->exists() ) {
-			$wikiPage = \WikiPage::factory( $this->title );
+			$wikiPage = \MediaWiki\MediaWikiServices::getInstance()->getWikiPageFactory()->newFromTitle( $this->title );
 			$pageUpdater = new Page( $wikiPage );
 			$hasComments = $pageUpdater->hasComments();
 			if ( !$pageUpdater->hasComments() ) {

@@ -4,7 +4,7 @@ namespace MediaWiki\Extension\SmartComments;
 
 use MediaWiki\Extension\SmartComments\Jobs\Update;
 use Title, User;
-use SMW\ApplicationFactory;
+use SMW\Services\ServicesFactory;
 use SMW\Subobject;
 use SMW\DIProperty;
 use SMW\DataValueFactory;
@@ -56,7 +56,7 @@ class SMWHandler {
 	public static function createPageUpdateJob($title) {
 		$job = null;
 		if ($title instanceof Title) {
-			$job = ApplicationFactory::getInstance()->newJobFactory()->newUpdateJob(
+			$job = ServicesFactory::getInstance()->newJobFactory()->newUpdateJob(
 				$title,
 				[
 					UpdateJob::FORCED_UPDATE => true,

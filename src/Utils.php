@@ -4,7 +4,7 @@ namespace MediaWiki\Extension\SmartComments;
 
 use SMW\DIWikiPage;
 use SMWDataItem;
-use SMWDIProperty;
+use SMW\DIProperty;
 use SMWQueryProcessor;
 
 class Utils {
@@ -37,7 +37,7 @@ class Utils {
 		$values = [];
 		$store = smwfGetStore();
 		if (!empty($store)) {
-			$property = SMWDIProperty::newFromUserLabel($propertyname, $inverse);
+			$property = DIProperty::newFromUserLabel($propertyname, $inverse);
 			$propvalues = $store->getPropertyValues($page, $property);
 			if (!empty($propvalues)) {
 				foreach ($propvalues as $propvalue) {

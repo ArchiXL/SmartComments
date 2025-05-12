@@ -7,6 +7,8 @@ use MediaWiki\Extension\SmartComments\Settings\Handler;
 use MediaWiki\Extension\SmartComments\Updater\Page;
 use SMW\Subobject;
 use Title;
+use SMW\Store;
+use SMW\SemanticData;
 
 class Hooks {
 
@@ -83,8 +85,8 @@ class Hooks {
 	/**
 	 * This function creates subobjects for all comments posted on the page.
 	 * 
-	 * @param \SMWStore $store
-	 * @param \SMWSemanticData $semanticData
+	 * @param Store $store
+	 * @param SemanticData $semanticData
 	 * @return bool
 	 */
 	public static function addSubobjectsForComments($store, \SMW\SemanticData $semanticData) {
