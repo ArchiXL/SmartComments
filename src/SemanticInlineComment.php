@@ -195,7 +195,7 @@ Class SemanticInlineComment {
 	 * @return mixed
 	 */
 	public function getText() {
-		$parser = MediaWikiServices::getInstance()->getParserFactory()->getInstance();
+		$parser = MediaWikiServices::getInstance()->getParserFactory()->create();
 		return $parser->parse(
 			htmlspecialchars_decode( $this->text ),
 			\Title::newFromText( "{$this->getPage()}_sic_{$this->getId()}" ),
@@ -206,7 +206,7 @@ Class SemanticInlineComment {
 			'skin' => null,
 			'unwrap' => false,
 			'deduplicateStyles' => true,
-			'wrapperDivClass' => [ 'sic-text'],
+			'wrapperDivClass' => 'sic-text',
 		] );
 	}
 
