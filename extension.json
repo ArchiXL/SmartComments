@@ -56,6 +56,45 @@
 			"messages": [
 				"sic-sp-adminbutton-confirm"
 			]
+		},
+		"ext.smartcomments.frontend": {
+			"localBasePath": "",
+			"remoteExtPath": "SmartComments",
+			"packageFiles": [
+				"resources/frontend/js/App.js",
+				"resources/frontend/js/directives/highlightDirective.js",
+				"resources/frontend/js/composables/useHighlight.js",
+				"resources/frontend/js/composables/useComments.js",
+				"resources/frontend/js/composables/useUser.js",
+				"resources/frontend/js/composables/useSmartCommentsSetup.js",
+				"resources/frontend/js/components/HighlightOverlay.vue",
+				"resources/frontend/js/components/ReplyForm.vue",
+				"resources/frontend/js/components/ReplyList.vue",
+				"resources/frontend/js/components/Comment.vue",
+				"resources/frontend/js/components/CommentActions.vue",
+				"resources/frontend/js/components/CommentBody.vue",
+				"resources/frontend/js/components/CommentMessage.vue",
+				"resources/frontend/js/SmartComments.vue"
+			],
+			"styles": [
+				"resources/frontend/less/smartcomments.less"
+			],
+			"dependencies": [
+				"ext.smartcomments.upstream"
+			]
+		},
+		"ext.smartcomments.upstream": {
+			"localBasePath": "",
+			"remoteExtPath": "SmartComments",
+			"scripts": [
+				"resources/js/node_modules/rangy/lib/rangy-core.js",
+				"resources/js/node_modules/rangy/lib/rangy-classapplier.js",
+				"resources/js/node_modules/rangy/lib/rangy-highlighter.js",
+				"resources/js/node_modules/rangy/lib/rangy-serializer.js",
+				"resources/js/node_modules/rangy/lib/rangy-textrange.js",
+				"resources/js/node_modules/rangy/lib/rangy-selectionsaverestore.js",
+				"resources/js/node_modules/html2canvas/dist/html2canvas.js"
+			]
 		}
 	},
 	"AvailableRights": [

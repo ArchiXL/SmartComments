@@ -1,0 +1,86 @@
+.smartcomments-side-panel {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 310px;
+    overflow: hidden;
+    overflow-y: auto;
+    background: #fff;
+    border-bottom: 1px solid #ccc;
+    border-top: 1px solid #ccc;
+
+    .smartcomments-commentgroup {
+        z-index: 3;
+        border-left: 3px solid #f6c343;
+        background: #ffffee;
+
+        .smartcomments-comment-actions {
+            border-bottom: 1px solid #c8ccd1;
+            box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .smartcomments-message,
+        .smartcomments-reply-form {
+            padding: .5em 1em;
+        }
+
+        .smartcomments-message {
+            border-bottom: 1px dotted #ccc;
+
+            .smartcomments-message-header {
+                border-bottom: 1px dotted #ccc;
+                display: flex;
+                padding: .5em 0;
+
+                .smartcomments-message-header-author {
+                    flex-grow: 1;
+
+                    a {
+                        font-weight: bold;
+                        color: #0070ff;
+                        cursor: pointer;
+                    }
+                }
+
+                .smartcomments-message-header-date {
+                    text-align: right;
+                    color: #999;
+                }
+            }
+        }
+
+        .smartcomments-reply-list {
+            background: #fff;
+        }
+
+        .smartcomments-reply-form {
+            padding-bottom: 1em;
+            background: #f9f9f9;
+            border-top: 1px solid #ccc;
+
+            textarea {
+                border: 1px solid #a2a9b1;
+                border-radius: 2px;
+                padding: 5px 8px;
+                font-family: inherit;
+                resize: vertical;
+                margin-bottom: .5em;
+            }
+
+            button {
+                background-color: #f8f9fa;
+                color: #202122;
+                border: 1px solid #a2a9b1;
+                border-radius: 2px;
+                padding: .5em;
+                font-weight: bold;
+                cursor: pointer;
+
+                &:hover {
+                    background: #fff;
+                    ;
+                }
+            }
+        }
+    }
+}
