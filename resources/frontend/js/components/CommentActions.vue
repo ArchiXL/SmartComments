@@ -2,7 +2,7 @@
     <div class="smartcomments-comment-actions">
         <div class="smartcomments-comment-actions-item" v-for="action in actions" :key="action.icon">
             <button class="smartcomments-comment-actions-item-button" @click="action.action">
-                <i :class="action.icon"></i>
+                <span class="oo-ui-iconElement-icon" :class="action.icon"></span>
                 <span class="smartcomments-visually-hidden" v-html="action.label"></span>
             </button>
         </div>
@@ -24,38 +24,38 @@ module.exports = defineComponent({
         return {
             actions: [
                 {
-                    icon: 'fas fa-times',
+                    icon: 'oo-ui-icon-close',
                     label: 'sluiten',
                     action: () => {
                         this.$emit('close');
                     }
                 },
                 {
-                    icon: 'fas fa-check',
+                    icon: 'oo-ui-icon-check',
                     label: 'markeren als afgehandeld',
                     action: () => {
-                        this.comment.markAsHandled();
+                        this.$emit('complete', this.comment);
                     }
                 },
                 {
-                    icon: 'fas fa-trash',
+                    icon: 'oo-ui-icon-trash',
                     label: 'verwijderen',
                     action: () => {
-                        this.comment.delete();
+                        this.$emit('delete', this.comment);
                     }
                 },
                 {
-                    icon: 'fas fa-articles',
+                    icon: 'oo-ui-icon-articles',
                     label: 'Paginaoverzicht bekijken',
                     action: () => {
-                        this.comment.viewPage();
+                        this.$emit('view', this.comment);
                     }
                 }
             ]
         }
     },
     created() {
-        console.log('CommentActions created');
+        console.log('CommentActions created', this.comment);
     }
 })
 </script>

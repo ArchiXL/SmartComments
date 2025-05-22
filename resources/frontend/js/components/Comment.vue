@@ -1,9 +1,22 @@
 <template>
     <div class="smartcomments-side-panel">
         <div class="smartcomments-commentgroup">
-            <comment-actions @close="$emit('close')"></comment-actions>
+            <!-- Actions -->
+            <comment-actions 
+                @close="$emit('close')" 
+                @delete="$emit('delete', $event)"
+                @complete="$emit('complete', $event)" 
+                @view="$emit('view', $event)"
+                :comment="comment"
+            ></comment-actions>
+
+            <!-- Body -->
             <comment-body :comment="comment"></comment-body>
+
+            <!-- Replies -->
             <reply-list :replies="comment.replies"></reply-list>
+
+            <!-- Reply form -->
             <reply-form></reply-form>
         </div>
     </div>
@@ -30,7 +43,7 @@ module.exports = defineComponent({
             required: true,
         },
     },
-    emits: ['close'],
+    emits: ['close', 'delete', 'complete', 'view'],
     methods: {
         handleReplySubmitted() {
             // Optionally, refresh the reply list or give user feedback

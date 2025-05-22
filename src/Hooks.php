@@ -41,8 +41,7 @@ class Hooks {
 	 */
 	public static function onBeforePageDisplay( \OutputPage $out, \Skin $skin ) {
 		if ( $out->getUser()->isRegistered() && $out->isArticle() ) {
-			// $out->addModuleStyles( [ 'oojs-ui.styles.icons-editing-core', 'oojs-ui.styles.icons-moderation', 'oojs-ui.styles.icons-alerts' ] );
-			// $out->addModules( 'ext.smartcomments' );
+			$out->addModuleStyles( [ 'oojs-ui.styles.icons-editing-core', 'oojs-ui.styles.icons-moderation', 'oojs-ui.styles.icons-alerts' ] );
 			$out->addHTML( '<div id="smartcomments-app"></div>' );
 			$out->addModules( 'ext.smartcomments.frontend' );
 		}
