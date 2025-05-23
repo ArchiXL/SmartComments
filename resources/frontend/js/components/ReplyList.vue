@@ -32,3 +32,9 @@ module.exports = defineComponent({
     }
 });
 </script>
+
+<style lang="less">
+.smartcomments-reply-list {
+    background: #fff;
+}
+</style>

@@ -40,3 +40,34 @@ module.exports = defineComponent({
     }
 });
 </script>
+
+<style lang="less">
+.smartcomments-message {
+    padding: .5em 1em;
+    border-bottom: 1px dotted #ccc;
+    font-size: .85em;
+
+    .smartcomments-message-header {
+        border-bottom: 1px dotted #ccc;
+        display: flex;
+        padding: .5em 0;
+        align-items: center;
+
+        .smartcomments-message-header-author {
+            flex-grow: 1;
+
+            a {
+                font-weight: bold;
+                color: #0070ff;
+                cursor: pointer;
+            }
+        }
+
+        .smartcomments-message-header-date {
+            text-align: right;
+            color: #999;
+            font-size: .90em;
+        }
+    }
+}
+</style>

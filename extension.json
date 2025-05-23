@@ -34,6 +34,7 @@
 	"Hooks": {
 		"LoadExtensionSchemaUpdates": "MediaWiki\\Extension\\SmartComments\\SchemaUpdates::onLoadExtensionSchemaUpdates",
 		"BeforePageDisplay": "MediaWiki\\Extension\\SmartComments\\Hooks::onBeforePageDisplay",
+		"SkinAfterBottomScripts": "MediaWiki\\Extension\\SmartComments\\Hooks::onSkinAfterBottomScripts",
 		"SkinTemplateNavigation::Universal": "MediaWiki\\Extension\\SmartComments\\Hooks::onSkinTemplateNavigation",
 		"ResourceLoaderGetConfigVars": "MediaWiki\\Extension\\SmartComments\\Hooks::onResourceLoaderGetConfigVars",
 		"SMW::Property::initProperties": "MediaWiki\\Extension\\SmartComments\\SMWHandler::initProperties",

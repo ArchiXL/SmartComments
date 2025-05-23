@@ -35,3 +35,36 @@ module.exports = defineComponent({
     }
 });
 </script>
+
+<style lang="less">
+.smartcomments-reply-form {
+    padding: .5em 1em 1em;
+    background: #f9f9f9;
+    border-top: 1px solid #ccc;
+    font-size: .85em;
+
+    textarea {
+        border: 1px solid #a2a9b1;
+        border-radius: 2px;
+        padding: 5px 8px;
+        font-family: inherit;
+        resize: vertical;
+        margin-bottom: .5em;
+        min-height: 75px;
+    }
+
+    button {
+        background-color: #f8f9fa;
+        color: #202122;
+        border: 1px solid #a2a9b1;
+        border-radius: 2px;
+        padding: .5em;
+        font-weight: bold;
+        cursor: pointer;
+
+        &:hover {
+            background: #fff;
+        }
+    }
+}
+</style>

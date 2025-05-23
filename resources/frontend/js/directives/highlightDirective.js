@@ -53,7 +53,20 @@ function applyHighlights(scopeElement, highlights, onClick) {
             if (onClick && typeof onClick === 'function') {
                 const clickHandler = (event) => {
                     event.stopPropagation(); // Prevent event from bubbling up
-                    onClick(highlightData.comment); // Pass the full comment object's rawComment part
+
+                    // Get the position of the clicked element
+                    const rect = targetEl.getBoundingClientRect();
+                    const position = {
+                        top: rect.top + window.scrollY,
+                        left: rect.left + window.scrollX,
+                        bottom: rect.bottom + window.scrollY,
+                        right: rect.right + window.scrollX,
+                        width: rect.width,
+                        height: rect.height
+                    };
+
+                    // Pass both comment data and position to the onClick callback
+                    onClick(highlightData.comment, position); // Pass the full comment object's rawComment part and position
                 };
                 targetEl.addEventListener('click', clickHandler);
                 targetEl.style.cursor = 'pointer'; // Indicate clickable

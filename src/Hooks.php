@@ -42,8 +42,22 @@ class Hooks {
 	public static function onBeforePageDisplay( \OutputPage $out, \Skin $skin ) {
 		if ( $out->getUser()->isRegistered() && $out->isArticle() ) {
 			$out->addModuleStyles( [ 'oojs-ui.styles.icons-editing-core', 'oojs-ui.styles.icons-moderation', 'oojs-ui.styles.icons-alerts' ] );
-			$out->addHTML( '<div id="smartcomments-app"></div>' );
 			$out->addModules( 'ext.smartcomments.frontend' );
+		}
+		return true;
+	}
+
+	/**
+	 * Adds the SmartComments app div at the bottom of the body tag
+	 *
+	 * @param \Skin $skin
+	 * @param string &$text
+	 * @return bool
+	 */
+	public static function onSkinAfterBottomScripts( \Skin $skin, &$text ) {
+		$out = $skin->getOutput();
+		if ( $out->getUser()->isRegistered() && $out->isArticle() ) {
+			$text .= '<div id="smartcomments-app"></div>';
 		}
 		return true;
 	}

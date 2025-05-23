@@ -1,5 +1,5 @@
 <template>
-    <div class="smartcomments-side-panel">
+    <div class="smartcomments-side-panel" :style="panelStyle">
         <div class="smartcomments-commentgroup">
             <!-- Actions -->
             <comment-actions 
@@ -42,8 +42,42 @@ module.exports = defineComponent({
             type: Object,
             required: true,
         },
+        position: {
+            type: Object,
+            default: null,
+        },
     },
     emits: ['close', 'delete', 'complete', 'view'],
+    computed: {
+        panelStyle() {
+            if (!this.position) {
+                console.warn('Comment panel: No position data, using default positioning');
+                return {
+                    top: '0',
+                };
+            }
+            
+            // Calculate position to place the comment panel next to the highlighted element
+            // We'll position it to the right of the element, or to the left if there's not enough space
+            const viewportHeight = window.innerHeight;
+            const panelEstimatedHeight = 200;
+            
+            let top;
+            
+            // Position vertically aligned with the top of the element
+            // But ensure it doesn't go off the bottom of the viewport
+            top = this.position.top;
+            const maxTop = window.scrollY + viewportHeight - panelEstimatedHeight - 20;
+            if (top > maxTop) {
+                top = Math.max(window.scrollY + 10, maxTop);
+            }
+            
+            return {
+                top: `${top}px`,
+            };
+            
+        },
+    },
     methods: {
         handleReplySubmitted() {
             // Optionally, refresh the reply list or give user feedback
@@ -55,3 +89,23 @@ module.exports = defineComponent({
     }
 });
 </script>
+
+<style lang="less">
+.smartcomments-side-panel {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 310px;
+    overflow: hidden;
+    overflow-y: auto;
+    background: #fff;
+    border-bottom: 1px solid #ccc;
+    border-top: 1px solid #ccc;
+
+    .smartcomments-commentgroup {
+        z-index: 3;
+        border-left: 3px solid #f6c343;
+        background: #ffffee;
+    }
+}
+</style>
