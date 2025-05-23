@@ -67,6 +67,9 @@
 				"resources/frontend/js/composables/useHighlight.js",
 				"resources/frontend/js/composables/useComments.js",
 				"resources/frontend/js/composables/useUser.js",
+				"resources/frontend/js/composables/useSelection.js",
+				"resources/frontend/js/composables/useSelectionEvents.js",
+				"resources/frontend/js/utils/selectionUtils.js",
 				"resources/frontend/js/composables/useSmartCommentsSetup.js",
 				"resources/frontend/js/components/HighlightOverlay.vue",
 				"resources/frontend/js/components/ReplyForm.vue",
@@ -75,6 +78,7 @@
 				"resources/frontend/js/components/CommentActions.vue",
 				"resources/frontend/js/components/CommentBody.vue",
 				"resources/frontend/js/components/CommentMessage.vue",
+				"resources/frontend/js/components/NewCommentDialog.vue",
 				"resources/frontend/js/SmartComments.vue"
 			],
 			"styles": [

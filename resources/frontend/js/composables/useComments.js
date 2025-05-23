@@ -73,11 +73,17 @@ function useComments() {
         error.value = null;
 
         try {
+            console.log('fetchComments: Starting to fetch comments for page:', mw.config.get('wgPageName'));
+
             const data = await apiRequest('lista', {
                 page: mw.config.get('wgPageName')
             });
 
+            console.log('fetchComments: API response received:', data);
+
             const rawAnchors = data.smartcomments?.anchors || [];
+            console.log('fetchComments: Raw anchors found:', rawAnchors);
+
             comments.value = rawAnchors.map(anchor => {
                 const processedAnchor = { ...anchor };
 
@@ -92,6 +98,8 @@ function useComments() {
                 // formatCommentsForHighlighting should filter these out.
                 return processedAnchor;
             });
+
+            console.log('fetchComments: Processed comments:', comments.value);
             isLoading.value = false;
         } catch (err) {
             error.value = err;
@@ -122,31 +130,63 @@ function useComments() {
     /**
      * Create a new comment
      * @param {string} text - The comment text
+     * @param {Object} selectionData - Optional selection data (if not provided, will use current selection)
      * @returns {Promise<ApiResponse>} - The result of the operation
      */
-    const saveComment = async (text) => {
+    const saveComment = async (text, selectionData = null) => {
         try {
-            // Get the current selection
-            const selection = window.getSelection();
-            const selectionString = selection.toString();
-            const range = selection.getRangeAt(0);
+            let posString, parentId = '', image = '';
 
-            // Check if selection is valid
-            if (!selectionString && mw.config.get('wgCanonicalSpecialPageName') !== 'SmartComments') {
-                return {
-                    success: '0',
-                    message: 'selection-error'
+            if (selectionData) {
+                // Use provided selection data and set global SmartComments.Selection for backward compatibility
+                if (typeof window.SmartComments === 'undefined') {
+                    window.SmartComments = {};
+                }
+                if (typeof window.SmartComments.Selection === 'undefined') {
+                    window.SmartComments.Selection = {};
+                }
+
+                // Set the selection object that the old API expects
+                window.SmartComments.Selection.selection = {
+                    text: selectionData.text || '',
+                    index: selectionData.index || 0,
+                    type: selectionData.type || 'text'
                 };
+                window.SmartComments.Selection.parent = selectionData.parentId || '';
+                window.SmartComments.Selection.image = selectionData.image || '';
+
+                // Build posString like the old API does
+                if (typeof selectionData.text === 'string') {
+                    posString = selectionData.index !== undefined
+                        ? `${selectionData.text}|${selectionData.index}`
+                        : selectionData.text;
+                } else {
+                    posString = selectionData.text || '';
+                }
+
+                parentId = selectionData.parentId || '';
+                image = selectionData.image || '';
+            } else {
+                // Get the current selection (legacy behavior)
+                const selection = window.getSelection();
+                const selectionString = selection.toString();
+
+                // Check if selection is valid
+                if (!selectionString && mw.config.get('wgCanonicalSpecialPageName') !== 'SmartComments') {
+                    return {
+                        success: '0',
+                        message: 'selection-error'
+                    };
+                }
+
+                const range = selection.getRangeAt(0);
+                posString = selectionString;
+                parentId = range.startContainer.parentElement?.id || '';
+                image = document.querySelector('img.selected')?.src || '';
             }
 
-            // Get parent element if available
-            const parentId = range.startContainer.parentElement?.id || '';
-
-            // Get image data if available
-            const image = document.querySelector('img.selected')?.src || '';
-
             const data = await apiRequest('new', {
-                pos: selectionString,
+                pos: posString,
                 comment: parentId,
                 text: text,
                 page: mw.config.get('wgPageName'),

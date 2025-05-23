@@ -12,7 +12,10 @@ const { useHighlight } = require('./useHighlight.js');
  * @returns {Array<Object|null>} Array of formatted highlight objects.
  */
 function formatCommentsForHighlighting(commentsArray) {
-    return commentsArray.map(comment => {
+    console.log('formatCommentsForHighlighting called with:', commentsArray);
+
+    return commentsArray.map((comment, index) => {
+        console.log(`Processing comment ${index}:`, comment);
         let pos;
 
         // Ensure comment object and its properties are valid before accessing
@@ -29,13 +32,36 @@ function formatCommentsForHighlighting(commentsArray) {
                     // For example, if posimg is a hash: `img[data-image-hash='${comment.posimg}']`
                     // If posimg is part of the src: `img[src*='${comment.posimg}']`
                     pos = `img[src*='${comment.posimg}']`; // Assuming posimg is part of the src URL
+                } else {
+                    // For jQuery type, use comment.pos directly if no selector/posimg
+                    pos = comment.pos;
                 }
             }
+        } else if (comment && comment.pos) {
+            // If no highlight_type is set but pos exists, try to determine the type
+            console.warn(`Comment ${index} has no highlight_type but has pos:`, comment.pos, 'Attempting to determine type...');
+
+            if (comment.pos.includes('|')) {
+                comment.highlight_type = 'wordIndex';
+                pos = comment.pos;
+            } else if (comment.pos.includes('[') && comment.pos.includes(']')) {
+                comment.highlight_type = 'jQuery';
+                pos = comment.pos;
+            } else if (comment.pos.includes('img[')) {
+                comment.highlight_type = 'jQuery';
+                pos = comment.pos;
+            } else {
+                // Default to wordIndex for text-based positions
+                comment.highlight_type = 'wordIndex';
+                pos = comment.pos;
+            }
+
+            console.log(`Determined highlight_type: ${comment.highlight_type} for comment ${index}`);
         }
 
         // Ensure comment object, data_id, and a valid pos are present
         if (comment && comment.data_id && typeof pos !== 'undefined') {
-            return {
+            const highlightObj = {
                 type: comment.highlight_type,
                 comment: {
                     pos: comment.pos,
@@ -43,9 +69,24 @@ function formatCommentsForHighlighting(commentsArray) {
                     rawComment: comment // Include the full comment object
                 }
             };
+            console.log(`Created highlight object for comment ${index}:`, highlightObj);
+            return highlightObj;
+        } else {
+            console.warn(`Filtering out comment ${index} - missing required fields:`, {
+                hasComment: !!comment,
+                hasDataId: !!(comment && comment.data_id),
+                hasPos: typeof pos !== 'undefined',
+                comment: comment
+            });
+            return null; // Return null for invalid or incomplete comments to filter them out
         }
-        return null; // Return null for invalid or incomplete comments to filter them out
-    }).filter(highlight => highlight !== null); // Filter out any null values
+    }).filter(highlight => {
+        const isValid = highlight !== null;
+        if (!isValid) {
+            console.log('Filtered out null highlight');
+        }
+        return isValid;
+    }); // Filter out any null values
 }
 
 /**
@@ -54,20 +95,48 @@ function formatCommentsForHighlighting(commentsArray) {
  * @returns {Object} State and functions for smart comments.
  */
 function useSmartCommentsSetup() {
-    const { comments, fetchComments, isLoading, error } = useComments();
-    const { highlightedAnchors, setHighlights } = useHighlight();
+    const commentsComposable = useComments();
+    const highlightComposable = useHighlight();
+
+    // Destructure with fallbacks
+    const {
+        comments = ref([]),
+        fetchComments = () => { },
+        isLoading = ref(false),
+        error = ref(null)
+    } = commentsComposable || {};
+
+    const {
+        highlightedAnchors = ref([]),
+        setHighlights = () => { }
+    } = highlightComposable || {};
+
+    console.log('useSmartCommentsSetup initialized - isLoading:', isLoading, 'error:', error);
 
     const loadAndSetHighlights = async () => {
-        await fetchComments(); // Fetch comments using useComments
-        const formattedHighlights = formatCommentsForHighlighting(comments.value);
-        setHighlights(formattedHighlights);
+        console.log('loadAndSetHighlights called - starting fetch...');
+        try {
+            await fetchComments(); // Fetch comments using useComments
+            console.log('Comments fetched:', comments.value);
+
+            const formattedHighlights = formatCommentsForHighlighting(comments.value);
+            console.log('Formatted highlights:', formattedHighlights);
+
+            setHighlights(formattedHighlights);
+            console.log('Highlights set. Current highlightedAnchors:', highlightedAnchors.value);
+        } catch (err) {
+            console.error('Error in loadAndSetHighlights:', err);
+        }
     };
 
-    onMounted(() => {
-        console.log('SmartComments setup initiated from useSmartCommentsSetup');
+    onMounted(async () => {
+        console.log('SmartComments setup onMounted - checking if enabled...');
         // Check if scenabled=1 is in the URL to enable features
         if (window.location.href.indexOf('scenabled=1') !== -1) {
-            loadAndSetHighlights();
+            console.log('SmartComments enabled - loading highlights...');
+            await loadAndSetHighlights();
+        } else {
+            console.log('SmartComments not enabled (missing scenabled=1 in URL)');
         }
     });
 
@@ -75,8 +144,8 @@ function useSmartCommentsSetup() {
         highlightedAnchors, // from useHighlight, to be consumed by the directive
         isLoading,          // from useComments
         error,              // from useComments
-        // comments,        // raw comments, if needed by the component directly
-        // loadAndSetHighlights // if manual refresh is needed
+        comments,           // Expose comments for debugging
+        loadAndSetHighlights // Expose manual refresh capability
     };
 }
 
