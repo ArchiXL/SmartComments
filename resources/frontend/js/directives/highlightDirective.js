@@ -1,16 +1,13 @@
 module.exports = {
     highlightDirective: {
         mounted(el, binding) {
-            console.log('highlightDirective mounted');
             applyHighlights(document.body, binding.value.anchors, binding.value.onClick);
         },
         updated(el, binding) {
-            console.log('highlightDirective updated');
             clearAllHighlights(document.body, binding.oldValue ? binding.oldValue.anchors : []);
             applyHighlights(document.body, binding.value.anchors, binding.value.onClick);
         },
         beforeUnmount(el, binding) {
-            console.log('highlightDirective beforeUnmount');
             clearAllHighlights(document.body, binding.value ? binding.value.anchors : []);
         }
     }
@@ -48,13 +45,18 @@ function applyHighlights(scopeElement, highlights, onClick) {
         const uniqueHighlightClass = `smartcomment-hl-${highlightData.comment.data_id}`;
         const dataCommentId = String(highlightData.comment.data_id); // Ensure it's a string for Map keys
 
-        // Common function to add click listener
-        const addClickListener = (targetEl) => {
+        // Idempotent function to add click listener
+        const ensureClickListenerIsAttached = (targetEl, commentForListener) => {
+            const currentDataCommentId = String(commentForListener.data_id);
+
+            let listenersForId = attachedListeners.get(currentDataCommentId);
+            if (listenersForId && listenersForId.some(l => l.element === targetEl && l.type === 'click')) {
+                return; // Already attached
+            }
+
             if (onClick && typeof onClick === 'function') {
                 const clickHandler = (event) => {
                     event.stopPropagation(); // Prevent event from bubbling up
-
-                    // Get the position of the clicked element
                     const rect = targetEl.getBoundingClientRect();
                     const position = {
                         top: rect.top + window.scrollY,
@@ -64,30 +66,30 @@ function applyHighlights(scopeElement, highlights, onClick) {
                         width: rect.width,
                         height: rect.height
                     };
-
-                    // Pass both comment data and position to the onClick callback
-                    onClick(highlightData.comment, position); // Pass the full comment object's rawComment part and position
+                    onClick(commentForListener, position);
                 };
                 targetEl.addEventListener('click', clickHandler);
                 targetEl.style.cursor = 'pointer'; // Indicate clickable
 
-                if (!attachedListeners.has(dataCommentId)) {
-                    attachedListeners.set(dataCommentId, []);
+                if (!attachedListeners.has(currentDataCommentId)) {
+                    attachedListeners.set(currentDataCommentId, []);
                 }
-                attachedListeners.get(dataCommentId).push({ element: targetEl, handler: clickHandler, type: 'click' });
+                attachedListeners.get(currentDataCommentId).push({ element: targetEl, handler: clickHandler, type: 'click' });
+                console.log(`highlightDirective: Click listener ADDED for comment ID ${currentDataCommentId} on element:`, targetEl);
             }
         };
 
         if (highlightData.type === 'jQuery') {
-            applyJQueryHighlight(scopeElement, highlightData, uniqueHighlightClass, addClickListener);
-        } else {
+            applyJQueryHighlight(scopeElement, highlightData, uniqueHighlightClass, (el) => ensureClickListenerIsAttached(el, highlightData.comment));
+        } else { // Rangy based
             let currentApplier = window.rangy.createClassApplier(uniqueHighlightClass, {
                 ignoreWhiteSpace: true,
                 elementTagName: 'span',
                 normalize: true,
                 onElementCreate: (spanEl, applier) => {
+                    console.log('highlightDirective: onElementCreate fired for comment ID:', dataCommentId, 'spanEl:', spanEl);
                     spanEl.setAttribute('data-comment-id', dataCommentId);
-                    addClickListener(spanEl); // Add click listener to newly created span
+                    ensureClickListenerIsAttached(spanEl, highlightData.comment);
                 }
             });
 
@@ -97,6 +99,20 @@ function applyHighlights(scopeElement, highlights, onClick) {
                 applyWordIndexHighlight(scopeElement, highlightData, currentApplier);
             } else {
                 console.warn('Unknown highlight type:', highlightData.type);
+            }
+
+            // After Rangy application, explicitly find styled elements and ensure listeners.
+            // This is a fallback if onElementCreate didn't fire for all elements or if attributes were missing.
+            const createdOrClassedElements = scopeElement.querySelectorAll(`.${uniqueHighlightClass}`);
+            if (createdOrClassedElements.length > 0) {
+                createdOrClassedElements.forEach(elementNode => {
+                    // Ensure data-comment-id attribute is set (it might not be if onElementCreate didn't fire)
+                    if (!elementNode.getAttribute('data-comment-id')) {
+                        elementNode.setAttribute('data-comment-id', dataCommentId);
+                    }
+                    // Ensure the listener is attached, relying on the idempotency of ensureClickListenerIsAttached.
+                    ensureClickListenerIsAttached(elementNode, highlightData.comment);
+                });
             }
         }
     });
@@ -265,6 +281,11 @@ function applyJQueryHighlight(scopeElement, highlightData, uniqueHighlightClassS
  * @param {Array} [highlightsToClear] - Specific highlights to remove. If not provided, attempts to clear all.
  */
 function clearAllHighlights(scopeElement, highlightsToClear) {
+    console.log('clearAllHighlights called with:', highlightsToClear);
+    if (!highlightsToClear || !Array.isArray(highlightsToClear)) {
+        console.warn('clearAllHighlights: highlightsToClear was not an array or was null/undefined', highlightsToClear);
+        return;
+    }
     if (!window.rangy) return;
 
     const clearListenersForCommentId = (commentIdStr) => {

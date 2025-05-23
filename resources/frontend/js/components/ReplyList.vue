@@ -22,14 +22,6 @@ module.exports = defineComponent({
             required: true,
         },
     },
-    data() {
-        return {
-            replies: this.replies,
-        }
-    },
-    created() {
-        console.log('ReplyList created', this.replies);
-    }
 });
 </script>
 

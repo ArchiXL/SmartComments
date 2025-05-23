@@ -1,7 +1,7 @@
 <template>
     <div class="smartcomments">
-        <HighlightOverlay v-if="isEnabled" v-highlight="{ anchors: highlightedAnchors, onClick: openComment }" />
-        <Comment 
+        <highlight-overlay v-if="isEnabled" v-highlight="{ anchors: highlightedAnchors, onClick: openComment }"></highlight-overlay>
+        <comment 
             v-if="comment" 
             :comment="comment" 
             :position="commentPosition"
@@ -9,7 +9,7 @@
             @delete="deleteComment($event)"
             @complete="completeComment($event)"
             @view="viewPage($event)"
-        />
+        ></comment>
     </div>
 </template>
 
@@ -47,11 +47,11 @@ module.exports = defineComponent({
         const commentPosition = ref(null);
         const comment = ref(null);
         const openComment = async (commentData, position) => {
+            console.log('DEBUG: openComment called with:', commentData, 'at position:', position);
             try {
-                const comment = await getComment(commentData.data_id);
-                console.log('Comment:', comment);
-                if (comment) {
-                    comment.value = comment;
+                const fetchedComment = await getComment(commentData.data_id);
+                if (fetchedComment) {
+                    comment.value = fetchedComment;
                     commentPosition.value = position;
                 } else {
                     console.error('Comment not found:', commentData.data_id);

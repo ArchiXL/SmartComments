@@ -20,13 +20,5 @@ module.exports = defineComponent({
             required: true,
         },
     },
-    data() {
-        return {
-            comment: this.comment,
-        }
-    },
-    created() {
-        console.log('CommentBody created', this.comment);
-    }
 });
 </script>

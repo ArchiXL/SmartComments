@@ -58,9 +58,6 @@ module.exports = defineComponent({
                 }
             ]
         }
-    },
-    created() {
-        console.log('CommentActions created', this.comment);
     }
 })
 </script>

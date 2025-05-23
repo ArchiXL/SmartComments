@@ -1,6 +1,8 @@
 $(document).ready(function () {
-    const Vue = require('vue');
-    const App = require('./SmartComments.vue');
+    mw.loader.using('mediawiki.api').then(function () {
+        const Vue = require('vue');
+        const App = require('./SmartComments.vue');
 
-    Vue.createMwApp(App).mount('#smartcomments-app');
+        Vue.createMwApp(App).mount('#smartcomments-app');
+    });
 });

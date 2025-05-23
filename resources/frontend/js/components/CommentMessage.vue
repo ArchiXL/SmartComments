@@ -34,9 +34,6 @@ module.exports = defineComponent({
             }
             return '';
         }
-    },
-    created() {
-        console.log('CommentMessage created. Original comment object:', this.comment);
     }
 });
 </script>

@@ -17,7 +17,7 @@
             <reply-list :replies="comment.replies"></reply-list>
 
             <!-- Reply form -->
-            <reply-form></reply-form>
+            <reply-form :comment="comment"></reply-form>
         </div>
     </div>
 </template>

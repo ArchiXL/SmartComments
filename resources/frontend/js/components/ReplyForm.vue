@@ -7,7 +7,7 @@
             <textarea class="smartcomments-reply-form-body-textarea" v-model="reply" placeholder="Typ hier je bericht..."></textarea>
         </div>
         <div class="smartcomments-reply-form-footer">
-            <button class="smartcomments-reply-form-footer-button" @click="reply">Reactie plaatsen</button>
+            <button class="smartcomments-reply-form-footer-button" @click="submitReply">Reactie plaatsen</button>
         </div>
     </div>
 </template>
@@ -23,14 +23,14 @@ module.exports = defineComponent({
         }
     },
     props: {
-        thread: {
+        comment: {
             type: Object,
             required: true,
         },
     },
     methods: {
-        reply() {
-            this.thread.reply(this.reply);
+        submitReply() {
+            this.comment.reply(this.reply);
         }
     }
 });
