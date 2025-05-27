@@ -2,6 +2,7 @@
  * Selection utilities for SmartComments
  * Maintains compatibility with PHP backend expectations
  */
+const useSmartCommentsStore = require('../store/smartCommentsStore.js');
 
 /**
  * Initialize rangy library if not already available
@@ -50,12 +51,14 @@ function getMediaWikiContentRoot() {
  * @returns {Object} - Validation result with status and message
  */
 function validateSelectionContent(selection) {
-    const VALIDATION_RESULTS = {
-        VALID: { valid: true, code: 0 },
-        ALREADY_COMMENTED: { valid: false, code: 1, message: 'Selection already contains comments' },
-        DYNAMIC_CONTENT: { valid: false, code: 2, message: 'Selection includes dynamic content' },
-        LINEBREAKS: { valid: false, code: 3, message: 'Selection contains line breaks' },
-        EMPTY: { valid: false, code: 4, message: 'Selection is empty' }
+    // SELECTION_ENUMS will be defined in useSelection.js and imported or passed if needed
+    // For now, we assume these codes are understood by the caller (useSelection.js)
+    const VALIDATION_CODES = {
+        VALID: 0,
+        ALREADY_COMMENTED: 1,
+        DYNAMIC_CONTENT: 2,
+        LINEBREAKS: 3,
+        EMPTY: 4
     };
 
     let selectionHTML;
@@ -65,32 +68,54 @@ function validateSelectionContent(selection) {
     } else if (selection && typeof selection.toHtml === 'function') {
         selectionHTML = selection.toHtml();
     } else if (selection && typeof selection.toString === 'function') {
+        // For rangy range objects, toString() gives the plain text. 
+        // toHtml() is better for checking content like smartcomment-hl or sc-dynamic-block.
+        // However, if toHtml is not available, try toString().
+        // Consider if an empty string from toString() should immediately be EMPTY or if HTML check is still useful.
         selectionHTML = selection.toString();
+        if (!selectionHTML && selection.commonAncestorContainer && selection.commonAncestorContainer.nodeType === Node.ELEMENT_NODE && selection.commonAncestorContainer.querySelector('img')) {
+            // If string is empty but it's a range potentially around an image, get outerHTML of ancestor
+            selectionHTML = selection.commonAncestorContainer.outerHTML;
+        }
     } else {
-        return VALIDATION_RESULTS.EMPTY;
+        return VALIDATION_CODES.EMPTY;
     }
 
-    // Check if empty
+    // Check if empty (after potentially getting HTML from an image selection)
     if (!selectionHTML || selectionHTML.trim() === '') {
-        return VALIDATION_RESULTS.EMPTY;
+        return VALIDATION_CODES.EMPTY;
     }
 
     // Check for existing comments
-    if (selectionHTML.indexOf('smartcomment-hl-') !== -1) {
-        return VALIDATION_RESULTS.ALREADY_COMMENTED;
+    if (selectionHTML.includes('smartcomment-hl-')) {
+        return VALIDATION_CODES.ALREADY_COMMENTED;
     }
 
-    // Check for dynamic content
-    if (selectionHTML.indexOf('sc-dynamic-block') !== -1) {
-        return VALIDATION_RESULTS.DYNAMIC_CONTENT;
+    // Check for dynamic content (but allow if the selection IS the dynamic block itself, e.g. for image selection)
+    // This needs more careful handling. For now, if it *contains* sc-dynamic-block and isn't just the block itself.
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = selectionHTML;
+    const firstChild = tempDiv.firstChild;
+
+    if (selectionHTML.includes('sc-dynamic-block')) {
+        // If the selection itself is a dynamic block, it might be valid (e.g. selecting an image that is wrapped)
+        // This case is typically handled by specific image/dynamic block selection logic, not general text selection.
+        // For general text selection, finding sc-dynamic-block inside is invalid.
+        if (!(firstChild && firstChild.classList && firstChild.classList.contains('sc-dynamic-block') && tempDiv.childNodes.length === 1)) {
+            // It's not SOLELY the dynamic block, so it's embedded dynamic content.
+            // return VALIDATION_CODES.DYNAMIC_CONTENT; // Re-evaluate this rule based on usage
+        }
     }
 
-    // Check for line breaks
-    if (selectionHTML.match(/[\n\r]/)) {
-        return VALIDATION_RESULTS.LINEBREAKS;
+    // Check for line breaks (relevant for text selections)
+    // For outerHTML of elements, line breaks might be part of formatting.
+    if (selection.constructor && selection.constructor.name === 'Range') { // Apply only for Rangy Range objects (text selections)
+        if (selection.toString().match(/[\n\r]/)) {
+            return VALIDATION_CODES.LINEBREAKS;
+        }
     }
 
-    return VALIDATION_RESULTS.VALID;
+    return VALIDATION_CODES.VALID;
 }
 
 /**
@@ -175,11 +200,12 @@ function cleanSelectionHTML(html) {
 }
 
 /**
- * Check if selection is enabled via URL parameter
+ * Check if selection is enabled via URL parameter or button state
  * @returns {boolean} - Whether selection is enabled
  */
 function isSelectionEnabled() {
-    return window.location.href.indexOf('scenabled=1') !== -1;
+    const store = useSmartCommentsStore();
+    return store.isEnabled;
 }
 
 /**
@@ -219,6 +245,43 @@ function createImageHash(src, width, height) {
     return simpleHash(data);
 }
 
+/**
+ * Gets the root element for comments, ensuring it's valid.
+ * @returns {HTMLElement} The content root element.
+ * @throws {Error} If the content root is not found or is invalid.
+ */
+function getContentRoot() {
+    // Check if SmartComments is enabled before proceeding
+    const store = useSmartCommentsStore(); // Get store instance
+    if (!store.isEnabled) { // Assuming 'isEnabled' is a reactive property or getter
+        console.warn('SmartComments is not enabled. Operations in getContentRoot might be restricted or unexpected.');
+        // Depending on strictness, you might throw an error or return a sensible default/null
+        // For now, we'll allow it to proceed but log a warning.
+    }
+
+    const contentRootId = 'bodyContent'; // Standard MediaWiki content ID
+    const contentRoot = document.getElementById(contentRootId);
+    if (!contentRoot) {
+        throw new Error(`Content root element with id ${contentRootId} not found.`);
+    }
+    return contentRoot;
+}
+
+function getCleanText(text) {
+    if (typeof text !== 'string') return '';
+    return text.replace(/[\s\uFEFF\xA0]+/g, ' ').trim();
+}
+
+/**
+ * NEW: Checks if SmartComments functionality is enabled. Placeholder for now.
+ * This function will eventually check the global state (e.g., from Pinia store or a global flag).
+ * @returns {boolean} True if SmartComments is enabled, false otherwise.
+ */
+function isSmartCommentsEnabled() {
+    const store = useSmartCommentsStore();
+    return store.isEnabled; // Assuming 'isEnabled' is a reactive property or getter
+}
+
 module.exports = {
     initializeRangy,
     getMediaWikiContentRoot,
@@ -228,5 +291,8 @@ module.exports = {
     cleanSelectionHTML,
     isSelectionEnabled,
     simpleHash,
-    createImageHash
+    createImageHash,
+    getContentRoot,
+    getCleanText,
+    isSmartCommentsEnabled
 }; 

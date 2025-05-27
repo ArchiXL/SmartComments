@@ -1,6 +1,6 @@
-const { onMounted, onUnmounted } = require('vue');
 const { useSelection, SELECTION_ENUMS } = require('./useSelection.js');
 const { useHighlight } = require('./useHighlight.js');
+const useSmartCommentsStore = require('../store/smartCommentsStore.js');
 
 function useSelectionEvents() {
     const selection = useSelection();
@@ -37,11 +37,11 @@ function useSelectionEvents() {
     function handleMouseUp(event) {
         if (!isSelectionEnabled()) return;
 
-        // Small timeout to avoid capturing highlighted area clicks
         setTimeout(async () => {
             if (!rangy.getSelection().isCollapsed) {
                 try {
-                    const result = await selection.processTextSelectionWithScreenshot(event);
+                    // Call the consolidated function with screenshot option
+                    const result = await selection.processTextSelection(event, { captureScreenshot: true });
                     if (result) {
                         await handleSuccessfulSelection(result, event);
                     }
@@ -56,57 +56,38 @@ function useSelectionEvents() {
     /**
      * Handle click events for dynamic blocks and images
      */
-    function handleClick(event) {
+    async function handleClick(event) { // Made async to await selection processing
         if (!isSelectionEnabled()) return;
 
         const target = event.target;
+        let selectionResult = null;
 
         // Handle dynamic block selection
-        if (target.classList.contains('sc-dynamic-block') ||
-            target.closest('.sc-dynamic-block')) {
-
-            const dynamicBlock = target.classList.contains('sc-dynamic-block')
-                ? target
-                : target.closest('.sc-dynamic-block');
-
+        const dynamicBlock = target.closest('.sc-dynamic-block');
+        if (dynamicBlock) {
             event.preventDefault();
-
             try {
-                // Use async version with screenshot
-                selection.processDynamicBlockSelectionWithScreenshot(dynamicBlock)
-                    .then(result => {
-                        handleSuccessfulSelection(result, event);
-                    })
-                    .catch(error => {
-                        console.error('Dynamic block selection failed:', error);
-                        showSelectionError(error);
-                    });
+                // Call the consolidated function with screenshot option
+                selectionResult = await selection.processDynamicBlockSelection(dynamicBlock, event, { captureScreenshot: true });
             } catch (error) {
                 console.error('Dynamic block selection failed:', error);
                 showSelectionError(error);
             }
-            return;
         }
-
-        // Handle image selection (if not wrapped in dynamic block)
-        if (target.tagName === 'IMG') {
+        // Handle image selection (if not wrapped in dynamic block and not already handled)
+        else if (target.tagName === 'IMG') {
             event.preventDefault();
-
             try {
-                // Use async version with screenshot
-                selection.processImageSelectionWithScreenshot(target)
-                    .then(result => {
-                        handleSuccessfulSelection(result, event);
-                    })
-                    .catch(error => {
-                        console.error('Image selection failed:', error);
-                        showSelectionError(error);
-                    });
+                // Call the consolidated function with screenshot option
+                selectionResult = await selection.processImageSelection(target, event, { captureScreenshot: true });
             } catch (error) {
                 console.error('Image selection failed:', error);
                 showSelectionError(error);
             }
-            return;
+        }
+
+        if (selectionResult) {
+            await handleSuccessfulSelection(selectionResult, event);
         }
     }
 
@@ -181,8 +162,8 @@ function useSelectionEvents() {
      * Check if selection is enabled
      */
     function isSelectionEnabled() {
-        // Check URL parameter like in original code
-        return window.location.href.indexOf('scenabled=1') !== -1;
+        const store = useSmartCommentsStore(); // Get store instance
+        return store.isEnabled;
     }
 
     /**

@@ -58,6 +58,24 @@
 				"sic-sp-adminbutton-confirm"
 			]
 		},
+		"ext.smartcomments.vue-demi": {
+			"localBasePath": "",
+			"remoteExtPath": "SmartComments",
+			"scripts": [
+				"resources/frontend/upstream/vue-demi.iife.js"
+			]
+		},
+		"ext.smartcomments.pinia": {
+			"localBasePath": "",
+			"remoteExtPath": "SmartComments",
+			"scripts": [
+				"resources/frontend/upstream/pinia.iife.js"
+			],
+			"dependencies": [
+				"vue",
+				"ext.smartcomments.vue-demi"
+			]
+		},
 		"ext.smartcomments.frontend": {
 			"localBasePath": "",
 			"remoteExtPath": "SmartComments",
@@ -69,9 +87,9 @@
 				"resources/frontend/js/composables/useUser.js",
 				"resources/frontend/js/composables/useSelection.js",
 				"resources/frontend/js/composables/useSelectionEvents.js",
+				"resources/frontend/js/composables/useScreenshot.js",
 				"resources/frontend/js/utils/selectionUtils.js",
 				"resources/frontend/js/composables/useSmartCommentsSetup.js",
-				"resources/frontend/js/components/HighlightOverlay.vue",
 				"resources/frontend/js/components/ReplyForm.vue",
 				"resources/frontend/js/components/ReplyList.vue",
 				"resources/frontend/js/components/Comment.vue",
@@ -79,13 +97,15 @@
 				"resources/frontend/js/components/CommentBody.vue",
 				"resources/frontend/js/components/CommentMessage.vue",
 				"resources/frontend/js/components/NewCommentDialog.vue",
+				"resources/frontend/js/store/smartCommentsStore.js",
 				"resources/frontend/js/SmartComments.vue"
 			],
 			"styles": [
 				"resources/frontend/less/smartcomments.less"
 			],
 			"dependencies": [
-				"ext.smartcomments.upstream"
+				"ext.smartcomments.upstream",
+				"ext.smartcomments.pinia"
 			]
 		},
 		"ext.smartcomments.upstream": {

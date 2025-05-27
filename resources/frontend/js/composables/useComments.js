@@ -1,4 +1,8 @@
 const { ref } = require('vue');
+const {
+    formatSelectionForBackend,
+    parseSelectionFromBackend
+} = require('../utils/selectionUtils.js');
 
 /**
  * @typedef {Object} Comment
@@ -73,33 +77,34 @@ function useComments() {
         error.value = null;
 
         try {
-            console.log('fetchComments: Starting to fetch comments for page:', mw.config.get('wgPageName'));
-
             const data = await apiRequest('lista', {
                 page: mw.config.get('wgPageName')
             });
 
-            console.log('fetchComments: API response received:', data);
-
             const rawAnchors = data.smartcomments?.anchors || [];
-            console.log('fetchComments: Raw anchors found:', rawAnchors);
 
             comments.value = rawAnchors.map(anchor => {
                 const processedAnchor = { ...anchor };
+                const selectionDetails = parseSelectionFromBackend(anchor.pos);
 
-                if (anchor.pos && typeof anchor.pos === 'string' && anchor.pos.includes('|')) {
-                    processedAnchor.highlight_type = 'wordIndex';
-                } else if (anchor.pos && typeof anchor.pos === 'string' && anchor.pos.indexOf('[') !== -1 && anchor.pos.indexOf(']') !== -1) {
-                    processedAnchor.highlight_type = 'jQuery';
-                } else if (anchor.pos && typeof anchor.pos === 'string' && anchor.pos.includes('img[')) {
-                    processedAnchor.highlight_type = 'jQuery';
+                if (selectionDetails) {
+                    processedAnchor.parsedSelection = selectionDetails;
+
+                    if (selectionDetails.type === 'text') {
+                        processedAnchor.highlight_type = 'wordIndex';
+                    } else if (selectionDetails.type === 'image' || selectionDetails.type === 'dynamic-block') {
+                        processedAnchor.highlight_type = 'selector';
+                    } else {
+                        processedAnchor.highlight_type = 'unknown';
+                        console.warn('fetchComments: Unknown highlight type for anchor:', anchor);
+                    }
+                } else {
+                    processedAnchor.highlight_type = 'unknown';
+                    console.warn('fetchComments: Could not parse backend position string for anchor:', anchor);
                 }
-                // If no type is determined, processedAnchor.highlight_type will be undefined.
-                // formatCommentsForHighlighting should filter these out.
                 return processedAnchor;
-            });
+            }).filter(anchor => anchor.highlight_type !== 'unknown');
 
-            console.log('fetchComments: Processed comments:', comments.value);
             isLoading.value = false;
         } catch (err) {
             error.value = err;
@@ -133,70 +138,50 @@ function useComments() {
      * @param {Object} selectionData - Optional selection data (if not provided, will use current selection)
      * @returns {Promise<ApiResponse>} - The result of the operation
      */
-    const saveComment = async (text, selectionData = null) => {
+    const saveComment = async (text, selectionData) => {
+        isLoading.value = true;
+        error.value = null;
+
+        if (!text || text.trim() === '') {
+            isLoading.value = false;
+            return { success: '0', message: 'Comment text cannot be empty.' };
+        }
+
+        if (!selectionData || !selectionData.text) {
+            console.warn('saveComment called without valid selectionData. This path might be deprecated or require legacy handling.');
+            isLoading.value = false;
+            return { success: '0', message: 'selection-error-new-system-requires-selectiondata' };
+        }
+
         try {
-            let posString, parentId = '', image = '';
+            const formattedSelection = formatSelectionForBackend(selectionData);
+            const posString = formattedSelection.position;
 
-            if (selectionData) {
-                // Use provided selection data and set global SmartComments.Selection for backward compatibility
-                if (typeof window.SmartComments === 'undefined') {
-                    window.SmartComments = {};
-                }
-                if (typeof window.SmartComments.Selection === 'undefined') {
-                    window.SmartComments.Selection = {};
-                }
-
-                // Set the selection object that the old API expects
-                window.SmartComments.Selection.selection = {
-                    text: selectionData.text || '',
-                    index: selectionData.index || 0,
-                    type: selectionData.type || 'text'
-                };
-                window.SmartComments.Selection.parent = selectionData.parentId || '';
-                window.SmartComments.Selection.image = selectionData.image || '';
-
-                // Build posString like the old API does
-                if (typeof selectionData.text === 'string') {
-                    posString = selectionData.index !== undefined
-                        ? `${selectionData.text}|${selectionData.index}`
-                        : selectionData.text;
-                } else {
-                    posString = selectionData.text || '';
-                }
-
-                parentId = selectionData.parentId || '';
-                image = selectionData.image || '';
-            } else {
-                // Get the current selection (legacy behavior)
-                const selection = window.getSelection();
-                const selectionString = selection.toString();
-
-                // Check if selection is valid
-                if (!selectionString && mw.config.get('wgCanonicalSpecialPageName') !== 'SmartComments') {
-                    return {
-                        success: '0',
-                        message: 'selection-error'
-                    };
-                }
-
-                const range = selection.getRangeAt(0);
-                posString = selectionString;
-                parentId = range.startContainer.parentElement?.id || '';
-                image = document.querySelector('img.selected')?.src || '';
-            }
-
-            const data = await apiRequest('new', {
+            const params = {
                 pos: posString,
-                comment: parentId,
+                comment: selectionData.parentId || '',
                 text: text,
                 page: mw.config.get('wgPageName'),
-                image: image
-            });
+                image: selectionData.image || ''
+            };
 
-            return data.smartcomments || { success: '0', message: 'api-error' };
+            const data = await apiRequest('new', params);
+
+            isLoading.value = false;
+            if (data && data.smartcomments && data.smartcomments.success === '1') {
+                return data.smartcomments;
+            } else if (data && data.smartcomments) {
+                return data.smartcomments;
+            } else {
+                console.error('saveComment: Unexpected API response format:', data);
+                return { success: '0', message: 'api-error-unexpected-response' };
+            }
+
         } catch (err) {
+            isLoading.value = false;
             error.value = err;
-            return { success: '0', message: 'api-error' };
+            console.error('Error saving comment:', err);
+            return { success: '0', message: 'api-error-exception' };
         }
     };
 

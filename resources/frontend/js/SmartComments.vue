@@ -1,6 +1,6 @@
 <template>
-    <div class="smartcomments">
-        <highlight-overlay v-if="isEnabled" v-highlight="{ anchors: highlightedAnchors, onClick: openComment }"></highlight-overlay>
+    <div class="smartcomments" v-if="isEnabled">
+        <!-- No inner div, no v-highlight directive -->
         <comment 
             v-if="comment" 
             :comment="comment" 
@@ -28,38 +28,26 @@ const { defineComponent } = require('vue');
 const useSmartCommentsSetup = require('./composables/useSmartCommentsSetup.js');
 const useComments = require('./composables/useComments.js');
 const { useSelectionEvents } = require('./composables/useSelectionEvents.js');
-const { highlightDirective } = require('./directives/highlightDirective.js');
+const { applyHighlights, clearAllHighlights } = require('./directives/highlightDirective.js');
+const useSmartCommentsStore = require('./store/smartCommentsStore.js');
 const Comment = require('./components/Comment.vue');
-const HighlightOverlay = require('./components/HighlightOverlay.vue');
 const NewCommentDialog = require('./components/NewCommentDialog.vue');
 
 module.exports = defineComponent({
     name: 'SmartComments',
     components: {
         Comment,
-        HighlightOverlay,
         NewCommentDialog,
     },
-    directives: {
-        highlight: highlightDirective,
-    },
     setup() {
-        // Initialize smart comments setup during setup phase so onMounted works properly
         const smartCommentsSetup = useSmartCommentsSetup();
-        
-        return {
-            smartCommentsSetup
-        };
+        const store = useSmartCommentsStore();
+        return { smartCommentsSetup, store, applyHighlights };
     },
     data() {
         return {
-            enabled: false,
             comment: null,
             commentPosition: null,
-            highlightedAnchors: [],
-            isLoading: false,
-            error: null,
-            // Store references needed for cleanup
             selectionEvents: null,
             selectionCleanup: null,
             showNewCommentDialog: false,
@@ -69,104 +57,70 @@ module.exports = defineComponent({
     },
     computed: {
         isEnabled() {
-            return window.location.href.indexOf('scenabled=1') !== -1;
+            return this.store.isEnabled;
         }
     },
     mounted() {
-        console.log('SmartComments mounted');
-        
-        // Set initial values with null checks - but these might be empty initially due to async loading
-        if (this.smartCommentsSetup.highlightedAnchors?.value) {
-            this.highlightedAnchors = this.smartCommentsSetup.highlightedAnchors.value;
-        }
-        if (this.smartCommentsSetup.isLoading?.value !== undefined) {
-            this.isLoading = this.smartCommentsSetup.isLoading.value;
-        }
-        if (this.smartCommentsSetup.error?.value !== undefined) {
-            this.error = this.smartCommentsSetup.error.value;
-        }
+        console.log('SmartComments.vue: mounted. isEnabled initially (from store):', this.isEnabled);
 
-        // Watch for changes in the reactive values - these are critical for catching async updates
-        if (this.smartCommentsSetup.highlightedAnchors) {
-            this.$watch(() => this.smartCommentsSetup.highlightedAnchors.value, (newValue) => {
-                console.log('Highlighted anchors changed:', newValue);
-                this.highlightedAnchors = newValue || [];
-            }, { deep: true, immediate: true });
-        }
-        
-        if (this.smartCommentsSetup.isLoading) {
-            this.$watch(() => this.smartCommentsSetup.isLoading.value, (newValue) => {
-                console.log('Loading state changed:', newValue);
-                this.isLoading = newValue || false;
-            }, { immediate: true });
-        }
-        
-        if (this.smartCommentsSetup.error) {
-            this.$watch(() => this.smartCommentsSetup.error.value, (newValue) => {
-                console.log('Error state changed:', newValue);
-                this.error = newValue || null;
-            }, { immediate: true });
-        }
-
-        // Initialize selection events
         this.selectionEvents = useSelectionEvents();
-        
-        // Bind selection events if enabled
-        if (this.isEnabled) {
-            this.selectionEvents.bindEvents();
-        }
 
-        // Listen for new selections
-        this.selectionCleanup = this.selectionEvents.onSelectionCreate(this.handleNewSelection);
+        this.$watch(() => this.isEnabled, async (stateNowEnabled) => {
+            console.log(`SmartComments.vue: isEnabled watcher (from store). New state: ${stateNowEnabled}.`);
+            const targetElement = document.getElementById('mw-content-text') || document.body;
 
-        // Bind keyboard events
-        document.addEventListener('keydown', this.handleKeydown);
-        
-        // Add a small delay to ensure everything is mounted, then manually trigger a check
-        this.$nextTick(() => {
-            setTimeout(async () => {
-                // If highlights are still empty after a delay, there might be an issue
-                if (this.highlightedAnchors.length === 0 && this.isEnabled) {
-                    console.warn('No highlights loaded after mount. Checking for issues...');
-                    this.debugCurrentState();
-                    
-                    // Try to manually load highlights as backup
-                    console.log('Attempting manual highlight loading...');
-                    try {
-                        await this.smartCommentsSetup.loadAndSetHighlights();
-                        console.log('Manual highlight loading completed');
-                    } catch (error) {
-                        console.error('Manual highlight loading failed:', error);
-                    }
+            if (stateNowEnabled) {
+                if (this.selectionEvents) this.selectionEvents.bindEvents();
+                console.log('SmartComments.vue isEnabled watcher: System ENABLED. Clearing old highlights before fetching new.');
+                if (this.smartCommentsSetup.highlightedAnchors?.value) {
+                    clearAllHighlights(targetElement, this.smartCommentsSetup.highlightedAnchors.value);
                 }
-            }, 1000);
-        });
-        
-        // Expose debug methods globally for console access
+                
+                console.log('SmartComments.vue isEnabled watcher: Fetching highlights.');
+                try {
+                    await this.smartCommentsSetup.loadAndSetHighlights();
+                    console.log('SmartComments.vue isEnabled watcher: Highlights loaded. Applying new highlights. Anchors:', this.smartCommentsSetup.highlightedAnchors?.value);
+                    if (this.smartCommentsSetup.highlightedAnchors?.value) {
+                        this.applyHighlights(targetElement, this.smartCommentsSetup.highlightedAnchors.value, this.openComment);
+                    }
+                } catch (e) {
+                    console.error('SmartComments.vue isEnabled watcher (enabled): Error loading or applying highlights:', e);
+                }
+            } else {
+                if (this.selectionEvents) this.selectionEvents.unbindEvents();
+                console.log('SmartComments.vue isEnabled watcher: System DISABLED. Clearing highlights.');
+                if (this.smartCommentsSetup.highlightedAnchors?.value) {
+                    clearAllHighlights(targetElement, this.smartCommentsSetup.highlightedAnchors.value);
+                }
+                this.closeComment();
+                this.closeNewCommentDialog();
+            }
+        }, { immediate: true });
+
+        this.selectionCleanup = this.selectionEvents.onSelectionCreate(this.handleNewSelection);
+        document.addEventListener('keydown', this.handleKeydown);
+
         if (typeof window !== 'undefined') {
             window.SmartCommentsDebug = {
                 component: this,
                 reloadHighlights: () => this.reloadHighlights(),
                 debugState: () => this.debugCurrentState(),
-                getHighlights: () => this.highlightedAnchors,
-                isEnabled: () => this.isEnabled
+                getComposableHighlights: () => this.smartCommentsSetup.highlightedAnchors?.value,
+                isEnabledStore: () => this.store.isEnabled,
+                enableComments: () => this.store.enableSmartComments(),
+                disableComments: () => this.store.disableSmartComments()
             };
-            console.log('SmartComments debug methods available at window.SmartCommentsDebug');
         }
     },
     beforeUnmount() {
-        // Clean up keyboard events
+        console.log('SmartComments.vue: beforeUnmount. Clearing highlights.');
+        const targetElement = document.getElementById('mw-content-text') || document.body;
+        if (this.smartCommentsSetup.highlightedAnchors?.value) {
+            clearAllHighlights(targetElement, this.smartCommentsSetup.highlightedAnchors.value);
+        }
         document.removeEventListener('keydown', this.handleKeydown);
-        
-        // Clean up selection events
-        if (this.selectionEvents) {
-            this.selectionEvents.unbindEvents();
-        }
-        
-        // Clean up selection listener
-        if (this.selectionCleanup) {
-            this.selectionCleanup();
-        }
+        if (this.selectionEvents) this.selectionEvents.unbindEvents();
+        if (this.selectionCleanup) this.selectionCleanup();
     },
     methods: {
         async openComment(commentData, position) {
@@ -188,117 +142,90 @@ module.exports = defineComponent({
                 this.commentPosition = null;
             }
         },
-
         closeComment() {
             this.comment = null;
             this.commentPosition = null;
         },
-
         handleKeydown(event) {
-            if (event.key === 'Escape' && this.comment) {
-                this.closeComment();
-            } else if (event.key === 'Delete' && this.comment) {
-                this.deleteComment(this.comment);
-            }
+            if (event.key === 'Escape' && this.comment) this.closeComment();
+            else if (event.key === 'Delete' && this.comment) this.deleteComment(this.comment);
         },
-
-        /**
-         * Handle new selection from the selection system
-         * @param {Object} selectionData - Selection event data
-         */
         handleNewSelection(selectionData) {
-            const { selection, position, highlight } = selectionData;
-            
-            // Open comment creation interface at selection position
+            const { selection, position } = selectionData;
             this.openCommentCreation(selection, position);
         },
-
-        /**
-         * Open comment creation interface for a new selection
-         * @param {Object} selection - Selection data
-         * @param {Object} position - Mouse position
-         */
         openCommentCreation(selection, position) {
-            // Set up the new comment dialog data
             this.newCommentSelection = {
                 text: selection.text,
                 index: selection.index,
                 type: selection.type,
                 image: selection.image || null
             };
-
-            this.newCommentPosition = {
-                x: position.x,
-                y: position.y
-            };
-
+            this.newCommentPosition = { x: position.x, y: position.y };
             this.showNewCommentDialog = true;
         },
-
         async deleteComment(comment) {
             console.log('Delete comment', comment);
-            // Add your delete logic here
-            this.closeComment(); // Close comment after deletion
+            this.closeComment();
         },
-
         async completeComment(comment) {
             console.log('Complete comment', comment);
-            // Add your complete logic here
         },
-
         async viewPage(comment) {
-            console.log('View page', comment);
-            // Add your view page logic here
+            console.log('View page for comment', comment);
         },
-
         closeNewCommentDialog() {
             this.showNewCommentDialog = false;
             this.newCommentPosition = null;
             this.newCommentSelection = null;
         },
-
-        handleCommentSaved(comment) {
-            this.comment = comment;
-            this.commentPosition = comment.position;
+        async handleCommentSaved(savedComment) {
             this.closeNewCommentDialog();
+            console.log('SmartComments.vue: Comment saved (event from dialog), reloading highlights.');
+            try {
+                await this.smartCommentsSetup.loadAndSetHighlights();
+            } catch (e) {
+                console.error('SmartComments.vue: Error reloading highlights after save:', e);
+            }
         },
-
-        /**
-         * Manual method to reload highlights for debugging
-         */
         async reloadHighlights() {
-            console.log('Manually reloading highlights...');
-            if (this.smartCommentsSetup && this.smartCommentsSetup.loadAndSetHighlights) {
+            console.log('SmartComments.vue: Manually reloading highlights...');
+            if (!this.isEnabled) {
+                console.warn('SmartComments.vue: Cannot reload highlights, system is disabled.');
+                return;
+            }
+            const targetElement = document.getElementById('mw-content-text') || document.body;
+            if (this.smartCommentsSetup?.loadAndSetHighlights) {
                 try {
+                    console.log('SmartComments.vue reloadHighlights: Clearing current DOM highlights.');
+                    if (this.smartCommentsSetup.highlightedAnchors?.value) {
+                        clearAllHighlights(targetElement, this.smartCommentsSetup.highlightedAnchors.value);
+                    }
+
                     await this.smartCommentsSetup.loadAndSetHighlights();
-                    console.log('Highlights reloaded successfully');
+                    console.log('SmartComments.vue reloadHighlights: Manual reload successfully triggered loadAndSetHighlights. Applying new highlights.');
+                    if (this.smartCommentsSetup.highlightedAnchors?.value) {
+                        this.applyHighlights(targetElement, this.smartCommentsSetup.highlightedAnchors.value, this.openComment);
+                    }
                 } catch (error) {
-                    console.error('Error reloading highlights:', error);
+                    console.error('SmartComments.vue reloadHighlights: Error:', error);
                 }
             } else {
-                console.error('SmartComments setup not available for manual reload');
+                console.error('SmartComments.vue reloadHighlights: smartCommentsSetup.loadAndSetHighlights not available.');
             }
         },
-
-        /**
-         * Debug method to check current state
-         */
         debugCurrentState() {
             console.log('=== SmartComments Debug State ===');
-            console.log('isEnabled:', this.isEnabled);
-            console.log('highlightedAnchors:', this.highlightedAnchors);
-            console.log('isLoading:', this.isLoading);
-            console.log('error:', this.error);
-            console.log('smartCommentsSetup:', this.smartCommentsSetup);
-            
+            console.log('isEnabled (computed):', this.isEnabled);
             if (this.smartCommentsSetup) {
-                console.log('Setup state:', {
+                console.log('Composable state (smartCommentsSetup):', {
                     comments: this.smartCommentsSetup.comments?.value,
                     highlightedAnchors: this.smartCommentsSetup.highlightedAnchors?.value,
-                    isLoading: this.smartCommentsSetup.isLoading?.value,
-                    error: this.smartCommentsSetup.error?.value
                 });
+            } else {
+                console.log('Composable state (smartCommentsSetup): Not available');
             }
+            console.log('Window debug object:', window.SmartCommentsDebug);
             console.log('================================');
         }
     }
@@ -385,6 +312,36 @@ module.exports = defineComponent({
             &:hover {
                 background-color: transparent;
                 outline: none;
+            }
+        }
+    }
+}
+*[class^='smartcomment-hl-'] {
+    cursor: pointer;
+    text-decoration: none !important;
+    color: #000;
+    background: #ffffe0;
+    /*blue=#e0ffff; green=#e0ffe0; red=#ffe0e0; yellow=#ffffe0*/
+    padding: 0 2px;
+    z-index: 2 !important;
+    box-shadow: 0 0 1px #000;
+
+    &.active {
+        background: #b4f3ff;
+    }
+
+    &.image {
+        .sc-dynamic-block {
+            &:before {
+                background: #ffffe0bf;
+                content: " ";
+                width: 100%;
+                height: 100%;
+                position: absolute;
+
+                &:hover {
+                    background: lightyellow;
+                }
             }
         }
     }

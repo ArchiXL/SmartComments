@@ -1,16 +1,21 @@
 module.exports = {
     highlightDirective: {
         mounted(el, binding) {
+            console.log('highlightDirective: MOUNTED. Anchors count:', binding.value && binding.value.anchors ? binding.value.anchors.length : 0, 'Binding value:', binding.value);
             applyHighlights(document.body, binding.value.anchors, binding.value.onClick);
         },
         updated(el, binding) {
+            console.log('highlightDirective: UPDATED. New anchors count:', binding.value && binding.value.anchors ? binding.value.anchors.length : 0, 'Old anchors count:', binding.oldValue && binding.oldValue.anchors ? binding.oldValue.anchors.length : 0, 'Binding value:', binding.value);
             clearAllHighlights(document.body, binding.oldValue ? binding.oldValue.anchors : []);
             applyHighlights(document.body, binding.value.anchors, binding.value.onClick);
         },
         beforeUnmount(el, binding) {
+            console.log('highlightDirective: BEFOREUNMOUNT. Anchors count:', binding.value && binding.value.anchors ? binding.value.anchors.length : 0);
             clearAllHighlights(document.body, binding.value ? binding.value.anchors : []);
         }
-    }
+    },
+    applyHighlights,
+    clearAllHighlights
 };
 
 /**
@@ -79,9 +84,9 @@ function applyHighlights(scopeElement, highlights, onClick) {
             }
         };
 
-        if (highlightData.type === 'jQuery') {
-            applyJQueryHighlight(scopeElement, highlightData, uniqueHighlightClass, (el) => ensureClickListenerIsAttached(el, highlightData.comment));
-        } else { // Rangy based
+        if (highlightData.type === 'selector') {
+            applySelectorHighlight(scopeElement, highlightData, uniqueHighlightClass, (el) => ensureClickListenerIsAttached(el, highlightData.comment));
+        } else if (highlightData.type === 'wordIndex') {
             let currentApplier = window.rangy.createClassApplier(uniqueHighlightClass, {
                 ignoreWhiteSpace: true,
                 elementTagName: 'span',
@@ -93,13 +98,8 @@ function applyHighlights(scopeElement, highlights, onClick) {
                 }
             });
 
-            if (highlightData.type === 'findSelectionIndex') {
-                applyFindSelectionIndexHighlight(scopeElement, highlightData, currentApplier);
-            } else if (highlightData.type === 'wordIndex') {
-                applyWordIndexHighlight(scopeElement, highlightData, currentApplier);
-            } else {
-                console.warn('Unknown highlight type:', highlightData.type);
-            }
+            // Call the consolidated function
+            applyTextIndexHighlight(scopeElement, highlightData, currentApplier);
 
             // After Rangy application, explicitly find styled elements and ensure listeners.
             // This is a fallback if onElementCreate didn't fire for all elements or if attributes were missing.
@@ -114,47 +114,54 @@ function applyHighlights(scopeElement, highlights, onClick) {
                     ensureClickListenerIsAttached(elementNode, highlightData.comment);
                 });
             }
+        } else {
+            console.warn('Unknown highlight type:', highlightData.type);
         }
     });
 }
 
 /**
- * Apply a highlight to the given element based on the selection index.
+ * Apply a highlight to the given element based on text and its occurrence index.
  * 
  * @param {Element} scopeElement - The element to apply the highlight to.
  * @param {Object} highlightData - The highlight data containing the comment information.
  * @param {Object} classApplier - The class applier to apply the highlight.
 */
-function applyFindSelectionIndexHighlight(scopeElement, highlightData, classApplier) {
+function applyTextIndexHighlight(scopeElement, highlightData, classApplier) {
     const { comment } = highlightData;
-    if (!comment || !comment.pos) return;
+    if (!comment || !comment.pos) {
+        console.warn('applyTextIndexHighlight: Missing comment or comment.pos', highlightData);
+        return;
+    }
 
     const posString = String(comment.pos);
     const lastPipePos = posString.lastIndexOf('|');
-    if (lastPipePos === -1) return;
+    if (lastPipePos === -1) {
+        console.warn('applyTextIndexHighlight: Invalid pos string format (missing |)', posString);
+        return;
+    }
 
     let textToFind = posString.substring(0, lastPipePos);
-    textToFind = decodeHtmlEntities(textToFind);
+    textToFind = decodeHtmlEntities(textToFind); // Ensure text is decoded
 
     const index = parseInt(posString.substring(lastPipePos + 1), 10);
 
-    if (isNaN(index) || index === -1) return;
+    if (isNaN(index) || index < 0) { // Index should be 0 or positive
+        console.warn('applyTextIndexHighlight: Invalid index (NaN or negative)', index, 'for pos:', posString);
+        return;
+    }
 
-    const range = window.rangy.createRange();
-    range.selectNodeContents(scopeElement);
-
-    const searchScopeRange = window.rangy.createRange();
-    searchScopeRange.selectNodeContents(scopeElement);
+    // Rangy range for searching
+    const searchRange = window.rangy.createRange();
+    searchRange.selectNodeContents(scopeElement);
 
     let count = 0;
-    const options = {
-        caseSensitive: true,
-        withinRange: searchScopeRange,
-        wholeWordsOnly: false
-    };
-
-    const textNodes = getTextNodesIn(scopeElement);
     let found = false;
+
+    // Iterate through text nodes to find the Nth occurrence
+    // rangy.findText is powerful but can be tricky with overlapping/adjacent matches.
+    // A manual iteration like this, though more verbose, gives fine-grained control over occurrence counting.
+    const textNodes = getTextNodesIn(scopeElement);
     for (const textNode of textNodes) {
         let localIndex = textNode.data.indexOf(textToFind);
         while (localIndex !== -1) {
@@ -162,82 +169,39 @@ function applyFindSelectionIndexHighlight(scopeElement, highlightData, classAppl
                 const matchRange = window.rangy.createRange();
                 matchRange.setStart(textNode, localIndex);
                 matchRange.setEnd(textNode, localIndex + textToFind.length);
-                classApplier.applyToRange(matchRange);
+                try {
+                    classApplier.applyToRange(matchRange);
+                } catch (e) {
+                    console.error('Error applying classApplier to range:', e, { textNode, localIndex, textToFind, highlightData });
+                }
                 found = true;
                 break;
             }
             count++;
-            localIndex = textNode.data.indexOf(textToFind, localIndex + textToFind.length);
+            localIndex = textNode.data.indexOf(textToFind, localIndex + textToFind.length); // search from after the current match
         }
         if (found) break;
+    }
+
+    if (!found) {
+        console.warn('applyTextIndexHighlight: Text index highlight not found or applied for:', { textToFind, index, posString });
     }
 }
 
 /**
- * Apply a highlight to the given element based on the word index.
- * 
- * @param {Element} scopeElement - The element to apply the highlight to.
- * @param {Object} highlightData - The highlight data containing the comment information.
- * @param {Object} classApplier - The class applier to apply the highlight.
-*/
-function applyWordIndexHighlight(scopeElement, highlightData, classApplier) {
-    const { comment } = highlightData;
-    if (!comment || !comment.pos) return;
-
-    const posString = String(comment.pos);
-    const lastPipePos = posString.lastIndexOf('|');
-    if (lastPipePos === -1) return;
-
-    let textToFind = posString.substring(0, lastPipePos);
-    textToFind = decodeHtmlEntities(textToFind);
-
-    const index = parseInt(posString.substring(lastPipePos + 1), 10);
-    if (isNaN(index) || index === -1) return;
-
-    const range = window.rangy.createRange();
-    range.selectNodeContents(scopeElement);
-
-    const searchScopeRange = window.rangy.createRange();
-    searchScopeRange.selectNodeContents(scopeElement);
-
-    let count = 0;
-    const options = {
-        caseSensitive: true,
-        withinRange: searchScopeRange,
-        wholeWordsOnly: false
-    };
-
-    const textNodes = getTextNodesIn(scopeElement);
-    let found = false;
-    for (const textNode of textNodes) {
-        let localIndex = textNode.data.indexOf(textToFind);
-        while (localIndex !== -1) {
-            if (count === index) {
-                const matchRange = window.rangy.createRange();
-                matchRange.setStart(textNode, localIndex);
-                matchRange.setEnd(textNode, localIndex + textToFind.length);
-                classApplier.applyToRange(matchRange);
-                found = true;
-                break;
-            }
-            count++;
-            localIndex = textNode.data.indexOf(textToFind, localIndex + textToFind.length);
-        }
-        if (found) break;
-    }
-}
-
-/**
- * Apply a highlight to the given element based on the jQuery selector.
+ * Apply a highlight to the given element based on the CSS selector.
  * 
  * @param {Element} scopeElement - The element to apply the highlight to.
  * @param {Object} highlightData - The highlight data containing the comment information.
  * @param {string} uniqueHighlightClassString - The unique highlight class string.
  * @param {Function} addClickListener - Function to add click listener to the target element.
  */
-function applyJQueryHighlight(scopeElement, highlightData, uniqueHighlightClassString, addClickListener) {
+function applySelectorHighlight(scopeElement, highlightData, uniqueHighlightClassString, addClickListener) {
     const { comment } = highlightData;
-    if (!comment || !comment.pos) return;
+    if (!comment || !comment.pos) {
+        console.warn('applySelectorHighlight: Missing comment or comment.pos', highlightData);
+        return;
+    }
 
     let selector = comment.pos;
     const classesToAdd = uniqueHighlightClassString.split(' ');
