@@ -1,17 +1,17 @@
 <template>
     <div class="smartcomments-reply-form">
         <div class="smartcomments-reply-form-header">
-            <p>Reageren</p>
+            <p>{{ messages.replyHeader() }}</p>
         </div>
         <div class="smartcomments-reply-form-body">
             <textarea 
                 class="smartcomments-reply-form-body-textarea" 
                 v-model="reply" 
-                placeholder="Typ hier je bericht..."
+                :placeholder="messages.replyPlaceholder()"
                 @focus="onFocus"
                 @blur="onBlur"
                 @input="onInput"
-                :aria-label="'Reactie op ' + comment.author"
+                :aria-label="replyAriaLabel"
                 ref="textarea"
             ></textarea>
         </div>
@@ -22,7 +22,7 @@
                     @click="cancelReply"
                     type="button"
                 >
-                    Annuleren
+                    {{ messages.cancel() }}
                 </button>
                 <button 
                     class="smartcomments-reply-form-submit" 
@@ -30,7 +30,7 @@
                     :disabled="!canSubmit"
                     type="submit"
                 >
-                    Reactie plaatsen
+                    {{ messages.replySubmit() }}
                 </button>
             </div>
         </div>
@@ -38,7 +38,8 @@
 </template>
 
 <script>
-const { defineComponent } = require('vue');
+const { defineComponent, computed } = require('vue');
+const useMessages = require('../composables/useMessages.js');
 
 module.exports = defineComponent({
     name: 'ReplyForm',
@@ -57,6 +58,22 @@ module.exports = defineComponent({
         },
     },
     emits: ['reply-submitted'],
+    setup(props) {
+        const { messages, msg } = useMessages();
+
+        const replyAriaLabel = computed(() => {
+            // Create a label for screen readers
+            const authorName = props.comment.author ? 
+                props.comment.author.replace(/<[^>]*>/g, '') : // Strip HTML tags
+                'comment';
+            return msg('sic-reply-aria-label', `Reply to ${authorName}`, authorName);
+        });
+
+        return {
+            messages,
+            replyAriaLabel
+        };
+    },
     computed: {
         showActions() {
             return this.isFocused || this.hasContent;

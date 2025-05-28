@@ -42,12 +42,14 @@
 const { defineComponent, ref, computed, onMounted, onBeforeUnmount, nextTick } = require('vue');
 const useCommentsStore = require('../store/commentsStore.js');
 const useAppStateStore = require('../store/appStateStore.js');
+const useMessages = require('../composables/useMessages.js');
 
 module.exports = defineComponent({
     name: 'CommentTimeline',
     setup() {
         const commentsStore = useCommentsStore();
         const appStateStore = useAppStateStore();
+        const { messages } = useMessages();
         
         // Reactive data
         const positions = ref([]);
@@ -91,11 +93,7 @@ module.exports = defineComponent({
         const comments = computed(() => commentsStore.comments.filter(comment => comment.status !== 'completed'));
 
         const brokenCommentMessage = computed(() => {
-            // Use MediaWiki's message system if available, otherwise fallback
-            if (typeof mw !== 'undefined' && mw.msg) {
-                return mw.msg('sic-unlocalized-comment');
-            }
-            return 'Unlocalized Comment';
+            return messages.unlocalizedComment();
         });
 
         const containerStyle = computed(() => {

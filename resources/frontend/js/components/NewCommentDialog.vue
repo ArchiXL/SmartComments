@@ -9,7 +9,7 @@
                     <button 
                         class="smartcomments-dialog-close" 
                         @click="handleCancel"
-                        data-tooltip="Sluiten"
+                        :data-tooltip="messages.close()"
                     >
                         <span class="oo-ui-iconElement-icon oo-ui-icon-close"></span>
                     </button>
@@ -18,27 +18,27 @@
                 <!-- Selected content preview -->
                 <div class="smartcomments-selected-content" v-if="selectionData">
                     <div class="smartcomments-selected-text">
-                        <strong>Geselecteerde tekst:</strong>
+                        <strong>{{ t('selectedText') }}:</strong>
                         <div class="smartcomments-selection-preview">{{ selectionData.text }}</div>
                     </div>
                     <img 
                         v-if="selectionData.image" 
                         class="smartcomments-selected-image" 
                         :src="selectionData.image" 
-                        alt="Geselecteerde afbeelding"
+                        :alt="t('selectedImage')"
                     />
                 </div>
 
                 <!-- Comment input -->
                 <div class="smartcomments-comment-input-wrapper">
                     <label for="smartcomments-comment-input" class="smartcomments-input-label">
-                        Nieuwe opmerking
+                        {{ messages.commentInput() }}
                     </label>
                     <textarea
                         id="smartcomments-comment-input"
                         v-model="commentText"
                         class="smartcomments-comment-input"
-                        placeholder="Voer uw opmerking in..."
+                        :placeholder="t('commentPlaceholder')"
                         rows="4"
                         ref="commentInput"
                         @keydown="handleKeydown"
@@ -55,15 +55,15 @@
                         @click="handleCancel"
                         :disabled="isSaving"
                     >
-                        Annuleren
+                        {{ messages.cancel() }}
                     </button>
                     <button 
                         class="smartcomments-button smartcomments-button-save" 
                         @click="handleSave"
                         :disabled="!canSave || isSaving"
                     >
-                        <span v-if="isSaving">Opslaan...</span>
-                        <span v-else>Opslaan</span>
+                        <span v-if="isSaving">{{ t('saving') }}</span>
+                        <span v-else>{{ messages.save() }}</span>
                     </button>
                 </div>
             </div>
@@ -74,6 +74,7 @@
 <script>
 const { defineComponent, ref, computed, nextTick, onMounted, onUnmounted } = require('vue');
 const useComments = require('../composables/useComments.js');
+const useMessages = require('../composables/useMessages.js');
 
 module.exports = defineComponent({
     name: 'NewCommentDialog',
@@ -88,7 +89,7 @@ module.exports = defineComponent({
         },
         title: {
             type: String,
-            default: 'Nieuwe opmerking'
+            default: ''
         }
     },
     emits: ['close', 'save', 'cancel'],
@@ -99,6 +100,23 @@ module.exports = defineComponent({
         const commentInput = ref(null);
 
         const { saveComment } = useComments();
+        const { messages, msg } = useMessages();
+
+        // Computed title with fallback
+        const computedTitle = computed(() => {
+            return props.title || messages.newCommentTitle();
+        });
+
+        // Translation helper function for inline use
+        const t = (key) => {
+            const translations = {
+                selectedText: msg('sic-selected-text', 'Selected text'),
+                selectedImage: msg('sic-selected-image', 'Selected image'), 
+                commentPlaceholder: msg('sic-comment-placeholder', 'Enter your comment...'),
+                saving: msg('sic-saving', 'Saving...')
+            };
+            return translations[key] || key;
+        };
 
         const canSave = computed(() => {
             return commentText.value.trim().length > 0;
@@ -123,7 +141,7 @@ module.exports = defineComponent({
 
         const handleSave = async () => {
             if (!canSave.value) {
-                error.value = 'Voer een opmerking in';
+                error.value = messages.errorEmpty();
                 return;
             }
 
@@ -145,7 +163,7 @@ module.exports = defineComponent({
                     
                     // Show success message and refresh page
                     if (window.mw && window.mw.notify) {
-                        window.mw.notify('Opmerking toegevoegd! De pagina wordt ververst...', { type: 'success' });
+                        window.mw.notify(messages.commentAddedRefreshing(), { type: 'success' });
                     }
                     
                     setTimeout(() => {
@@ -157,10 +175,10 @@ module.exports = defineComponent({
                     emit('close');
                 } else {
                     // Error
-                    error.value = result.message || 'Er is een fout opgetreden bij het opslaan';
+                    error.value = result.message || messages.apiError();
                 }
             } catch (err) {
-                error.value = 'Er is een fout opgetreden bij het opslaan';
+                error.value = messages.apiError();
                 console.error('Error saving comment:', err);
             } finally {
                 isSaving.value = false;
@@ -225,7 +243,10 @@ module.exports = defineComponent({
             handleKeydown,
             focusInput,
             handleBackdropClick,
-            manageBodyClass
+            manageBodyClass,
+            messages,
+            t,
+            title: computedTitle
         };
     },
     watch: {

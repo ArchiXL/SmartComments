@@ -44,6 +44,7 @@
 const { defineComponent, computed, ref } = require('vue');
 const useUserStore = require('../store/userStore.js');
 const useCommentsStore = require('../store/commentsStore.js');
+const useMessages = require('../composables/useMessages.js');
 
 module.exports = defineComponent({
     name: 'CommentActions',
@@ -56,11 +57,12 @@ module.exports = defineComponent({
     setup(props, { emit }) {
         const userStore = useUserStore();
         const commentsStore = useCommentsStore();
+        const { messages } = useMessages();
 
         const actions = [
             {
                 icon: 'oo-ui-icon-arrowPrevious',
-                label: 'Vorige opmerking',
+                label: messages.previousComment(),
                 align: 'left',
                 action: () => {
                     emit('previous');
@@ -71,7 +73,7 @@ module.exports = defineComponent({
             },
             {
                 icon: 'oo-ui-icon-arrowNext',
-                label: 'Volgende opmerking',
+                label: messages.nextComment(),
                 align: 'left',
                 action: () => {
                     emit('next');
@@ -82,12 +84,12 @@ module.exports = defineComponent({
             },
             {
                 icon: 'oo-ui-icon-ellipsis',
-                label: 'Acties',
+                label: messages.actions(),
                 align: 'right',
                 items: [
                     {
                         icon: 'oo-ui-icon-check',
-                        label: 'Markeren als afgehandeld',
+                        label: messages.markComplete(),
                         style: '',
                         action: () => {
                             emit('complete', props.comment);
@@ -95,7 +97,7 @@ module.exports = defineComponent({
                     },
                     {
                         icon: 'oo-ui-icon-trash',
-                        label: 'Verwijderen',
+                        label: messages.markDelete(),
                         style: '',
                         action: () => {
                             emit('delete', props.comment);
@@ -103,7 +105,7 @@ module.exports = defineComponent({
                     },
                     {
                         icon: 'oo-ui-icon-articles',
-                        label: 'Paginaoverzicht bekijken',
+                        label: messages.viewOverview(),
                         style: '',
                         action: () => {
                             emit('view', props.comment);
@@ -116,7 +118,7 @@ module.exports = defineComponent({
             },
             {
                 icon: 'oo-ui-icon-close',
-                label: 'Sluiten',
+                label: messages.close(),
                 align: 'right',
                 action: () => {
                     emit('close');

@@ -3,6 +3,7 @@ const {
     formatSelectionForBackend,
     parseSelectionFromBackend
 } = require('../utils/selectionUtils.js');
+const useMessages = require('./useMessages.js');
 
 /**
  * @typedef {Object} Comment
@@ -40,36 +41,35 @@ function useComments() {
     const error = ref(null);
     const blockedMode = ref(false);
 
+    const { messages } = useMessages();
 
     /**
-     * Make a request to the MediaWiki API
-     * @param {string} method - API method to call
-     * @param {object} params - Parameters to send
-     * @returns {Promise<Object>} - API response
+     * Make API requests to the MediaWiki API
+     * @param {string} method - The method to call
+     * @param {Object} params - Parameters for the API request
+     * @returns {Promise<Object>} - The API response
      */
     const apiRequest = async (method, params = {}) => {
-        const defaultParams = {
-            action: 'smartcomments',
-            method,
-            format: 'json'
-        };
-
-        const requestParams = { ...defaultParams, ...params };
         const api = new mw.Api();
 
-        // For GET requests
-        if (method === 'get' || method === 'lista' || method === 'blockedmode') {
-            return api.get(requestParams);
-        }
-        // For POST requests
-        else {
-            return api.post(requestParams);
+        const requestData = {
+            action: 'smartcomments',
+            method: method,
+            format: 'json',
+            ...params
+        };
+
+        try {
+            const result = await api.post(requestData);
+            return result;
+        } catch (err) {
+            console.error('API request failed:', err);
+            throw err;
         }
     };
 
     /**
-     * Fetch all comments for the current page
-     * @param {string} status - Filter comments by status
+     * Fetch comments for the current page
      * @returns {Promise<void>}
      */
     const fetchComments = async () => {
@@ -145,7 +145,7 @@ function useComments() {
 
         if (!text || text.trim() === '') {
             isLoading.value = false;
-            return { success: '0', message: 'Comment text cannot be empty.' };
+            return { success: '0', message: messages.errorEmpty() };
         }
 
         // For replies, we only need parentId, not selection text
@@ -154,7 +154,7 @@ function useComments() {
         if (!isReply && (!selectionData || !selectionData.text)) {
             console.warn('saveComment called without valid selectionData. This path might be deprecated or require legacy handling.');
             isLoading.value = false;
-            return { success: '0', message: 'selection-error-new-system-requires-selectiondata' };
+            return { success: '0', message: messages.selectionError5() };
         }
 
         try {
@@ -183,14 +183,14 @@ function useComments() {
                 return data.smartcomments;
             } else {
                 console.error('saveComment: Unexpected API response format:', data);
-                return { success: '0', message: 'api-error-unexpected-response' };
+                return { success: '0', message: messages.apiError() };
             }
 
         } catch (err) {
             isLoading.value = false;
             error.value = err;
             console.error('Error saving comment:', err);
-            return { success: '0', message: 'api-error-exception' };
+            return { success: '0', message: messages.apiError() };
         }
     };
 
@@ -211,10 +211,10 @@ function useComments() {
                 page
             });
 
-            return data.smartcomments || { success: '0', message: 'api-error' };
+            return data.smartcomments || { success: '0', message: messages.apiError() };
         } catch (err) {
             error.value = err;
-            return { success: '0', message: 'api-error' };
+            return { success: '0', message: messages.apiError() };
         }
     };
 
@@ -231,10 +231,10 @@ function useComments() {
                 page
             });
 
-            return data.smartcomments || { success: '0', message: 'api-error' };
+            return data.smartcomments || { success: '0', message: messages.apiError() };
         } catch (err) {
             error.value = err;
-            return { success: '0', message: 'api-error' };
+            return { success: '0', message: messages.apiError() };
         }
     };
 

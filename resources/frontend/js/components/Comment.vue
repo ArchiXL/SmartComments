@@ -34,6 +34,7 @@ const ReplyList = require('./ReplyList.vue');
 const CommentActions = require('./CommentActions.vue');
 const CommentBody = require('./CommentBody.vue');
 const useComments = require('../composables/useComments.js');
+const useMessages = require('../composables/useMessages.js');
 
 module.exports = defineComponent({
     name: 'Comment',
@@ -54,9 +55,11 @@ module.exports = defineComponent({
         },
     },
     emits: ['close', 'delete', 'complete', 'view', 'navigate', 'reply-added'],
-    computed: {
-        panelStyle() {
-            if (!this.position) {
+    setup(props, { emit }) {
+        const { messages } = useMessages();
+
+        const panelStyle = computed(() => {
+            if (!props.position) {
                 console.warn('Comment panel: No position data, using default positioning');
                 return {
                     top: '0',
@@ -72,7 +75,7 @@ module.exports = defineComponent({
             
             // Position vertically aligned with the top of the element
             // But ensure it doesn't go off the bottom of the viewport
-            top = this.position.top;
+            top = props.position.top;
             const maxTop = window.scrollY + viewportHeight - panelEstimatedHeight - 20;
             if (top > maxTop) {
                 top = Math.max(window.scrollY + 10, maxTop);
@@ -81,18 +84,17 @@ module.exports = defineComponent({
             return {
                 top: `${top}px`,
             };
-        },
+        });
         
         // Enhanced comment object with reply method
-        enhancedComment() {
+        const enhancedComment = computed(() => {
             return {
-                ...this.comment,
-                reply: this.submitReply
+                ...props.comment,
+                reply: submitReply
             };
-        }
-    },
-    methods: {
-        async submitReply(replyText) {
+        });
+
+        const submitReply = async (replyText) => {
             if (!replyText || replyText.trim() === '') {
                 console.warn('Cannot submit empty reply');
                 return false;
@@ -105,7 +107,7 @@ module.exports = defineComponent({
                 // The API expects the parent comment ID in the 'comment' parameter
                 const selectionData = {
                     text: replyText, // Use the reply text for validation
-                    parentId: this.comment.id || this.comment.data_id, // This will be passed as 'comment' parameter
+                    parentId: props.comment.id || props.comment.data_id, // This will be passed as 'comment' parameter
                     type: 'reply'
                 };
 
@@ -117,24 +119,24 @@ module.exports = defineComponent({
                         id: result.comment || Date.now(), // Use returned comment ID or temporary one
                         text: replyText,
                         author: `<a href="${mw.util.getUrl('User:' + mw.config.get('wgUserName'))}">${mw.config.get('wgUserName')}</a>`,
-                        datetime: mw.msg('sic-date-justnow') || 'Just now',
+                        datetime: messages.justNow(),
                         modifiedBy: mw.config.get('wgUserName'),
-                        modifiedDateTime: mw.msg('sic-date-justnow') || 'Just now'
+                        modifiedDateTime: messages.justNow()
                     };
 
                     // Add reply to the comment's replies array
-                    if (!this.comment.replies) {
-                        this.comment.replies = [];
+                    if (!props.comment.replies) {
+                        props.comment.replies = [];
                     }
-                    this.comment.replies.push(newReply);
+                    props.comment.replies.push(newReply);
 
                     // Emit event for parent component to handle
-                    this.$emit('reply-added', {
-                        comment: this.comment,
+                    emit('reply-added', {
+                        comment: props.comment,
                         reply: newReply
                     });
 
-                    console.log('Reply submitted successfully for comment ID:', this.comment.id || this.comment.data_id);
+                    console.log('Reply submitted successfully for comment ID:', props.comment.id || props.comment.data_id);
                     return true;
                 } else {
                     console.error('Failed to submit reply:', result.message);
@@ -144,30 +146,38 @@ module.exports = defineComponent({
                 console.error('Error submitting reply:', error);
                 return false;
             }
-        },
-        
-        handleReplySubmitted(replyData) {
-            console.log('Reply submitted for comment ID:', this.comment.id || this.comment.data_id);
+        };
+
+        const handleReplySubmitted = (replyData) => {
+            console.log('Reply submitted for comment ID:', props.comment.id || props.comment.data_id);
             
             // Trigger refresh of highlights to show updated reply count
             if (typeof window !== 'undefined') {
                 window.dispatchEvent(new CustomEvent('smartcomments:refresh-highlights', {
                     detail: { 
                         replyAdded: true,
-                        comment: this.comment,
+                        comment: props.comment,
                         reply: replyData 
                     }
                 }));
             }
-        },
-        
-        handleNext() {
-            this.$emit('navigate', { type: 'next' });
-        },
-        
-        handlePrevious() {
-            this.$emit('navigate', { type: 'previous' });
-        }
+        };
+
+        const handleNext = () => {
+            emit('navigate', { direction: 'next' });
+        };
+
+        const handlePrevious = () => {
+            emit('navigate', { direction: 'previous' });
+        };
+
+        return {
+            panelStyle,
+            enhancedComment,
+            handleNext,
+            handlePrevious,
+            messages
+        };
     },
     created() {
         console.log('Comment created', this.comment);
