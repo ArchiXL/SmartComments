@@ -1,6 +1,7 @@
 const { useSelection, SELECTION_ENUMS } = require('./useSelection.js');
 const { useHighlight } = require('./useHighlight.js');
 const useAppStateStore = require('../store/appStateStore.js');
+const { smartCommentsEvents } = require('../utils/smartCommentsEvents.js');
 
 function useSelectionEvents() {
     const selection = useSelection();
@@ -95,8 +96,6 @@ function useSelectionEvents() {
      * Handle successful selection by creating highlight and triggering events
      */
     async function handleSuccessfulSelection(selectionResult, event) {
-        console.log('Selection successful:', selectionResult);
-
         // Create highlight based on selection type
         const highlightData = createHighlightData(selectionResult);
 
@@ -106,7 +105,19 @@ function useSelectionEvents() {
         // Format data for API usage
         const apiData = selection.formatSelectionForAPI(selectionResult);
 
-        // Emit custom event for other components to handle
+        // Trigger centralized selection active event
+        smartCommentsEvents.triggerSelectionActive({
+            selection: selectionResult,
+            screenshot: selectionResult.screenshot || null,
+            apiData: apiData,
+            position: {
+                x: event.pageX,
+                y: event.pageY
+            },
+            highlight: highlightData
+        });
+
+        // Emit custom event for other components to handle (legacy compatibility)
         const selectionEvent = new CustomEvent('smartcomments:selection', {
             detail: {
                 selection: selectionResult,
@@ -215,7 +226,6 @@ function useSelectionEvents() {
         setupDynamicBlockHover();
 
         isEventsBound = true;
-        console.log('Selection events bound');
     }
 
     /**
@@ -230,7 +240,6 @@ function useSelectionEvents() {
         selection.getContentRoot().removeEventListener('click', clickHandler);
 
         isEventsBound = false;
-        console.log('Selection events unbound');
     }
 
     /**

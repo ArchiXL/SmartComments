@@ -15,7 +15,6 @@ module.exports = defineStore('appStore', {
         _updateButtonUI() {
             const toggleElement = document.getElementById('ca-comments');
             if (!toggleElement) {
-                console.error('appStateStore: Toggle element "ca-comments" not found.');
                 return;
             }
 
@@ -52,7 +51,6 @@ module.exports = defineStore('appStore', {
             } else {
                 console.error('appStateStore: Toggle element "ca-comments" not found during initialization.');
             }
-            console.log('appStateStore: initializeState called. Initial isEnabled:', this.isEnabled);
         },
 
         /**
@@ -62,7 +60,6 @@ module.exports = defineStore('appStore', {
         enableAppState() {
             if (this.isEnabled) return;
             this.isEnabled = true;
-            console.log('appStateStore: Comments ENABLED.');
             this._updateButtonUI();
         },
 
@@ -73,7 +70,6 @@ module.exports = defineStore('appStore', {
         disableAppState() {
             if (!this.isEnabled) return;
             this.isEnabled = false;
-            console.log('appStateStore: Comments DISABLED.');
             this._updateButtonUI();
         },
 
@@ -82,7 +78,6 @@ module.exports = defineStore('appStore', {
          * @returns {void}
          */
         toggleAppState() {
-            console.log('appStateStore: toggleAppState called.');
             if (this.isEnabled) {
                 this.disableAppState();
             } else {

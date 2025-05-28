@@ -40,7 +40,7 @@ class Hooks {
 	 * @return bool
 	 */
 	public static function onBeforePageDisplay( \OutputPage $out, \Skin $skin ) {
-		if ( $out->getUser()->isRegistered() && $out->isArticle() ) {
+		if ( $out->getUser()->isRegistered() && $out->isArticle() && !Handler::isCommentModeBlocked() ) {
 			$out->addModuleStyles( [ 'oojs-ui.styles.icons-editing-core', 'oojs-ui.styles.icons-moderation', 'oojs-ui.styles.icons-alerts' ] );
 			$out->addModules( 'ext.smartcomments.frontend' );
 		}
@@ -56,7 +56,7 @@ class Hooks {
 	 */
 	public static function onSkinAfterBottomScripts( \Skin $skin, &$text ) {
 		$out = $skin->getOutput();
-		if ( $out->getUser()->isRegistered() && $out->isArticle() ) {
+		if ( $out->getUser()->isRegistered() && $out->isArticle() && !Handler::isCommentModeBlocked() ) {
 			$text .= '<div id="smartcomments-app"></div>';
 		}
 		return true;

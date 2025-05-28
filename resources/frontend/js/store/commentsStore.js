@@ -1,6 +1,7 @@
 const { defineStore } = Pinia;
 const useComments = require('../composables/useComments.js');
 const { useHighlight } = require('../composables/useHighlight.js');
+const { smartCommentsEvents, EVENTS } = require('../utils/smartCommentsEvents.js');
 
 module.exports = defineStore('commentsStore', {
     state: () => ({
@@ -145,7 +146,6 @@ module.exports = defineStore('commentsStore', {
          * Open a comment dialog with the specified comment and position
          */
         async openCommentDialog(commentData, position) {
-            console.log('CommentsStore: Opening comment dialog for:', commentData.data_id);
             this.setLoading(true);
             this.clearError();
 
@@ -161,8 +161,6 @@ module.exports = defineStore('commentsStore', {
 
                     // Set active highlight
                     this.setActiveHighlight(fetchedComment.data_id || fetchedComment.id);
-
-                    console.log('CommentsStore: Comment dialog opened successfully');
                 } else {
                     this.setError('Comment not found');
                     console.error('CommentsStore: Comment not found:', commentData.data_id);
@@ -179,6 +177,9 @@ module.exports = defineStore('commentsStore', {
          * Close the comment dialog
          */
         closeCommentDialog() {
+            // Trigger comment group close event
+            smartCommentsEvents.triggerCommentGroupClose();
+
             // Clear active highlight
             this.clearActiveHighlight();
 
@@ -186,7 +187,6 @@ module.exports = defineStore('commentsStore', {
             this.commentPosition = null;
             this.isCommentDialogVisible = false;
             this.setCurrentComment(null);
-            console.log('CommentsStore: Comment dialog closed');
         },
 
         /**
@@ -207,7 +207,6 @@ module.exports = defineStore('commentsStore', {
                         this.setActiveHighlight(fetchedComment.data_id || fetchedComment.id, true);
 
                         // Keep the same position for now, could be enhanced to scroll to highlighted element
-                        console.log('CommentsStore: Successfully navigated to', direction, 'comment');
                     } else {
                         this.setError(`Could not fetch ${direction} comment`);
                         console.error('CommentsStore: Could not fetch', direction, 'comment:', targetComment);
@@ -230,7 +229,6 @@ module.exports = defineStore('commentsStore', {
                 image: selectionData.selection.image || null
             };
             this.isNewCommentDialogVisible = true;
-            console.log('CommentsStore: New comment dialog opened');
         },
 
         /**
@@ -239,7 +237,6 @@ module.exports = defineStore('commentsStore', {
         closeNewCommentDialog() {
             this.newCommentSelection = null;
             this.isNewCommentDialogVisible = false;
-            console.log('CommentsStore: New comment dialog closed');
         },
 
         /**
@@ -247,7 +244,9 @@ module.exports = defineStore('commentsStore', {
          */
         async handleCommentSaved(savedComment) {
             this.closeNewCommentDialog();
-            console.log('CommentsStore: Comment saved, triggering refresh');
+
+            // Trigger comment created event
+            smartCommentsEvents.triggerCommentCreated(savedComment);
 
             // Emit an event that the main component can listen to for reloading highlights
             // This maintains separation - the store doesn't know about highlight management
@@ -262,7 +261,6 @@ module.exports = defineStore('commentsStore', {
          * Delete a comment
          */
         async deleteComment(comment) {
-            console.log('CommentsStore: Deleting comment:', comment.id || comment.data_id);
             this.setLoading(true);
 
             try {
@@ -271,6 +269,9 @@ module.exports = defineStore('commentsStore', {
 
                 if (result.success === '1' || result.success === true) {
                     this.removeComment(comment.id || comment.data_id);
+
+                    // Trigger comment deleted event
+                    smartCommentsEvents.triggerCommentDeleted(comment);
 
                     // Clear highlighting for the deleted comment
                     const { removeCommentHighlight } = useHighlight();
@@ -284,7 +285,6 @@ module.exports = defineStore('commentsStore', {
                             detail: { deletedComment: comment }
                         }));
                     }
-                    console.log('CommentsStore: Comment deleted successfully');
                 } else {
                     this.setError(result.message || 'Failed to delete comment');
                 }
@@ -300,7 +300,6 @@ module.exports = defineStore('commentsStore', {
          * Complete a comment
          */
         async completeComment(comment) {
-            console.log('CommentsStore: Completing comment:', comment.id || comment.data_id);
             this.setLoading(true);
 
             try {
@@ -314,6 +313,9 @@ module.exports = defineStore('commentsStore', {
                 if (result.success === '1' || result.success === true) {
                     this.updateComment(comment.id || comment.data_id, { status: 'completed' });
 
+                    // Trigger comment completed event
+                    smartCommentsEvents.triggerCommentCompleted(comment);
+
                     // Clear highlighting for the completed comment
                     const { removeCommentHighlight } = useHighlight();
                     removeCommentHighlight(comment.id || comment.data_id);
@@ -324,7 +326,6 @@ module.exports = defineStore('commentsStore', {
                             detail: { completedComment: comment }
                         }));
                     }
-                    console.log('CommentsStore: Comment completed successfully');
                     this.closeCommentDialog();
                 } else {
                     this.setError(result.message || 'Failed to complete comment');
@@ -341,8 +342,6 @@ module.exports = defineStore('commentsStore', {
          * View page for comment
          */
         viewPage(comment) {
-            console.log('CommentsStore: Viewing page for comment:', comment.id || comment.data_id);
-
             // Navigate to the SmartComments special page
             const specialPageUrl = mw.util.getUrl('Special:SmartComments', {
                 page: mw.config.get('wgPageName')
@@ -391,8 +390,6 @@ module.exports = defineStore('commentsStore', {
                     });
                 }
             }
-
-            console.log('CommentsStore: Set active highlight for comment:', commentId);
         },
 
         /**
@@ -404,16 +401,12 @@ module.exports = defineStore('commentsStore', {
             activeElements.forEach(element => {
                 element.classList.remove('active');
             });
-
-            console.log('CommentsStore: Cleared all active highlights');
         },
 
         /**
          * Handle reply added to comment
          */
         handleReplyAdded(replyData) {
-            console.log('CommentsStore: Reply added:', replyData);
-
             // Update the active comment in the store with the new reply
             if (this.activeComment && replyData.comment) {
                 const commentId = replyData.comment.id || replyData.comment.data_id;
@@ -431,6 +424,97 @@ module.exports = defineStore('commentsStore', {
                     }
                 }));
             }
+        },
+
+        /**
+         * Open a comment dialog by ID (for URL parameter handling)
+         * @param {string|number} commentId - The comment ID to open
+         */
+        async openCommentDialogById(commentId) {
+            if (!commentId) return;
+
+            this.setLoading(true);
+            this.clearError();
+
+            try {
+                const { getComment } = useComments();
+                const fetchedComment = await getComment(commentId);
+
+                if (fetchedComment) {
+                    // Find the highlight element for this comment
+                    const highlightElement = document.querySelector(`.smartcomment-hl-${commentId}`);
+
+                    let position;
+                    if (highlightElement) {
+                        // Use the highlight element position
+                        const rect = highlightElement.getBoundingClientRect();
+                        position = {
+                            top: rect.top + window.scrollY,
+                            left: rect.left + window.scrollX,
+                            bottom: rect.bottom + window.scrollY,
+                            right: rect.right + window.scrollX,
+                            width: rect.width,
+                            height: rect.height
+                        };
+                    } else {
+                        // Fallback position if no highlight found (broken comment)
+                        position = {
+                            top: 100,
+                            left: 100,
+                            bottom: 150,
+                            right: 400,
+                            width: 300,
+                            height: 50
+                        };
+                    }
+
+                    this.activeComment = fetchedComment;
+                    this.commentPosition = position;
+                    this.isCommentDialogVisible = true;
+                    this.setCurrentComment(fetchedComment.id || fetchedComment.data_id);
+
+                    // Set active highlight and scroll into view
+                    this.setActiveHighlight(fetchedComment.data_id || fetchedComment.id, true);
+
+                    // Update the comments array if this comment isn't already in it
+                    const existingIndex = this.comments.findIndex(comment =>
+                        (comment.id && comment.id === commentId) ||
+                        (comment.data_id && comment.data_id === commentId)
+                    );
+                    if (existingIndex === -1) {
+                        this.comments.push(fetchedComment);
+                    }
+                } else {
+                    this.setError('Comment not found');
+                    console.error('CommentsStore: Comment not found for ID:', commentId);
+                }
+            } catch (error) {
+                this.setError('Error fetching comment');
+                console.error('CommentsStore: Error fetching comment by ID:', error);
+            } finally {
+                this.setLoading(false);
+            }
+        },
+
+        /**
+         * Check URL parameters and open comment if commentId or focusId is present
+         */
+        async checkAndOpenCommentFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const commentId = urlParams.get('commentId') || urlParams.get('focusId');
+
+            if (commentId) {
+                console.log('CommentsStore: Opening comment from URL parameter:', commentId);
+                await this.openCommentDialogById(commentId);
+            }
+        },
+
+        /**
+         * Alias for openCommentDialogById for consistency
+         * @param {string|number} commentId - The comment ID to open
+         */
+        async openCommentById(commentId) {
+            return await this.openCommentDialogById(commentId);
         },
     }
 }); 

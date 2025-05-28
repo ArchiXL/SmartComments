@@ -116,7 +116,7 @@ module.exports = defineComponent({
                     const newReply = {
                         id: result.comment || Date.now(), // Use returned comment ID or temporary one
                         text: replyText,
-                        author: mw.config.get('wgUserName'),
+                        author: `<a href="${mw.util.getUrl('User:' + mw.config.get('wgUserName'))}">${mw.config.get('wgUserName')}</a>`,
                         datetime: mw.msg('sic-date-justnow') || 'Just now',
                         modifiedBy: mw.config.get('wgUserName'),
                         modifiedDateTime: mw.msg('sic-date-justnow') || 'Just now'

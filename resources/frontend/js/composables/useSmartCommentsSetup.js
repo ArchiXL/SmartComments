@@ -82,19 +82,13 @@ function useSmartCommentsSetup() {
         setHighlights = () => { }
     } = highlightComposable || {};
 
-    console.log('useSmartCommentsSetup initialized - isLoading:', isLoading, 'error:', error);
-
     const loadAndSetHighlights = async () => {
-        console.log('loadAndSetHighlights called - starting fetch...');
         try {
             await fetchComments(); // Fetch comments using useComments
-            console.log('Comments fetched:', comments.value);
 
             const formattedHighlights = formatCommentsForHighlighting(comments.value);
-            console.log('Formatted highlights:', formattedHighlights);
 
             setHighlights(formattedHighlights);
-            console.log('Highlights set. Current highlightedAnchors:', highlightedAnchors.value);
         } catch (err) {
             console.error('Error in loadAndSetHighlights:', err);
         }

@@ -41,20 +41,19 @@
 		"SMW::SQLStore::BeforeDataUpdateComplete": "MediaWiki\\Extension\\SmartComments\\Hooks::addSubobjectsForComments",
 		"ParserCacheSaveComplete": "MediaWiki\\Extension\\SmartComments\\Hooks::onParserCacheSaveComplete",
 		"MediaWikiServices": "MediaWiki\\Extension\\SmartComments\\Hooks::onMediaWikiServices",
-		"ArticleDeleteAfterSuccess": "MediaWiki\\Extension\\SmartComments\\Hooks::onArticleDeleteAfterSuccess",
-		"ResourceLoaderRegisterModules": "MediaWiki\\Extension\\SmartComments\\JavascriptLoader::register"
+		"ArticleDeleteAfterSuccess": "MediaWiki\\Extension\\SmartComments\\Hooks::onArticleDeleteAfterSuccess"
 	},
 	"ResourceFileModulePaths": {
 		"localBasePath": "",
 		"remoteExtPath": "SmartComments"
 	},
 	"ResourceModules": {
-		"ext.SmartComments.Special": {
+		"ext.smartcomments.special": {
 			"styles": [
-				"resources/css/specialPage.less"
+				"resources/special/less/smartcomments.less"
 			],
 			"scripts": [
-				"resources/js/SmartComments.special.js"
+				"resources/special/js/smartcomments.js"
 			],
 			"messages": [
 				"sic-sp-adminbutton-confirm"
@@ -90,6 +89,7 @@
 				"resources/frontend/js/composables/useScreenshot.js",
 				"resources/frontend/js/utils/constants.js",
 				"resources/frontend/js/utils/selectionUtils.js",
+				"resources/frontend/js/utils/smartCommentsEvents.js",
 				"resources/frontend/js/utils/vueDemiPolyfill.js",
 				"resources/frontend/js/composables/useSmartCommentsSetup.js",
 				"resources/frontend/js/components/ReplyForm.vue",
