@@ -31,6 +31,7 @@
 const { defineComponent } = require('vue');
 const useSmartCommentsSetup = require('./composables/useSmartCommentsSetup.js');
 const { useSelectionEvents } = require('./composables/useSelectionEvents.js');
+const { useLinkPrevention } = require('./composables/useLinkPrevention.js');
 const { applyHighlights, clearAllHighlights } = require('./directives/highlightDirective.js');
 const useAppStateStore = require('./store/appStateStore.js');
 const useCommentsStore = require('./store/commentsStore.js');
@@ -52,7 +53,8 @@ module.exports = defineComponent({
         const store = useAppStateStore();
         const commentsStore = useCommentsStore();
         const messages = useMessages();
-        return { smartCommentsSetup, store, commentsStore, applyHighlights, smartCommentsEvents, EVENTS, messages };
+        const linkPrevention = useLinkPrevention();
+        return { smartCommentsSetup, store, commentsStore, applyHighlights, smartCommentsEvents, EVENTS, messages, linkPrevention };
     },
     data() {
         return {
@@ -88,6 +90,8 @@ module.exports = defineComponent({
                 this.smartCommentsEvents.triggerCommentsEnabled();
                 
                 if (this.selectionEvents) this.selectionEvents.bindEvents();
+                // Bind link prevention events when comment mode is enabled
+                if (this.linkPrevention) this.linkPrevention.bindEvents();
                 if (this.smartCommentsSetup.highlightedAnchors?.value) {
                     clearAllHighlights(targetElement, this.smartCommentsSetup.highlightedAnchors.value);
                 }
@@ -105,6 +109,8 @@ module.exports = defineComponent({
                 this.smartCommentsEvents.triggerCommentsDisabled();
                 
                 if (this.selectionEvents) this.selectionEvents.unbindEvents();
+                // Unbind link prevention events when comment mode is disabled
+                if (this.linkPrevention) this.linkPrevention.unbindEvents();
                 if (this.smartCommentsSetup.highlightedAnchors?.value) {
                     clearAllHighlights(targetElement, this.smartCommentsSetup.highlightedAnchors.value);
                 }
@@ -138,6 +144,8 @@ module.exports = defineComponent({
         document.removeEventListener('keydown', this.handleKeydown);
         document.removeEventListener('smartcomments:refresh-highlights', this.handleHighlightRefresh);
         if (this.selectionEvents) this.selectionEvents.unbindEvents();
+        // Clean up link prevention events
+        if (this.linkPrevention) this.linkPrevention.unbindEvents();
         if (this.selectionCleanup) this.selectionCleanup();
         window.removeEventListener('popstate', this.handlePopState);
         
@@ -224,8 +232,8 @@ module.exports = defineComponent({
          * Handle comment navigation from Comment component
          */
         handleCommentNavigation(navigationData) {
-            const { type } = navigationData;
-            this.commentsStore.navigateComment(type);
+            const { direction } = navigationData;
+            this.commentsStore.navigateComment(direction);
         },
 
         /**

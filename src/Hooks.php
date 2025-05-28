@@ -81,18 +81,10 @@ class Hooks {
 	 * @return bool
 	 */
 	public static function onResourceLoaderGetConfigVars( &$vars ) {
-		global $wgSmartCommentsBodyContainer, $wgSmartCommentsSelectLinksOnClick,
-			   $wgSmartCommentsOpenPopupOnSelect, $wgSmartCommentsDirectComment, $wgSmartCommentsPopupTimeout,
-				$wgSmartCommentsSpecialMaxItems, $wgSmartCommentsEnabledAddons;
+		global $wgSmartComments, $wgSmartCommentsSpecialMaxItems;
 
 		$vars[ 'wgSmartComments' ] = [
-			'bodyContainer' => $wgSmartCommentsBodyContainer,
-			'selectOnLinkClick' => $wgSmartCommentsSelectLinksOnClick,
-			'commentOnSelect' => $wgSmartCommentsOpenPopupOnSelect,
-			'directComment' => $wgSmartCommentsDirectComment,
-			'popupTimeout' => $wgSmartCommentsPopupTimeout,
 			'maxCommentsShownOnSpecial' => $wgSmartCommentsSpecialMaxItems,
-			'enabledAddons' => $wgSmartCommentsEnabledAddons
 		];
 		return true;
 	}

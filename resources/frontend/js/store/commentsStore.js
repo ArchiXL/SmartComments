@@ -203,6 +203,9 @@ module.exports = defineStore('commentsStore', {
                     if (fetchedComment) {
                         this.activeComment = fetchedComment;
 
+                        // Ensure currentCommentId is properly set
+                        this.setCurrentComment(fetchedComment.id || fetchedComment.data_id);
+
                         // Update active highlight to the new comment and scroll it into view
                         this.setActiveHighlight(fetchedComment.data_id || fetchedComment.id, true);
 

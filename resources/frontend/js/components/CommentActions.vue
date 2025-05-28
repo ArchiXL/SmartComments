@@ -59,7 +59,7 @@ module.exports = defineComponent({
         const commentsStore = useCommentsStore();
         const { messages } = useMessages();
 
-        const actions = [
+        const actions = computed(() => [
             {
                 icon: 'oo-ui-icon-arrowPrevious',
                 label: messages.previousComment(),
@@ -127,10 +127,10 @@ module.exports = defineComponent({
                     return true;
                 }
             },
-        ];
+        ]);
 
         const filteredActions = computed(() => {
-            return actions.filter(action => action.when());
+            return actions.value.filter(action => action.when());
         });
 
         const dropdownStates = ref({});

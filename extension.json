@@ -93,6 +93,7 @@
 				"resources/frontend/js/utils/smartCommentsEvents.js",
 				"resources/frontend/js/utils/vueDemiPolyfill.js",
 				"resources/frontend/js/composables/useSmartCommentsSetup.js",
+				"resources/frontend/js/composables/useLinkPrevention.js",
 				"resources/frontend/js/components/ReplyForm.vue",
 				"resources/frontend/js/components/ReplyList.vue",
 				"resources/frontend/js/components/Comment.vue",

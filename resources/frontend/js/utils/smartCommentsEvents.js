@@ -4,10 +4,6 @@
  * Provides a centralized event system for SmartComments components.
  * This includes events from the previous frontend codebase like sc-debug-mode, sc-comment-group-open.
  */
-
-/**
- * SmartComments event constants
- */
 const EVENTS = {
     // Core events from previous codebase
     SELECTION_ACTIVE: 'sc-selection-active',
@@ -79,21 +75,14 @@ class SmartCommentsEvents {
      * @param {HTMLElement} target - Target element (defaults to window)
      */
     trigger(eventName, data = {}, target = window) {
-        if (this.debugMode) {
-            console.log(`[${eventName}]`, data);
-        }
-
-        // Create custom event
         const event = new CustomEvent(eventName, {
             detail: data,
             bubbles: true,
             cancelable: true
         });
 
-        // Dispatch event
         target.dispatchEvent(event);
 
-        // Also trigger on window for global listeners (legacy compatibility)
         if (target !== window) {
             window.dispatchEvent(event);
         }
@@ -110,9 +99,6 @@ class SmartCommentsEvents {
      */
     on(eventName, callback, target = window) {
         const wrappedCallback = (event) => {
-            if (this.debugMode) {
-                console.log(`[${eventName}]`, event.detail);
-            }
             callback(event);
         };
 
