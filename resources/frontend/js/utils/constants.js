@@ -27,7 +27,8 @@ const SELECTION_VALIDATION_CODES = {
     ALREADY_COMMENTED: 1,
     DYNAMIC_CONTENT: 2,
     LINEBREAKS: 3,
-    EMPTY: 4
+    EMPTY: 4,
+    HTML_CONTENT: 5
 };
 
 // CSS classes used by SmartComments

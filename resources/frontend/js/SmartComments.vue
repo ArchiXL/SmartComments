@@ -34,6 +34,7 @@ const { useSelectionEvents } = require('./composables/useSelectionEvents.js');
 const { applyHighlights, clearAllHighlights } = require('./directives/highlightDirective.js');
 const useAppStateStore = require('./store/appStateStore.js');
 const useCommentsStore = require('./store/commentsStore.js');
+const useMessages = require('./composables/useMessages.js');
 const Comment = require('./components/Comment.vue');
 const NewCommentDialog = require('./components/NewCommentDialog.vue');
 const CommentTimeline = require('./components/CommentTimeline.vue');
@@ -50,7 +51,8 @@ module.exports = defineComponent({
         const smartCommentsSetup = useSmartCommentsSetup();
         const store = useAppStateStore();
         const commentsStore = useCommentsStore();
-        return { smartCommentsSetup, store, commentsStore, applyHighlights, smartCommentsEvents, EVENTS };
+        const messages = useMessages();
+        return { smartCommentsSetup, store, commentsStore, applyHighlights, smartCommentsEvents, EVENTS, messages };
     },
     data() {
         return {
@@ -61,6 +63,9 @@ module.exports = defineComponent({
     computed: {
         isEnabled() {
             return this.store.isEnabled;
+        },
+        annotateTooltipText() {
+            return this.messages.msg('sic-annotate-tooltip');
         }
     },
     mounted() {
@@ -71,6 +76,9 @@ module.exports = defineComponent({
         
         // Setup SmartComments events
         this.setupSmartCommentsEvents();
+
+        // Set CSS custom property for annotate tooltip text
+        this.updateAnnotateTooltipText();
 
         this.$watch(() => this.isEnabled, async (stateNowEnabled) => {
             const targetElement = document.getElementById('mw-content-text') || document.body;
@@ -104,6 +112,11 @@ module.exports = defineComponent({
                 this.commentsStore.closeAllDialogs();
             }
         }, { immediate: true });
+
+        // Watch for changes in annotate tooltip text (e.g., language changes)
+        this.$watch(() => this.annotateTooltipText, () => {
+            this.updateAnnotateTooltipText();
+        });
 
         // Handle selection events - delegate to store
         this.selectionCleanup = this.selectionEvents.onSelectionCreate(this.handleNewSelection);
@@ -172,7 +185,11 @@ module.exports = defineComponent({
         /**
          * Handle highlight click - delegate to store
          */
-        handleHighlightClick(commentData, position) {
+        handleHighlightClick(event, commentData, position) {
+            if (event && event.preventDefault) {
+                event.preventDefault();
+            }
+            
             // Trigger events
             this.smartCommentsEvents.triggerHighlightClicked(commentData, position);
             this.smartCommentsEvents.triggerCommentGroupOpen(commentData, position);
@@ -199,9 +216,7 @@ module.exports = defineComponent({
          * Handle new selection - delegate to store
          */
         handleNewSelection(selectionData) {
-            // Trigger selection active event
             this.smartCommentsEvents.triggerSelectionActive(selectionData);
-            
             this.commentsStore.openNewCommentDialog(selectionData);
         },
 
@@ -283,6 +298,13 @@ module.exports = defineComponent({
                     }
                 })
             );
+        },
+
+        /**
+         * Update CSS custom property for annotate tooltip text
+         */
+        updateAnnotateTooltipText() {
+            document.documentElement.style.setProperty('--smartcomments-annotate-text', `"${this.annotateTooltipText}"`);
         }
     }
 });
@@ -314,67 +336,6 @@ module.exports = defineComponent({
             box-sizing: border-box;
         }
     }
-
-    /* Selection system styles */
-    .sc-dynamic-block {
-        cursor: pointer;
-        transition: background-color 0.2s ease;
-        
-        &.sc-hover {
-            background-color: rgba(255, 255, 0, 0.2);
-            outline: 1px solid rgba(255, 255, 0, 0.5);
-        }
-        
-        &.sc-image-block {
-            display: inline-block;
-            
-            img {
-                display: block;
-                max-width: 100%;
-                height: auto;
-            }
-        }
-    }
-
-    /* Text selection highlighting */
-    .sc-selection-highlight {
-        background-color: rgba(255, 255, 224, 0.8);
-        border-top: 1px solid rgba(0, 0, 0, 0.2);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-        
-        &:first-child {
-            border-left: 1px solid rgba(0, 0, 0, 0.2);
-        }
-        
-        &:last-child {
-            border-right: 1px solid rgba(0, 0, 0, 0.2);
-        }
-    }
-    
-    // Pulse animation for active highlights
-    @keyframes pulse-highlight {
-        0% {
-            box-shadow: 0 0 8px rgba(54, 192, 255, 0.6);
-        }
-        50% {
-            box-shadow: 0 0 15px rgba(54, 192, 255, 0.9);
-        }
-        100% {
-            box-shadow: 0 0 8px rgba(54, 192, 255, 0.6);
-        }
-    }
-
-    /* Selection disabled state */
-    &.selection-disabled {
-        .sc-dynamic-block {
-            cursor: default;
-            
-            &:hover {
-                background-color: transparent;
-                outline: none;
-            }
-        }
-    }
 }
 *[class^='smartcomment-hl-'] {
     cursor: pointer;
@@ -389,7 +350,7 @@ module.exports = defineComponent({
         background: #ffde8d;
     }
 
-    &.image {
+    &[data-type="image"] {
         .sc-dynamic-block {
             &:before {
                 background: #ffffe0bf;
@@ -406,6 +367,69 @@ module.exports = defineComponent({
             &.active:before {
                 background: rgba(54, 192, 255, 0.8);
             }
+        }
+    }
+}
+
+/* Selection system styles */
+.sc-dynamic-block {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    position: relative;
+
+    &:hover {
+        &:before {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 224, 0.8);
+            border-top: 1px solid rgba(0, 0, 0, 0.2);
+            content: var(--smartcomments-annotate-text, "annotate");
+        }
+    }
+    
+    &.sc-hover {
+        background-color: rgba(255, 255, 0, 0.2);
+        outline: 1px solid rgba(255, 255, 0, 0.5);
+    }
+    
+    &.sc-image-block {
+        display: inline-block;
+        
+        img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+    }
+}
+
+
+/* Text selection highlighting */
+.sc-selection-highlight {
+    background-color: rgba(255, 255, 224, 0.8);
+    border-top: 1px solid rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    
+    &:first-child {
+        border-left: 1px solid rgba(0, 0, 0, 0.2);
+    }
+    
+    &:last-child {
+        border-right: 1px solid rgba(0, 0, 0, 0.2);
+    }
+}
+
+/* Selection disabled state */
+&.selection-disabled {
+    .sc-dynamic-block {
+        cursor: default;
+        
+        &:hover {
+            background-color: transparent;
+            outline: none;
         }
     }
 }

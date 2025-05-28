@@ -15,6 +15,7 @@ const SELECTION_ENUMS = {
     INVALID_SELECTION_INCLUDES_DYNAMIC_CONTENT: 2,
     INVALID_SELECTION_CONTAINS_LINEBREAKS: 3,
     INVALID_SELECTION_IS_EMPTY: 4,
+    INVALID_SELECTION_CONTAINS_HTML: 5,
     UNKNOWN_ERROR: 99
 };
 
@@ -228,7 +229,29 @@ function useSelection() {
         const validationResult = validateSelection(range);
 
         if (validationResult !== SELECTION_ENUMS.SELECTION_VALID) {
-            // Handle invalid selection (e.g., show a message to the user)
+            // Show specific error message based on validation result
+            let errorMessage = 'Invalid selection';
+            switch (validationResult) {
+                case SELECTION_ENUMS.INVALID_SELECTION_ALREADY_COMMENTED:
+                    errorMessage = mw.msg('sic-selection-error-1');
+                    break;
+                case SELECTION_ENUMS.INVALID_SELECTION_INCLUDES_DYNAMIC_CONTENT:
+                    errorMessage = mw.msg('sic-selection-error-2');
+                    break;
+                case SELECTION_ENUMS.INVALID_SELECTION_CONTAINS_LINEBREAKS:
+                    errorMessage = mw.msg('sic-selection-error-3');
+                    break;
+                case SELECTION_ENUMS.INVALID_SELECTION_CONTAINS_HTML:
+                    errorMessage = mw.msg('sic-selection-error-4');
+                    break;
+                case SELECTION_ENUMS.INVALID_SELECTION_IS_EMPTY:
+                    errorMessage = mw.msg('sic-selection-error-5');
+                    break;
+                default:
+                    errorMessage = 'Invalid selection';
+            }
+
+            mw.notify(errorMessage, { type: 'error' });
             console.warn('Invalid selection:', validationResult);
             clearSelection();
             return null;
@@ -280,8 +303,14 @@ function useSelection() {
             return null;
         }
 
+        // For sc-image-block elements, use the data-hash instead of full HTML
+        let selectionText = element.outerHTML;
+        if (element.classList.contains('sc-image-block') && element.dataset.hash) {
+            selectionText = element.dataset.hash;
+        }
+
         const selectionData = {
-            text: element.outerHTML,
+            text: selectionText,
             index: -1,
             type: 'dynamic_block',
             element: element

@@ -85,6 +85,11 @@ function validateSelectionContent(selection) {
         }
     }
 
+    // Check for HTML content in text selections
+    if (selectionHTML && /<[^>]*>/.test(selectionHTML)) {
+        return VALIDATION_CODES.HTML_CONTENT;
+    }
+
     return VALIDATION_CODES.VALID;
 }
 

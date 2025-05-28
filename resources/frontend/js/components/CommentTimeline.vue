@@ -152,7 +152,7 @@ module.exports = defineComponent({
                     ...comment,
                     itemStyle: {
                         top: `${adjustedPosition}px`,
-                        right: '-3px',
+                        right: '0px',
                         position: 'absolute'
                     }
                 });
@@ -170,7 +170,7 @@ module.exports = defineComponent({
                     ...comment,
                     itemStyle: {
                         top: `${bottomPosition}px`,
-                        right: '-3px',
+                        right: '0px',
                         position: 'absolute'
                     }
                 });
@@ -312,17 +312,6 @@ module.exports = defineComponent({
 
             &:hover {
                 background: #7de67d;
-            }
-
-            &:after {
-                content: '';
-                position: absolute;
-                top: -3px;
-                right: -3px;
-                width: 6px;
-                height: 6px;
-                background: #27ae60;
-                border: 1px solid #fff;
             }
         }
     }

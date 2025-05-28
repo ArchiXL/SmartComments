@@ -117,5 +117,6 @@
 	"sic-actions": "Acties",
 	"sic-mark-complete": "Markeer als voltooid",
 	"sic-mark-delete": "Verwijderen",
-	"sic-view-overview": "Bekijk paginaoverzicht"
+	"sic-view-overview": "Bekijk paginaoverzicht",
+	"sic-annotate-tooltip": "Annoteren"
 }

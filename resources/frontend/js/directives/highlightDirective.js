@@ -69,7 +69,7 @@ function applyHighlights(scopeElement, highlights, onClick) {
                         width: rect.width,
                         height: rect.height
                     };
-                    onClick(commentForListener, position);
+                    onClick(event, commentForListener, position);
                 };
                 targetEl.addEventListener('click', clickHandler);
                 targetEl.style.cursor = 'pointer'; // Indicate clickable
@@ -205,6 +205,20 @@ function applySelectorHighlight(scopeElement, highlightData, uniqueHighlightClas
 
     if (selector.startsWith('img[')) {
         const hash = selector.replace('img[', '').replace(']', '');
+
+        // First, try to find elements with data-hash attribute that matches the selector
+        const dynamicBlocksWithHash = scopeElement.querySelectorAll(`[data-hash="${selector}"]`);
+        if (dynamicBlocksWithHash.length > 0) {
+            dynamicBlocksWithHash.forEach(element => {
+                // Apply highlighting directly to the element with data-hash
+                element.classList.add(...classesToAdd);
+                element.setAttribute('data-comment-id', dataCommentId);
+                addClickListener(element);
+            });
+            return; // Exit early if we found dynamic blocks
+        }
+
+        // Fallback to original image matching logic
         const images = scopeElement.querySelectorAll('img');
         images.forEach(img => {
             if (img.getAttribute('data-original-hash') === hash || img.src.includes(hash) || (comment.image_hash && img.src.includes(comment.image_hash))) {

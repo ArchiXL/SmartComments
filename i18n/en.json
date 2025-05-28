@@ -109,13 +109,14 @@
 	"sic-comment-placeholder": "Enter your comment...",
 	"sic-saving": "Saving...",
 	"sic-reply-header": "Reply",
-	"sic-reply-placeholder": "Type your message...",
-	"sic-reply-submit": "Post reply",
-	"sic-reply-aria-label": "Reply to $1",
+	"sic-reply-placeholder": "Enter your reply...",
+	"sic-reply-submit": "Submit",
+	"sic-reply-aria-label": "Reply to comment",
 	"sic-previous-comment": "Previous comment",
 	"sic-next-comment": "Next comment",
 	"sic-actions": "Actions",
 	"sic-mark-complete": "Mark as complete",
 	"sic-mark-delete": "Delete",
-	"sic-view-overview": "View page overview"
+	"sic-view-overview": "View overview",
+	"sic-annotate-tooltip": "Annotate"
 }

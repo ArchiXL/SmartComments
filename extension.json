@@ -154,7 +154,8 @@
 				"sic-actions",
 				"sic-mark-complete",
 				"sic-mark-delete",
-				"sic-view-overview"
+				"sic-view-overview",
+				"sic-annotate-tooltip"
 			]
 		},
 		"ext.smartcomments.upstream": {
