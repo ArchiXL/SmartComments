@@ -136,7 +136,6 @@ module.exports = defineComponent({
                         reply: newReply
                     });
 
-                    console.log('Reply submitted successfully for comment ID:', props.comment.id || props.comment.data_id);
                     return true;
                 } else {
                     console.error('Failed to submit reply:', result.message);
@@ -149,8 +148,6 @@ module.exports = defineComponent({
         };
 
         const handleReplySubmitted = (replyData) => {
-            console.log('Reply submitted for comment ID:', props.comment.id || props.comment.data_id);
-            
             // Trigger refresh of highlights to show updated reply count
             if (typeof window !== 'undefined') {
                 window.dispatchEvent(new CustomEvent('smartcomments:refresh-highlights', {
@@ -178,9 +175,6 @@ module.exports = defineComponent({
             handlePrevious,
             messages
         };
-    },
-    created() {
-        console.log('Comment created', this.comment);
     }
 });
 </script>

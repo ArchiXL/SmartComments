@@ -61,7 +61,6 @@ class SmartCommentsEvents {
      */
     enableDebugMode() {
         this.debugMode = true;
-        console.log('[SmartComments] Debug mode enabled');
         this.trigger(EVENTS.DEBUG_MODE, { enabled: true });
     }
 
@@ -70,7 +69,6 @@ class SmartCommentsEvents {
      */
     disableDebugMode() {
         this.debugMode = false;
-        console.log('[SmartComments] Debug mode disabled');
         this.trigger(EVENTS.DEBUG_MODE, { enabled: false });
     }
 
@@ -82,7 +80,7 @@ class SmartCommentsEvents {
      */
     trigger(eventName, data = {}, target = window) {
         if (this.debugMode) {
-            console.log(`[SmartComments Event] ${eventName}`, data);
+            console.log(`[${eventName}]`, data);
         }
 
         // Create custom event
@@ -113,7 +111,7 @@ class SmartCommentsEvents {
     on(eventName, callback, target = window) {
         const wrappedCallback = (event) => {
             if (this.debugMode) {
-                console.log(`[SmartComments Event Received] ${eventName}`, event.detail);
+                console.log(`[${eventName}]`, event.detail);
             }
             callback(event);
         };

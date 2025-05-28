@@ -258,31 +258,15 @@ module.exports = defineComponent({
             // Listen for debug mode events
             this.smartCommentsEventsCleanup.push(
                 this.smartCommentsEvents.on(EVENTS.DEBUG_MODE, (event) => {
-                    console.log('[SmartComments] Debug mode event received:', event.detail);
                     if (event.detail.enabled && !this.isEnabled) {
                         this.store.setEnabled(true);
                     }
                 })
             );
             
-            // Listen for comment group open events
-            this.smartCommentsEventsCleanup.push(
-                this.smartCommentsEvents.on(EVENTS.COMMENT_GROUP_OPEN, (event) => {
-                    console.log('[SmartComments] Comment group opened:', event.detail);
-                })
-            );
-            
-            // Listen for comment group close events
-            this.smartCommentsEventsCleanup.push(
-                this.smartCommentsEvents.on(EVENTS.COMMENT_GROUP_CLOSE, (event) => {
-                    console.log('[SmartComments] Comment group closed:', event.detail);
-                })
-            );
-            
             // Listen for selection active events
             this.smartCommentsEventsCleanup.push(
                 this.smartCommentsEvents.on(EVENTS.SELECTION_ACTIVE, (event) => {
-                    console.log('[SmartComments] Selection active:', event.detail);
                     // Close any open comment dialogs when a new selection is made
                     if (this.commentsStore.isCommentDialogVisible) {
                         this.commentsStore.closeCommentDialog();
@@ -293,7 +277,6 @@ module.exports = defineComponent({
             // Listen for open comment events
             this.smartCommentsEventsCleanup.push(
                 this.smartCommentsEvents.on(EVENTS.OPEN_COMMENT_ID, (event) => {
-                    console.log('[SmartComments] Open comment event:', event.detail);
                     if (event.detail.commentId) {
                         // Handle opening specific comment
                         this.commentsStore.openCommentById(event.detail.commentId);

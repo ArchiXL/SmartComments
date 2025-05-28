@@ -1,73 +1,76 @@
 # SmartComments Events System
 
-This document describes the centralized event system for SmartComments, which includes events from the previous frontend codebase like `sc-debug-mode`, `sc-comment-group-open`, and new Vue frontend events.
+This document describes the jQuery-based event system for SmartComments, using `$(window).on()` for event handling across the application.
 
 ## Overview
 
-The SmartComments Events System provides a centralized way to handle events across the application. It maintains compatibility with the previous frontend codebase while adding new events for the Vue-based frontend.
+The SmartComments Events System uses jQuery's event system with `$(window).on()` to handle events across the application. All events are triggered on the window object for global accessibility.
 
 ## Quick Start
 
 ```javascript
-// Import the events system
-const { smartCommentsEvents, EVENTS } = require('./utils/smartCommentsEvents.js');
-
 // Listen for an event
-const cleanup = smartCommentsEvents.on(EVENTS.DEBUG_MODE, (event) => {
-    console.log('Debug mode changed:', event.detail);
+$(window).on('sc-debug-mode', function(event, data) {
+    console.log('Debug mode changed:', data);
 });
 
 // Trigger an event
-smartCommentsEvents.triggerCommentGroupOpen(commentData, position);
-
-// Clean up listener when done
-cleanup();
+$(window).trigger('sc-comment-group-open', {
+    comment: commentData,
+    position: position,
+    timestamp: Date.now()
+});
 ```
 
 ## Available Events
 
-### Core Events (from previous codebase)
+### Core Events
 
-| Event Name | Constant | Description | Event Data |
-|------------|----------|-------------|------------|
-| `sc-selection-active` | `EVENTS.SELECTION_ACTIVE` | Triggered when user makes a text/content selection | `{ selection, position, timestamp }` |
-| `sc-comment-group-open` | `EVENTS.COMMENT_GROUP_OPEN` | Triggered when a comment dialog is opened | `{ comment, position, timestamp }` |
-| `sc-comment-group-close` | `EVENTS.COMMENT_GROUP_CLOSE` | Triggered when a comment dialog is closed | `{ timestamp }` |
-| `sc-debug-mode` | `EVENTS.DEBUG_MODE` | Triggered when debug mode is enabled/disabled | `{ enabled: boolean }` |
-| `sc-open-comment` | `EVENTS.OPEN_COMMENT_ID` | Triggered to open a specific comment by ID | `{ commentId, timestamp }` |
+| Event Name | Description | Event Data |
+|------------|-------------|------------|
+| `sc-selection-active` | Triggered when user makes a text/content selection | `{ selection, position, timestamp }` |
+| `sc-comment-group-open` | Triggered when a comment dialog is opened | `{ comment, position, timestamp }` |
+| `sc-comment-group-close` | Triggered when a comment dialog is closed | `{ timestamp }` |
+| `sc-debug-mode` | Triggered when debug mode is enabled/disabled | `{ enabled: boolean }` |
+| `sc-open-comment` | Triggered to open a specific comment by ID | `{ commentId, timestamp }` |
 
-### New Vue Frontend Events
+### Comment Lifecycle Events
 
-| Event Name | Constant | Description | Event Data |
-|------------|----------|-------------|------------|
-| `sc-comment-created` | `EVENTS.COMMENT_CREATED` | Triggered when a new comment is created | `{ comment, timestamp }` |
-| `sc-comment-updated` | `EVENTS.COMMENT_UPDATED` | Triggered when a comment is updated | `{ comment, timestamp }` |
-| `sc-comment-deleted` | `EVENTS.COMMENT_DELETED` | Triggered when a comment is deleted | `{ comment, timestamp }` |
-| `sc-comment-completed` | `EVENTS.COMMENT_COMPLETED` | Triggered when a comment is marked as completed | `{ comment, timestamp }` |
-| `sc-highlight-clicked` | `EVENTS.HIGHLIGHT_CLICKED` | Triggered when a comment highlight is clicked | `{ comment, position, timestamp }` |
-| `sc-selection-changed` | `EVENTS.SELECTION_CHANGED` | Triggered when selection state changes | `{ selection, timestamp }` |
-| `sc-comments-enabled` | `EVENTS.COMMENTS_ENABLED` | Triggered when SmartComments is enabled | `{ timestamp }` |
-| `sc-comments-disabled` | `EVENTS.COMMENTS_DISABLED` | Triggered when SmartComments is disabled | `{ timestamp }` |
+| Event Name | Description | Event Data |
+|------------|-------------|------------|
+| `sc-comment-created` | Triggered when a new comment is created | `{ comment, timestamp }` |
+| `sc-comment-updated` | Triggered when a comment is updated | `{ comment, timestamp }` |
+| `sc-comment-deleted` | Triggered when a comment is deleted | `{ comment, timestamp }` |
+| `sc-comment-completed` | Triggered when a comment is marked as completed | `{ comment, timestamp }` |
+
+### UI Events
+
+| Event Name | Description | Event Data |
+|------------|-------------|------------|
+| `sc-highlight-clicked` | Triggered when a comment highlight is clicked | `{ comment, position, timestamp }` |
+| `sc-selection-changed` | Triggered when selection state changes | `{ selection, timestamp }` |
+| `sc-comments-enabled` | Triggered when SmartComments is enabled | `{ timestamp }` |
+| `sc-comments-disabled` | Triggered when SmartComments is disabled | `{ timestamp }` |
 
 ### System Events
 
-| Event Name | Constant | Description | Event Data |
-|------------|----------|-------------|------------|
-| `smartcomments:refresh-highlights` | `EVENTS.REFRESH_HIGHLIGHTS` | Triggered to refresh comment highlights | `{ timestamp }` |
-| `smartcomments:refresh-timeline` | `EVENTS.REFRESH_TIMELINE` | Triggered to refresh comment timeline | `{ timestamp }` |
+| Event Name | Description | Event Data |
+|------------|-------------|------------|
+| `smartcomments:refresh-highlights` | Triggered to refresh comment highlights | `{ timestamp }` |
+| `smartcomments:refresh-timeline` | Triggered to refresh comment timeline | `{ timestamp }` |
 
 ## Usage Examples
 
 ### 1. Listen for Debug Mode Changes
 
 ```javascript
-const cleanup = smartCommentsEvents.on(EVENTS.DEBUG_MODE, (event) => {
-    if (event.detail.enabled) {
+$(window).on('sc-debug-mode', function(event, data) {
+    if (data.enabled) {
         console.log('Debug mode enabled');
-        document.body.classList.add('sc-debug');
+        $('body').addClass('sc-debug');
     } else {
         console.log('Debug mode disabled');
-        document.body.classList.remove('sc-debug');
+        $('body').removeClass('sc-debug');
     }
 });
 ```
@@ -76,13 +79,14 @@ const cleanup = smartCommentsEvents.on(EVENTS.DEBUG_MODE, (event) => {
 
 ```javascript
 // Comment opened
-smartCommentsEvents.on(EVENTS.COMMENT_GROUP_OPEN, (event) => {
-    const { comment, position } = event.detail;
-    console.log(`Comment ${comment.id} opened at:`, position);
+$(window).on('sc-comment-group-open', function(event, data) {
+    var comment = data.comment;
+    var position = data.position;
+    console.log('Comment ' + comment.id + ' opened at:', position);
 });
 
 // Comment closed
-smartCommentsEvents.on(EVENTS.COMMENT_GROUP_CLOSE, (event) => {
+$(window).on('sc-comment-group-close', function(event, data) {
     console.log('Comment dialog closed');
 });
 ```
@@ -90,9 +94,10 @@ smartCommentsEvents.on(EVENTS.COMMENT_GROUP_CLOSE, (event) => {
 ### 3. Listen for Selection Events
 
 ```javascript
-smartCommentsEvents.on(EVENTS.SELECTION_ACTIVE, (event) => {
-    const { selection, position } = event.detail;
-    console.log(`Selected: "${selection.text}"`);
+$(window).on('sc-selection-active', function(event, data) {
+    var selection = data.selection;
+    var position = data.position;
+    console.log('Selected: "' + selection.text + '"');
     console.log('Position:', position);
 });
 ```
@@ -101,56 +106,53 @@ smartCommentsEvents.on(EVENTS.SELECTION_ACTIVE, (event) => {
 
 ```javascript
 // New comment created
-smartCommentsEvents.on(EVENTS.COMMENT_CREATED, (event) => {
-    console.log('New comment:', event.detail.comment);
+$(window).on('sc-comment-created', function(event, data) {
+    console.log('New comment:', data.comment);
     showNotification('Comment created!');
 });
 
 // Comment deleted
-smartCommentsEvents.on(EVENTS.COMMENT_DELETED, (event) => {
-    console.log('Comment deleted:', event.detail.comment);
+$(window).on('sc-comment-deleted', function(event, data) {
+    console.log('Comment deleted:', data.comment);
     showNotification('Comment deleted');
 });
 
 // Comment completed
-smartCommentsEvents.on(EVENTS.COMMENT_COMPLETED, (event) => {
-    console.log('Comment completed:', event.detail.comment);
+$(window).on('sc-comment-completed', function(event, data) {
+    console.log('Comment completed:', data.comment);
     showNotification('Comment marked as completed!');
 });
 ```
 
-### 5. Trigger Events Manually
+### 5. Trigger Events
 
 ```javascript
 // Enable debug mode
-smartCommentsEvents.enableDebugMode();
+$(window).trigger('sc-debug-mode', { enabled: true });
 
 // Open a comment
-smartCommentsEvents.triggerCommentGroupOpen(
-    { id: 123, text: 'Example comment' },
-    { top: 100, left: 200 }
-);
+$(window).trigger('sc-comment-group-open', {
+    comment: { id: 123, text: 'Example comment' },
+    position: { top: 100, left: 200 },
+    timestamp: Date.now()
+});
 
 // Trigger selection
-smartCommentsEvents.triggerSelectionActive({
+$(window).trigger('sc-selection-active', {
     selection: { text: 'Selected text', type: 'text' },
-    position: { x: 300, y: 400 }
+    position: { x: 300, y: 400 },
+    timestamp: Date.now()
 });
 ```
 
-## Event Object Structure
+## Event Data Structure
 
-All events follow this structure:
+All events include a timestamp and event-specific data:
 
 ```javascript
 {
-    type: 'event-name',           // The event name
-    detail: {                     // Event-specific data
-        timestamp: 1234567890,    // When the event occurred
-        // ... other event-specific properties
-    },
-    bubbles: true,               // Events bubble up
-    cancelable: true             // Events can be cancelled
+    timestamp: 1234567890,    // When the event occurred
+    // ... other event-specific properties
 }
 ```
 
@@ -160,46 +162,29 @@ All events follow this structure:
 
 ```javascript
 // Listen for an event only once
-const cleanup = smartCommentsEvents.once(EVENTS.COMMENT_CREATED, (event) => {
-    console.log('First comment created:', event.detail.comment);
+$(window).one('sc-comment-created', function(event, data) {
+    console.log('First comment created:', data.comment);
 });
 ```
 
-### Debug Mode
+### Namespaced Events
 
 ```javascript
-// Enable debug mode for detailed event logging
-smartCommentsEvents.enableDebugMode();
+// Use namespaces for easier cleanup
+$(window).on('sc-debug-mode.myPlugin', function(event, data) {
+    console.log('Debug mode changed:', data);
+});
 
-// Disable debug mode
-smartCommentsEvents.disableDebugMode();
-
-// Debug mode is automatically enabled if URL contains scenabled=1
+// Remove all events for a namespace
+$(window).off('.myPlugin');
 ```
 
-### Custom Event Targets
+### Event Delegation
 
 ```javascript
-// Listen on a specific element instead of window
-const element = document.getElementById('my-element');
-const cleanup = smartCommentsEvents.on(EVENTS.DEBUG_MODE, callback, element);
-```
-
-### Clean Up All Listeners
-
-```javascript
-// Remove all event listeners (useful for cleanup)
-smartCommentsEvents.removeAllListeners();
-```
-
-## Legacy Compatibility
-
-The events system provides automatic compatibility with jQuery events if jQuery is available:
-
-```javascript
-// If jQuery is present, events are also triggered as jQuery events
-$(window).on('sc-debug-mode', function(event, data) {
-    console.log('jQuery event received:', data);
+// Listen for events on specific elements
+$(document).on('sc-highlight-clicked', '.comment-highlight', function(event, data) {
+    console.log('Highlight clicked:', data);
 });
 ```
 
@@ -211,79 +196,126 @@ Debug mode is automatically enabled when the URL contains `scenabled=1`:
 https://example.com/wiki/Page?scenabled=1
 ```
 
-This will automatically trigger the `sc-debug-mode` event with `enabled: true`.
+This will automatically trigger the `sc-debug-mode` event:
+
+```javascript
+// Check URL parameter on page load
+$(document).ready(function() {
+    var urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('scenabled') === '1') {
+        $(window).trigger('sc-debug-mode', { enabled: true });
+    }
+});
+```
 
 ## Best Practices
 
-1. **Always clean up listeners** when components are destroyed:
+1. **Always clean up event listeners** when components are destroyed:
    ```javascript
-   const cleanup = smartCommentsEvents.on(EVENTS.DEBUG_MODE, callback);
+   // Use namespaces for easy cleanup
+   $(window).on('sc-debug-mode.myComponent', callback);
    
-   // In Vue component beforeUnmount or similar
-   cleanup();
+   // Later, remove all events for this component
+   $(window).off('.myComponent');
    ```
 
-2. **Use constants instead of strings** for event names:
+2. **Use consistent event naming**:
    ```javascript
-   // Good
-   smartCommentsEvents.on(EVENTS.DEBUG_MODE, callback);
-   
-   // Avoid
-   smartCommentsEvents.on('sc-debug-mode', callback);
+   // Follow the sc-* pattern for SmartComments events
+   $(window).trigger('sc-comment-created', data);
    ```
 
-3. **Check event data structure** before using:
+3. **Include timestamps in event data**:
    ```javascript
-   smartCommentsEvents.on(EVENTS.COMMENT_CREATED, (event) => {
-       if (event.detail && event.detail.comment) {
-           console.log('Comment:', event.detail.comment);
-       }
+   $(window).trigger('sc-comment-created', {
+       comment: comment,
+       timestamp: Date.now()
    });
    ```
 
-4. **Use debug mode for development**:
+4. **Check for jQuery availability**:
    ```javascript
-   // Add ?scenabled=1 to URL for automatic debug mode
-   // Or enable manually:
-   smartCommentsEvents.enableDebugMode();
+   if (typeof $ !== 'undefined') {
+       $(window).on('sc-debug-mode', callback);
+   }
    ```
 
-## Integration with Vue Components
+## Event Triggering Utilities
 
-In Vue components, set up event listeners in `mounted()` and clean them up in `beforeUnmount()`:
+Create helper functions for common event triggers:
 
 ```javascript
-// In Vue component
-mounted() {
-    this.eventCleanups = [
-        smartCommentsEvents.on(EVENTS.DEBUG_MODE, this.handleDebugMode),
-        smartCommentsEvents.on(EVENTS.COMMENT_CREATED, this.handleCommentCreated),
-    ];
-},
-
-beforeUnmount() {
-    this.eventCleanups.forEach(cleanup => cleanup());
-},
-
-methods: {
-    handleDebugMode(event) {
-        // Handle debug mode change
+// Helper functions for triggering events
+var SmartCommentsEvents = {
+    enableDebugMode: function() {
+        $(window).trigger('sc-debug-mode', { enabled: true });
     },
     
-    handleCommentCreated(event) {
-        // Handle comment creation
+    disableDebugMode: function() {
+        $(window).trigger('sc-debug-mode', { enabled: false });
+    },
+    
+    openComment: function(comment, position) {
+        $(window).trigger('sc-comment-group-open', {
+            comment: comment,
+            position: position,
+            timestamp: Date.now()
+        });
+    },
+    
+    closeComment: function() {
+        $(window).trigger('sc-comment-group-close', {
+            timestamp: Date.now()
+        });
+    },
+    
+    commentCreated: function(comment) {
+        $(window).trigger('sc-comment-created', {
+            comment: comment,
+            timestamp: Date.now()
+        });
     }
-}
+};
+
+// Usage
+SmartCommentsEvents.enableDebugMode();
+SmartCommentsEvents.openComment(commentData, { top: 100, left: 200 });
+```
+
+## Integration Examples
+
+### MediaWiki Integration
+
+```javascript
+// In MediaWiki, use mw.hook for additional compatibility
+$(document).ready(function() {
+    // Listen for SmartComments events
+    $(window).on('sc-comment-created', function(event, data) {
+        // Also fire MediaWiki hook
+        mw.hook('smartcomments.comment.created').fire(data.comment);
+    });
+});
+```
+
+### Debug Console Integration
+
+```javascript
+// Enable debug logging for all SmartComments events
+$(window).on('sc-debug-mode', function(event, data) {
+    if (data.enabled) {
+        // Log all SmartComments events when debug is enabled
+        $(window).on('sc-comment-created.debug sc-comment-deleted.debug sc-comment-updated.debug', 
+            function(event, data) {
+                console.log('SmartComments Event:', event.type, data);
+            }
+        );
+    } else {
+        // Remove debug logging
+        $(window).off('.debug');
+    }
+});
 ```
 
 ## Files
 
-- **`smartCommentsEvents.js`** - Main events system implementation
-- **`eventsExample.js`** - Usage examples and demos
-- **`SmartComments.vue`** - Main Vue component with events integration
-- **`commentsStore.js`** - Pinia store with events integration
-
-## See Also
-
-- **`examples/eventsExample.js`** - Complete usage examples
-- Original events system: **`resources/js/sic-base/events/Events.js`** 
+Events are handled throughout the SmartComments codebase using this jQuery-based approach in various JavaScript files within the extension. 

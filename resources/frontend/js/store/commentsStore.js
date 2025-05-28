@@ -504,7 +504,6 @@ module.exports = defineStore('commentsStore', {
             const commentId = urlParams.get('commentId') || urlParams.get('focusId');
 
             if (commentId) {
-                console.log('CommentsStore: Opening comment from URL parameter:', commentId);
                 await this.openCommentDialogById(commentId);
             }
         },

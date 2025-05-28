@@ -409,7 +409,6 @@ function removeCommentHighlight(commentId, scopeElement = null) {
     const elements = targetElement.querySelectorAll(`.${uniqueHighlightClass}`);
 
     if (elements.length === 0) {
-        console.log('removeCommentHighlight: No elements found for comment:', commentId);
         return;
     }
 
@@ -454,8 +453,6 @@ function removeCommentHighlight(commentId, scopeElement = null) {
             manuallyRemoveHighlight(targetEl, uniqueHighlightClass, hasOtherSmartCommentClass);
         }
     });
-
-    console.log('removeCommentHighlight: Removed highlight for comment:', commentId);
 }
 
 /**

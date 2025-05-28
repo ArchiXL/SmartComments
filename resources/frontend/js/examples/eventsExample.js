@@ -13,14 +13,10 @@ const { smartCommentsEvents, EVENTS } = require('../utils/smartCommentsEvents.js
  */
 function setupDebugModeListener() {
     const cleanup = smartCommentsEvents.on(EVENTS.DEBUG_MODE, (event) => {
-        console.log('Debug mode changed:', event.detail);
-
         if (event.detail.enabled) {
-            console.log('SmartComments debug mode is now enabled');
             // Add debug UI elements, logging, etc.
             document.body.classList.add('sc-debug');
         } else {
-            console.log('SmartComments debug mode is now disabled');
             document.body.classList.remove('sc-debug');
         }
     });
@@ -33,19 +29,11 @@ function setupDebugModeListener() {
  */
 function setupCommentGroupListeners() {
     const openCleanup = smartCommentsEvents.on(EVENTS.COMMENT_GROUP_OPEN, (event) => {
-        console.log('Comment group opened:', event.detail);
-
         const { comment, position, timestamp } = event.detail;
-        console.log(`Comment ${comment.id || comment.data_id} opened at position:`, position);
-
-        // You could add UI feedback here
         document.body.classList.add('sc-comment-open');
     });
 
     const closeCleanup = smartCommentsEvents.on(EVENTS.COMMENT_GROUP_CLOSE, (event) => {
-        console.log('Comment group closed:', event.detail);
-
-        // Remove UI feedback
         document.body.classList.remove('sc-comment-open');
     });
 
@@ -57,12 +45,7 @@ function setupCommentGroupListeners() {
  */
 function setupSelectionListener() {
     const cleanup = smartCommentsEvents.on(EVENTS.SELECTION_ACTIVE, (event) => {
-        console.log('Selection made:', event.detail);
-
         const { selection, position } = event.detail;
-        console.log(`Selected text: "${selection.text}"`);
-        console.log('Selection position:', position);
-
         // You could show a temporary UI indicator
         showSelectionFeedback(selection, position);
     });
@@ -75,20 +58,14 @@ function setupSelectionListener() {
  */
 function setupCommentLifecycleListeners() {
     const createdCleanup = smartCommentsEvents.on(EVENTS.COMMENT_CREATED, (event) => {
-        console.log('New comment created:', event.detail.comment);
-        // Show success notification
         showNotification('Comment created successfully!', 'success');
     });
 
     const deletedCleanup = smartCommentsEvents.on(EVENTS.COMMENT_DELETED, (event) => {
-        console.log('Comment deleted:', event.detail.comment);
-        // Show deletion notification
         showNotification('Comment deleted.', 'info');
     });
 
     const completedCleanup = smartCommentsEvents.on(EVENTS.COMMENT_COMPLETED, (event) => {
-        console.log('Comment completed:', event.detail.comment);
-        // Show completion notification
         showNotification('Comment marked as completed!', 'success');
     });
 
@@ -129,7 +106,6 @@ function checkUrlForDebugMode() {
     // but you can also check manually:
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('scenabled') === '1') {
-        console.log('Debug mode enabled via URL parameter');
         smartCommentsEvents.enableDebugMode();
     }
 }
@@ -166,8 +142,6 @@ function showNotification(message, type = 'info') {
     // Use MediaWiki notification system if available
     if (typeof mw !== 'undefined' && mw.notify) {
         mw.notify(message, { type });
-    } else {
-        console.log(`[${type.toUpperCase()}] ${message}`);
     }
 }
 
@@ -175,8 +149,6 @@ function showNotification(message, type = 'info') {
  * Example usage - Setup all listeners
  */
 function initializeEventListeners() {
-    console.log('Setting up SmartComments event listeners...');
-
     const cleanupFunctions = [
         setupDebugModeListener(),
         ...setupCommentGroupListeners(),
@@ -186,7 +158,6 @@ function initializeEventListeners() {
 
     // Return a function to clean up all listeners
     return () => {
-        console.log('Cleaning up SmartComments event listeners...');
         cleanupFunctions.forEach(cleanup => cleanup());
     };
 }

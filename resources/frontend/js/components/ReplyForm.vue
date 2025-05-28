@@ -119,11 +119,8 @@ module.exports = defineComponent({
                         this.reply = '';
                         this.hasContent = false;
                         this.isFocused = false;
-                        
-                        console.log('Reply submitted successfully');
                     } else {
                         console.error('Failed to submit reply');
-                        // Could show user feedback here
                     }
                 } else {
                     console.error('Comment object does not have a reply method');

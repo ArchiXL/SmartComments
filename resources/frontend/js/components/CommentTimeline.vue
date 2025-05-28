@@ -175,8 +175,6 @@ module.exports = defineComponent({
                     }
                 });
             });
-
-            console.log(`CommentTimeline: Processed ${processedComments.length} comments, ${brokenComments.length} broken`);
             return processedComments;
         });
 

@@ -159,13 +159,13 @@
 		},
 		"ext.smartcomments.upstream": {
 			"scripts": [
-				"resources/js/node_modules/rangy/lib/rangy-core.js",
-				"resources/js/node_modules/rangy/lib/rangy-classapplier.js",
-				"resources/js/node_modules/rangy/lib/rangy-highlighter.js",
-				"resources/js/node_modules/rangy/lib/rangy-serializer.js",
-				"resources/js/node_modules/rangy/lib/rangy-textrange.js",
-				"resources/js/node_modules/rangy/lib/rangy-selectionsaverestore.js",
-				"resources/js/node_modules/html2canvas/dist/html2canvas.js"
+				"resources/frontend/upstream/rangy/lib/rangy-core.js",
+				"resources/frontend/upstream/rangy/lib/rangy-classapplier.js",
+				"resources/frontend/upstream/rangy/lib/rangy-highlighter.js",
+				"resources/frontend/upstream/rangy/lib/rangy-serializer.js",
+				"resources/frontend/upstream/rangy/lib/rangy-textrange.js",
+				"resources/frontend/upstream/rangy/lib/rangy-selectionsaverestore.js",
+				"resources/frontend/upstream/html2canvas/dist/html2canvas.js"
 			]
 		}
 	},
