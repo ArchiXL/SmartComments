@@ -1,4 +1,5 @@
 const { defineStore } = Pinia;
+const useComments = require('../composables/useComments.js');
 
 module.exports = defineStore('commentsStore', {
     state: () => ({
@@ -6,6 +7,15 @@ module.exports = defineStore('commentsStore', {
         currentCommentId: null,
         isLoading: false,
         error: null,
+
+        // Dialog state management
+        activeComment: null,
+        commentPosition: null,
+        isCommentDialogVisible: false,
+
+        // New comment dialog state
+        isNewCommentDialogVisible: false,
+        newCommentSelection: null,
     }),
 
     getters: {
@@ -123,6 +133,200 @@ module.exports = defineStore('commentsStore', {
 
         clearError() {
             this.error = null;
+        },
+
+        // === Dialog Management Actions ===
+
+        /**
+         * Open a comment dialog with the specified comment and position
+         */
+        async openCommentDialog(commentData, position) {
+            console.log('CommentsStore: Opening comment dialog for:', commentData.data_id);
+            this.setLoading(true);
+            this.clearError();
+
+            try {
+                const { getComment } = useComments();
+                const fetchedComment = await getComment(commentData.data_id);
+
+                if (fetchedComment) {
+                    this.activeComment = fetchedComment;
+                    this.commentPosition = position;
+                    this.isCommentDialogVisible = true;
+                    this.setCurrentComment(fetchedComment.id || fetchedComment.data_id);
+                    console.log('CommentsStore: Comment dialog opened successfully');
+                } else {
+                    this.setError('Comment not found');
+                    console.error('CommentsStore: Comment not found:', commentData.data_id);
+                }
+            } catch (error) {
+                this.setError('Error fetching comment');
+                console.error('CommentsStore: Error fetching comment:', error);
+            } finally {
+                this.setLoading(false);
+            }
+        },
+
+        /**
+         * Close the comment dialog
+         */
+        closeCommentDialog() {
+            this.activeComment = null;
+            this.commentPosition = null;
+            this.isCommentDialogVisible = false;
+            this.setCurrentComment(null);
+            console.log('CommentsStore: Comment dialog closed');
+        },
+
+        /**
+         * Navigate to next/previous comment
+         */
+        async navigateComment(direction) {
+            const targetComment = direction === 'next' ? this.goToNextComment() : this.goToPreviousComment();
+
+            if (targetComment) {
+                try {
+                    const { getComment } = useComments();
+                    const fetchedComment = await getComment(targetComment.data_id || targetComment.id);
+
+                    if (fetchedComment) {
+                        this.activeComment = fetchedComment;
+                        // Keep the same position for now, could be enhanced to scroll to highlighted element
+                        console.log('CommentsStore: Successfully navigated to', direction, 'comment');
+                    } else {
+                        this.setError(`Could not fetch ${direction} comment`);
+                        console.error('CommentsStore: Could not fetch', direction, 'comment:', targetComment);
+                    }
+                } catch (error) {
+                    this.setError(`Error navigating to ${direction} comment`);
+                    console.error('CommentsStore: Error navigating to', direction, 'comment:', error);
+                }
+            }
+        },
+
+        /**
+         * Open new comment dialog with selection data
+         */
+        openNewCommentDialog(selectionData) {
+            this.newCommentSelection = {
+                text: selectionData.selection.text,
+                index: selectionData.selection.index,
+                type: selectionData.selection.type,
+                image: selectionData.selection.image || null
+            };
+            this.isNewCommentDialogVisible = true;
+            console.log('CommentsStore: New comment dialog opened');
+        },
+
+        /**
+         * Close new comment dialog
+         */
+        closeNewCommentDialog() {
+            this.newCommentSelection = null;
+            this.isNewCommentDialogVisible = false;
+            console.log('CommentsStore: New comment dialog closed');
+        },
+
+        /**
+         * Handle comment save completion
+         */
+        async handleCommentSaved(savedComment) {
+            this.closeNewCommentDialog();
+            console.log('CommentsStore: Comment saved, triggering refresh');
+
+            // Emit an event that the main component can listen to for reloading highlights
+            // This maintains separation - the store doesn't know about highlight management
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('smartcomments:refresh-highlights', {
+                    detail: { savedComment }
+                }));
+            }
+        },
+
+        /**
+         * Delete a comment
+         */
+        async deleteComment(comment) {
+            console.log('CommentsStore: Deleting comment:', comment.id || comment.data_id);
+            this.setLoading(true);
+
+            try {
+                const { deleteComment } = useComments();
+                const result = await deleteComment(comment.id || comment.data_id);
+
+                if (result.success === '1' || result.success === true) {
+                    this.removeComment(comment.id || comment.data_id);
+                    this.closeCommentDialog();
+
+                    // Trigger highlight refresh
+                    if (typeof window !== 'undefined') {
+                        window.dispatchEvent(new CustomEvent('smartcomments:refresh-highlights', {
+                            detail: { deletedComment: comment }
+                        }));
+                    }
+                    console.log('CommentsStore: Comment deleted successfully');
+                } else {
+                    this.setError(result.message || 'Failed to delete comment');
+                }
+            } catch (error) {
+                this.setError('Error deleting comment');
+                console.error('CommentsStore: Error deleting comment:', error);
+            } finally {
+                this.setLoading(false);
+            }
+        },
+
+        /**
+         * Complete a comment
+         */
+        async completeComment(comment) {
+            console.log('CommentsStore: Completing comment:', comment.id || comment.data_id);
+            this.setLoading(true);
+
+            try {
+                const { updateComment } = useComments();
+                const result = await updateComment(
+                    comment.id || comment.data_id,
+                    'completed',
+                    comment.text
+                );
+
+                if (result.success === '1' || result.success === true) {
+                    this.updateComment(comment.id || comment.data_id, { status: 'completed' });
+
+                    // Trigger highlight refresh
+                    if (typeof window !== 'undefined') {
+                        window.dispatchEvent(new CustomEvent('smartcomments:refresh-highlights', {
+                            detail: { completedComment: comment }
+                        }));
+                    }
+                    console.log('CommentsStore: Comment completed successfully');
+                } else {
+                    this.setError(result.message || 'Failed to complete comment');
+                }
+            } catch (error) {
+                this.setError('Error completing comment');
+                console.error('CommentsStore: Error completing comment:', error);
+            } finally {
+                this.setLoading(false);
+            }
+        },
+
+        /**
+         * View page for comment
+         */
+        viewPage(comment) {
+            console.log('CommentsStore: Viewing page for comment:', comment.id || comment.data_id);
+            // Implementation depends on your page navigation system
+            // This could open a new window, navigate to a different route, etc.
+        },
+
+        /**
+         * Close all dialogs (useful for global state changes)
+         */
+        closeAllDialogs() {
+            this.closeCommentDialog();
+            this.closeNewCommentDialog();
         }
     }
 }); 

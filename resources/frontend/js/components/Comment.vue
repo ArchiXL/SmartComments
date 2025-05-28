@@ -85,11 +85,11 @@ module.exports = defineComponent({
             // Optionally, refresh the reply list or give user feedback
             console.log('Reply submitted for comment ID:', this.comment.id);
         },
-        handleNext(nextComment) {
-            this.$emit('navigate', { type: 'next', comment: nextComment });
+        handleNext() {
+            this.$emit('navigate', { type: 'next' });
         },
-        handlePrevious(previousComment) {
-            this.$emit('navigate', { type: 'previous', comment: previousComment });
+        handlePrevious() {
+            this.$emit('navigate', { type: 'previous' });
         }
     },
     created() {

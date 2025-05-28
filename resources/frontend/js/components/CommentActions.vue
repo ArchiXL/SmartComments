@@ -63,13 +63,9 @@ module.exports = defineComponent({
                 label: 'Volgende opmerking',
                 align: 'left',
                 action: () => {
-                    const nextComment = commentsStore.goToNextComment();
-                    if (nextComment) {
-                        emit('next', nextComment);
-                    }
+                    emit('next');
                 },
                 when: () => {
-                    // Show next button if there are more comments after the current one
                     return commentsStore.hasNextComment;
                 }
             },
@@ -78,13 +74,9 @@ module.exports = defineComponent({
                 label: 'Vorige opmerking',
                 align: 'left',
                 action: () => {
-                    const previousComment = commentsStore.goToPreviousComment();
-                    if (previousComment) {
-                        emit('previous', previousComment);
-                    }
+                    emit('previous');
                 },
                 when: () => {
-                    // Show previous button if there are comments before the current one
                     return commentsStore.hasPreviousComment;
                 }
             },
