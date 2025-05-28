@@ -45,7 +45,6 @@ module.exports = defineComponent({
     font-size: .85em;
 
     .smartcomments-message-header {
-        border-bottom: 1px dotted #ccc;
         display: flex;
         padding: .5em 0;
         align-items: center;

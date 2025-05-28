@@ -80,11 +80,11 @@
 				"resources/frontend/js/directives/highlightDirective.js",
 				"resources/frontend/js/composables/useHighlight.js",
 				"resources/frontend/js/composables/useComments.js",
-				"resources/frontend/js/composables/useUser.js",
 				"resources/frontend/js/composables/useSelection.js",
 				"resources/frontend/js/composables/useSelectionEvents.js",
 				"resources/frontend/js/composables/useScreenshot.js",
 				"resources/frontend/js/utils/selectionUtils.js",
+				"resources/frontend/js/utils/vueDemiPolyfill.js",
 				"resources/frontend/js/composables/useSmartCommentsSetup.js",
 				"resources/frontend/js/components/ReplyForm.vue",
 				"resources/frontend/js/components/ReplyList.vue",
@@ -95,6 +95,7 @@
 				"resources/frontend/js/components/NewCommentDialog.vue",
 				"resources/frontend/js/store/appStateStore.js",
 				"resources/frontend/js/store/commentsStore.js",
+				"resources/frontend/js/store/userStore.js",
 				"resources/frontend/js/SmartComments.vue"
 			],
 			"styles": [

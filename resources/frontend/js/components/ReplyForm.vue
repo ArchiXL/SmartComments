@@ -4,10 +4,35 @@
             <p>Reageren</p>
         </div>
         <div class="smartcomments-reply-form-body">
-            <textarea class="smartcomments-reply-form-body-textarea" v-model="reply" placeholder="Typ hier je bericht..."></textarea>
+            <textarea 
+                class="smartcomments-reply-form-body-textarea" 
+                v-model="reply" 
+                placeholder="Typ hier je bericht..."
+                @focus="onFocus"
+                @blur="onBlur"
+                @input="onInput"
+                :aria-label="'Reactie op ' + comment.author"
+                ref="textarea"
+            ></textarea>
         </div>
-        <div class="smartcomments-reply-form-footer">
-            <button class="smartcomments-reply-form-footer-button" @click="submitReply">Reactie plaatsen</button>
+        <div class="smartcomments-reply-form-footer" v-show="showActions">
+            <div class="smartcomments-reply-form-actions">
+                <button 
+                    class="smartcomments-reply-form-cancel" 
+                    @click="cancelReply"
+                    type="button"
+                >
+                    Annuleren
+                </button>
+                <button 
+                    class="smartcomments-reply-form-submit" 
+                    @click="submitReply"
+                    :disabled="!canSubmit"
+                    type="submit"
+                >
+                    Reactie plaatsen
+                </button>
+            </div>
         </div>
     </div>
 </template>
@@ -20,6 +45,8 @@ module.exports = defineComponent({
     data() {
         return {
             reply: '',
+            isFocused: false,
+            hasContent: false,
         }
     },
     props: {
@@ -28,9 +55,37 @@ module.exports = defineComponent({
             required: true,
         },
     },
+    computed: {
+        showActions() {
+            return this.isFocused || this.hasContent;
+        },
+        canSubmit() {
+            return this.reply.trim().length > 0;
+        }
+    },
     methods: {
+        onFocus() {
+            this.isFocused = true;
+        },
+        onBlur() {
+            this.isFocused = false;
+        },
+        onInput() {
+            this.hasContent = this.reply.trim().length > 0;
+        },
         submitReply() {
-            this.comment.reply(this.reply);
+            if (this.canSubmit) {
+                this.comment.reply(this.reply);
+                this.reply = '';
+                this.hasContent = false;
+                this.isFocused = false;
+            }
+        },
+        cancelReply() {
+            this.reply = '';
+            this.hasContent = false;
+            this.isFocused = false;
+            this.$refs.textarea.blur();
         }
     }
 });
@@ -46,6 +101,17 @@ module.exports = defineComponent({
     border-left: 1px solid #ccc;
     font-size: .85em;
 
+    &-footer {
+        transition: all 0.2s ease-in-out;
+    }
+
+    &-actions {
+        display: flex;
+        gap: 0.5em;
+        justify-content: flex-end;
+        align-items: center;
+    }
+
     textarea {
         border: 1px solid #a2a9b1;
         border-radius: 2px;
@@ -53,20 +119,59 @@ module.exports = defineComponent({
         font-family: inherit;
         resize: vertical;
         margin-bottom: .5em;
-        min-height: 75px;
+        height: 2.2em;
+        min-height: 2.2em;
+        transition: height 0.2s ease-in-out;
+        width: 100%;
+        box-sizing: border-box;
+        
+        &:focus {
+            height: 75px;
+            min-height: 75px;
+            outline: 2px solid #36c;
+            outline-offset: -1px;
+        }
     }
 
     button {
-        background-color: #f8f9fa;
-        color: #202122;
         border: 1px solid #a2a9b1;
         border-radius: 2px;
-        padding: .5em;
+        padding: .5em 1em;
         font-weight: bold;
         cursor: pointer;
+        font-size: .9em;
+        transition: all 0.15s ease-in-out;
 
-        &:hover {
-            background: #fff;
+        &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    }
+
+    &-cancel {
+        background-color: transparent;
+        color: #54595d;
+        border-color: #c8ccd1;
+
+        &:hover:not(:disabled) {
+            background-color: #f8f9fa;
+            border-color: #a2a9b1;
+        }
+    }
+
+    &-submit {
+        background-color: #36c;
+        color: #fff;
+        border-color: #36c;
+
+        &:hover:not(:disabled) {
+            background-color: #2a4b8d;
+            border-color: #2a4b8d;
+        }
+
+        &:disabled {
+            background-color: #a2a9b1;
+            border-color: #a2a9b1;
         }
     }
 }

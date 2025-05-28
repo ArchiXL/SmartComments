@@ -42,7 +42,7 @@
 
 <script>
 const { defineComponent, computed, ref } = require('vue');
-const useUser = require('../composables/useUser.js');
+const useUserStore = require('../store/userStore.js');
 const useCommentsStore = require('../store/commentsStore.js');
 
 module.exports = defineComponent({
@@ -54,7 +54,7 @@ module.exports = defineComponent({
         },
     },
     setup(props, { emit }) {
-        const { canManageComments } = useUser();
+        const userStore = useUserStore();
         const commentsStore = useCommentsStore();
 
         const actions = [
@@ -119,7 +119,7 @@ module.exports = defineComponent({
                     }
                 ],
                 when: () => {
-                    return canManageComments();
+                    return userStore.canManageComments;
                 }
             },
             {
@@ -162,10 +162,9 @@ module.exports = defineComponent({
 
 <style lang="less">
 .smartcomments-comment-actions {
-    border-bottom: 1px solid #c8ccd1;
-    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
+    padding: .5em .5em 0;
 
     .smartcomments-comment-actions-item {
         &.align-left {
@@ -178,6 +177,14 @@ module.exports = defineComponent({
         }
     }
 
+    span.oo-ui-iconElement-icon {
+        width: 14px;
+        height: 14px;
+        min-width: 14px;
+        min-height: 14px;
+        position: relative;
+    }
+
     button {
         background: transparent;
         cursor: pointer;
@@ -188,12 +195,6 @@ module.exports = defineComponent({
 
         &:hover {
             background: #e0e0e0;
-        }
-
-        span.oo-ui-iconElement-icon {
-            width: 16px;
-            height: 16px;
-            position: relative;
         }
     }
 
@@ -228,9 +229,7 @@ module.exports = defineComponent({
                 }
                 
                 span.oo-ui-iconElement-icon {
-                    width: 16px;
-                    height: 16px;
-                    margin-right: 8px;
+                    margin-right: 4px;
                 }
             }
         }
