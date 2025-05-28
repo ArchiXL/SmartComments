@@ -2,7 +2,7 @@
  * Selection utilities for SmartComments
  * Maintains compatibility with PHP backend expectations
  */
-const useSmartCommentsStore = require('../store/smartCommentsStore.js');
+const useAppStateStore = require('../store/appStateStore.js');
 
 /**
  * Initialize rangy library if not already available
@@ -204,7 +204,7 @@ function cleanSelectionHTML(html) {
  * @returns {boolean} - Whether selection is enabled
  */
 function isSelectionEnabled() {
-    const store = useSmartCommentsStore();
+    const store = useAppStateStore();
     return store.isEnabled;
 }
 
@@ -252,7 +252,7 @@ function createImageHash(src, width, height) {
  */
 function getContentRoot() {
     // Check if SmartComments is enabled before proceeding
-    const store = useSmartCommentsStore(); // Get store instance
+    const store = useAppStateStore(); // Get store instance
     if (!store.isEnabled) { // Assuming 'isEnabled' is a reactive property or getter
         console.warn('SmartComments is not enabled. Operations in getContentRoot might be restricted or unexpected.');
         // Depending on strictness, you might throw an error or return a sensible default/null
@@ -278,7 +278,7 @@ function getCleanText(text) {
  * @returns {boolean} True if SmartComments is enabled, false otherwise.
  */
 function isSmartCommentsEnabled() {
-    const store = useSmartCommentsStore();
+    const store = useAppStateStore();
     return store.isEnabled; // Assuming 'isEnabled' is a reactive property or getter
 }
 

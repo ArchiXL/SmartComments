@@ -1,6 +1,6 @@
 const { useSelection, SELECTION_ENUMS } = require('./useSelection.js');
 const { useHighlight } = require('./useHighlight.js');
-const useSmartCommentsStore = require('../store/smartCommentsStore.js');
+const useAppStateStore = require('../store/appStateStore.js');
 
 function useSelectionEvents() {
     const selection = useSelection();
@@ -162,7 +162,7 @@ function useSelectionEvents() {
      * Check if selection is enabled
      */
     function isSelectionEnabled() {
-        const store = useSmartCommentsStore(); // Get store instance
+        const store = useAppStateStore();
         return store.isEnabled;
     }
 

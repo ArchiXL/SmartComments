@@ -44,10 +44,12 @@
 		"ArticleDeleteAfterSuccess": "MediaWiki\\Extension\\SmartComments\\Hooks::onArticleDeleteAfterSuccess",
 		"ResourceLoaderRegisterModules": "MediaWiki\\Extension\\SmartComments\\JavascriptLoader::register"
 	},
+	"ResourceFileModulePaths": {
+		"localBasePath": "",
+		"remoteExtPath": "SmartComments"
+	},
 	"ResourceModules": {
 		"ext.SmartComments.Special": {
-			"localBasePath": "",
-			"remoteExtPath": "SmartComments",
 			"styles": [
 				"resources/css/specialPage.less"
 			],
@@ -59,15 +61,11 @@
 			]
 		},
 		"ext.smartcomments.vue-demi": {
-			"localBasePath": "",
-			"remoteExtPath": "SmartComments",
 			"scripts": [
 				"resources/frontend/upstream/vue-demi.iife.js"
 			]
 		},
 		"ext.smartcomments.pinia": {
-			"localBasePath": "",
-			"remoteExtPath": "SmartComments",
 			"scripts": [
 				"resources/frontend/upstream/pinia.iife.js"
 			],
@@ -77,8 +75,6 @@
 			]
 		},
 		"ext.smartcomments.frontend": {
-			"localBasePath": "",
-			"remoteExtPath": "SmartComments",
 			"packageFiles": [
 				"resources/frontend/js/App.js",
 				"resources/frontend/js/directives/highlightDirective.js",
@@ -97,7 +93,8 @@
 				"resources/frontend/js/components/CommentBody.vue",
 				"resources/frontend/js/components/CommentMessage.vue",
 				"resources/frontend/js/components/NewCommentDialog.vue",
-				"resources/frontend/js/store/smartCommentsStore.js",
+				"resources/frontend/js/store/appStateStore.js",
+				"resources/frontend/js/store/commentsStore.js",
 				"resources/frontend/js/SmartComments.vue"
 			],
 			"styles": [
@@ -109,8 +106,6 @@
 			]
 		},
 		"ext.smartcomments.upstream": {
-			"localBasePath": "",
-			"remoteExtPath": "SmartComments",
 			"scripts": [
 				"resources/js/node_modules/rangy/lib/rangy-core.js",
 				"resources/js/node_modules/rangy/lib/rangy-classapplier.js",

@@ -1,4 +1,4 @@
-const { ref } = require('vue'); // Assuming Vue's ref is available via require if Vue is globally loaded or bundled
+const { ref } = require('vue');
 
 function useHighlight() {
     const highlightedAnchors = ref([]);

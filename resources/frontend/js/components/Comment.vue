@@ -7,6 +7,8 @@
                 @delete="$emit('delete', $event)"
                 @complete="$emit('complete', $event)" 
                 @view="$emit('view', $event)"
+                @next="handleNext"
+                @previous="handlePrevious"
                 :comment="comment"
             ></comment-actions>
 
@@ -47,7 +49,7 @@ module.exports = defineComponent({
             default: null,
         },
     },
-    emits: ['close', 'delete', 'complete', 'view'],
+    emits: ['close', 'delete', 'complete', 'view', 'navigate'],
     computed: {
         panelStyle() {
             if (!this.position) {
@@ -82,6 +84,12 @@ module.exports = defineComponent({
         handleReplySubmitted() {
             // Optionally, refresh the reply list or give user feedback
             console.log('Reply submitted for comment ID:', this.comment.id);
+        },
+        handleNext(nextComment) {
+            this.$emit('navigate', { type: 'next', comment: nextComment });
+        },
+        handlePrevious(previousComment) {
+            this.$emit('navigate', { type: 'previous', comment: previousComment });
         }
     },
     created() {
@@ -98,14 +106,14 @@ module.exports = defineComponent({
     width: 310px;
     overflow: hidden;
     overflow-y: auto;
-    background: #fff;
-    border-bottom: 1px solid #ccc;
-    border-top: 1px solid #ccc;
+    padding-left: 3em;
 
     .smartcomments-commentgroup {
         z-index: 3;
-        border-left: 3px solid #f6c343;
         background: #ffffee;
+        border-left: 3px solid #f6c343;
+        border-bottom: 1px solid #ccc;
+        border-top: 1px solid #ccc;
     }
 }
 </style>

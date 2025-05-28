@@ -9,6 +9,7 @@
             @delete="deleteComment($event)"
             @complete="completeComment($event)"
             @view="viewPage($event)"
+            @navigate="handleCommentNavigation"
         ></comment>
         
         <!-- New Comment Dialog -->
@@ -29,7 +30,8 @@ const useSmartCommentsSetup = require('./composables/useSmartCommentsSetup.js');
 const useComments = require('./composables/useComments.js');
 const { useSelectionEvents } = require('./composables/useSelectionEvents.js');
 const { applyHighlights, clearAllHighlights } = require('./directives/highlightDirective.js');
-const useSmartCommentsStore = require('./store/smartCommentsStore.js');
+const useAppStateStore = require('./store/appStateStore.js');
+const useCommentsStore = require('./store/commentsStore.js');
 const Comment = require('./components/Comment.vue');
 const NewCommentDialog = require('./components/NewCommentDialog.vue');
 
@@ -41,8 +43,9 @@ module.exports = defineComponent({
     },
     setup() {
         const smartCommentsSetup = useSmartCommentsSetup();
-        const store = useSmartCommentsStore();
-        return { smartCommentsSetup, store, applyHighlights };
+        const store = useAppStateStore();
+        const commentsStore = useCommentsStore();
+        return { smartCommentsSetup, store, commentsStore, applyHighlights };
     },
     data() {
         return {
@@ -79,6 +82,10 @@ module.exports = defineComponent({
                 console.log('SmartComments.vue isEnabled watcher: Fetching highlights.');
                 try {
                     await this.smartCommentsSetup.loadAndSetHighlights();
+                    // Update the comments store with the loaded comments
+                    if (this.smartCommentsSetup.comments?.value) {
+                        this.commentsStore.setComments(this.smartCommentsSetup.comments.value);
+                    }
                     console.log('SmartComments.vue isEnabled watcher: Highlights loaded. Applying new highlights. Anchors:', this.smartCommentsSetup.highlightedAnchors?.value);
                     if (this.smartCommentsSetup.highlightedAnchors?.value) {
                         this.applyHighlights(targetElement, this.smartCommentsSetup.highlightedAnchors.value, this.openComment);
@@ -131,6 +138,8 @@ module.exports = defineComponent({
                 if (fetchedComment) {
                     this.comment = fetchedComment;
                     this.commentPosition = position;
+                    // Set the current comment in the store for navigation
+                    this.commentsStore.setCurrentComment(fetchedComment.id || fetchedComment.data_id);
                 } else {
                     console.error('Comment not found:', commentData.data_id);
                     this.comment = null;
@@ -145,6 +154,7 @@ module.exports = defineComponent({
         closeComment() {
             this.comment = null;
             this.commentPosition = null;
+            this.commentsStore.setCurrentComment(null);
         },
         handleKeydown(event) {
             if (event.key === 'Escape' && this.comment) this.closeComment();
@@ -184,8 +194,32 @@ module.exports = defineComponent({
             console.log('SmartComments.vue: Comment saved (event from dialog), reloading highlights.');
             try {
                 await this.smartCommentsSetup.loadAndSetHighlights();
+                // Update the comments store with the new comments
+                if (this.smartCommentsSetup.comments?.value) {
+                    this.commentsStore.setComments(this.smartCommentsSetup.comments.value);
+                }
             } catch (e) {
                 console.error('SmartComments.vue: Error reloading highlights after save:', e);
+            }
+        },
+        async handleCommentNavigation(navigationData) {
+            const { type, comment: nextComment } = navigationData;
+            console.log('SmartComments.vue: Navigating to', type, 'comment:', nextComment);
+            
+            if (nextComment) {
+                try {
+                    const { getComment } = useComments();
+                    const fetchedComment = await getComment(nextComment.data_id || nextComment.id);
+                    if (fetchedComment) {
+                        this.comment = fetchedComment;
+                        // Keep the same position for now, or could be enhanced to scroll to the highlighted element
+                        console.log('SmartComments.vue: Successfully navigated to', type, 'comment');
+                    } else {
+                        console.error('SmartComments.vue: Could not fetch', type, 'comment:', nextComment);
+                    }
+                } catch (e) {
+                    console.error('SmartComments.vue: Error navigating to', type, 'comment:', e);
+                }
             }
         },
         async reloadHighlights() {
@@ -203,6 +237,10 @@ module.exports = defineComponent({
                     }
 
                     await this.smartCommentsSetup.loadAndSetHighlights();
+                    // Update the comments store with the reloaded comments
+                    if (this.smartCommentsSetup.comments?.value) {
+                        this.commentsStore.setComments(this.smartCommentsSetup.comments.value);
+                    }
                     console.log('SmartComments.vue reloadHighlights: Manual reload successfully triggered loadAndSetHighlights. Applying new highlights.');
                     if (this.smartCommentsSetup.highlightedAnchors?.value) {
                         this.applyHighlights(targetElement, this.smartCommentsSetup.highlightedAnchors.value, this.openComment);
@@ -225,6 +263,12 @@ module.exports = defineComponent({
             } else {
                 console.log('Composable state (smartCommentsSetup): Not available');
             }
+            console.log('Comments store state:', {
+                comments: this.commentsStore.comments,
+                currentCommentId: this.commentsStore.currentCommentId,
+                hasNext: this.commentsStore.hasNextComment,
+                hasPrevious: this.commentsStore.hasPreviousComment
+            });
             console.log('Window debug object:', window.SmartCommentsDebug);
             console.log('================================');
         }
@@ -252,6 +296,7 @@ module.exports = defineComponent({
             /* Position relative to right edge to prevent overflow */
             right: 0;
             max-width: 250px;
+            width: auto;
             white-space: normal;
             word-wrap: break-word;
             box-sizing: border-box;

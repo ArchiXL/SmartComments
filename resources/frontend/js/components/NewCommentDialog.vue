@@ -328,6 +328,7 @@ module.exports = defineComponent({
             max-height: 150px;
             border: 1px solid #a2a9b1;
             border-radius: 2px;
+            display: none;
         }
     }
 

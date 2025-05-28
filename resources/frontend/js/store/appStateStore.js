@@ -1,6 +1,6 @@
 const { defineStore } = Pinia;
 
-module.exports = defineStore('smartComments', {
+module.exports = defineStore('appStore', {
     state: () => ({
         isEnabled: false
     }),
@@ -15,7 +15,7 @@ module.exports = defineStore('smartComments', {
         _updateButtonUI() {
             const toggleElement = document.getElementById('ca-comments');
             if (!toggleElement) {
-                console.error('smartCommentsStore: Toggle element "ca-comments" not found.');
+                console.error('appStateStore: Toggle element "ca-comments" not found.');
                 return;
             }
 
@@ -40,23 +40,23 @@ module.exports = defineStore('smartComments', {
             const toggleElement = document.getElementById('ca-comments');
             if (toggleElement) {
                 // Use arrow function for onclick to preserve 'this' context
-                toggleElement.onclick = () => this.toggleSmartComments();
+                toggleElement.onclick = () => this.toggleAppState();
                 // Set initial button state based on initial isEnabled state
                 this._updateButtonUI();
             } else {
-                console.error('smartCommentsStore: Toggle element "ca-comments" not found during initialization.');
+                console.error('appStateStore: Toggle element "ca-comments" not found during initialization.');
             }
-            console.log('smartCommentsStore: initializeState called. Initial isEnabled:', this.isEnabled);
+            console.log('appStateStore: initializeState called. Initial isEnabled:', this.isEnabled);
         },
 
         /**
          * Enables the comments UI
          * @returns {void}
          */
-        enableSmartComments() {
+        enableAppState() {
             if (this.isEnabled) return;
             this.isEnabled = true;
-            console.log('smartCommentsStore: Comments ENABLED.');
+            console.log('appStateStore: Comments ENABLED.');
             this._updateButtonUI();
         },
 
@@ -64,10 +64,10 @@ module.exports = defineStore('smartComments', {
          * Disables the comments UI
          * @returns {void}
          */
-        disableSmartComments() {
+        disableAppState() {
             if (!this.isEnabled) return;
             this.isEnabled = false;
-            console.log('smartCommentsStore: Comments DISABLED.');
+            console.log('appStateStore: Comments DISABLED.');
             this._updateButtonUI();
         },
 
@@ -75,12 +75,12 @@ module.exports = defineStore('smartComments', {
          * Toggles the comments UI
          * @returns {void}
          */
-        toggleSmartComments() {
-            console.log('smartCommentsStore: toggleSmartComments called.');
+        toggleAppState() {
+            console.log('appStateStore: toggleAppState called.');
             if (this.isEnabled) {
-                this.disableSmartComments();
+                this.disableAppState();
             } else {
-                this.enableSmartComments();
+                this.enableAppState();
             }
         }
     }

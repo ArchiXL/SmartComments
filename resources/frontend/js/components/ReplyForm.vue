@@ -38,9 +38,12 @@ module.exports = defineComponent({
 
 <style lang="less">
 .smartcomments-reply-form {
+    margin-left: -3px;
     padding: .5em 1em 1em;
+    padding-left: ~"calc(1em + 3px)";
     background: #f9f9f9;
     border-top: 1px solid #ccc;
+    border-left: 1px solid #ccc;
     font-size: .85em;
 
     textarea {

@@ -1,7 +1,7 @@
 const { onMounted, ref } = require('vue');
 const useComments = require('./useComments.js');
 const { useHighlight } = require('./useHighlight.js');
-const useSmartCommentsStore = require('../store/smartCommentsStore.js'); // Import Pinia store
+const useAppStateStore = require('../store/appStateStore.js');
 
 /**
  * @typedef {import('./useComments.js').Comment} Comment
@@ -68,7 +68,7 @@ function formatCommentsForHighlighting(commentsArray) {
 function useSmartCommentsSetup() {
     const commentsComposable = useComments();
     const highlightComposable = useHighlight();
-    const smartCommentsStore = useSmartCommentsStore(); // Use the Pinia store
+    const appStateStore = useAppStateStore(); // Use the Pinia store
 
     // Destructure with fallbacks
     const {
@@ -101,23 +101,12 @@ function useSmartCommentsSetup() {
         }
     };
 
-    // onMounted(async () => {
-    //     console.log('SmartComments setup onMounted - checking if enabled...');
-    //     // Check if SmartComments is enabled via Pinia store
-    //     if (smartCommentsStore.isEnabled) { // Assuming 'isEnabled' is a reactive property or getter
-    //         console.log('SmartComments enabled - loading highlights...');
-    //         await loadAndSetHighlights();
-    //     } else {
-    //         console.log('SmartComments not enabled');
-    //     }
-    // });
-
     return {
-        highlightedAnchors, // from useHighlight, to be consumed by the directive
-        isLoading,          // from useComments
-        error,              // from useComments
-        comments,           // Expose comments for debugging
-        loadAndSetHighlights // Expose manual refresh capability
+        highlightedAnchors,
+        isLoading,
+        error,
+        comments,
+        loadAndSetHighlights
     };
 }
 
