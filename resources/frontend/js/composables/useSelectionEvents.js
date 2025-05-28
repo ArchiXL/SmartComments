@@ -1,4 +1,6 @@
-const { useSelection, SELECTION_ENUMS } = require('./useSelection.js');
+const { useSelection } = require('./useSelection.js');
+const { SELECTION_ENUMS } = require('../utils/constants.js');
+const { getMediaWikiContentRoot } = require('../utils/constants.js');
 const { useHighlight } = require('./useHighlight.js');
 const useAppStateStore = require('../store/appStateStore.js');
 const { smartCommentsEvents } = require('../utils/smartCommentsEvents.js');
@@ -181,7 +183,7 @@ function useSelectionEvents() {
      * Add hover effects for dynamic blocks
      */
     function setupDynamicBlockHover() {
-        const contentRoot = selection.getContentRoot();
+        const contentRoot = getMediaWikiContentRoot();
 
         // Use event delegation for better performance
         contentRoot.addEventListener('mouseover', (event) => {
@@ -205,7 +207,7 @@ function useSelectionEvents() {
     function bindEvents() {
         if (isEventsBound) return;
 
-        const contentRoot = selection.getContentRoot();
+        const contentRoot = getMediaWikiContentRoot();
 
         // Create bound handlers
         mouseDownHandler = handleMouseDown.bind(null);
@@ -235,9 +237,9 @@ function useSelectionEvents() {
         if (!isEventsBound) return;
 
         document.removeEventListener('mousedown', mouseDownHandler);
-        selection.getContentRoot().removeEventListener('mouseup', mouseUpHandler);
+        getMediaWikiContentRoot().removeEventListener('mouseup', mouseUpHandler);
         document.removeEventListener('mousemove', mouseMoveHandler);
-        selection.getContentRoot().removeEventListener('click', clickHandler);
+        getMediaWikiContentRoot().removeEventListener('click', clickHandler);
 
         isEventsBound = false;
     }
@@ -276,8 +278,7 @@ function useSelectionEvents() {
         // Formatting methods
         formatSelectionForAPI: selection.formatSelectionForAPI,
 
-        // Validation
-        validateSelection: selection.validateSelection,
+        // Constants
         SELECTION_ENUMS
     };
 }

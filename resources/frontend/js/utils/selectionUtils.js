@@ -3,7 +3,7 @@
  * Maintains compatibility with PHP backend expectations
  */
 const useAppStateStore = require('../store/appStateStore.js');
-const { CONTENT_ROOT_SELECTORS, SELECTION_VALIDATION_CODES, SMARTCOMMENTS_CLASSES, getMediaWikiContentRoot } = require('./constants.js');
+const { CONTENT_ROOT_SELECTORS, SELECTION_VALIDATION, SMARTCOMMENTS_CLASSES, getMediaWikiContentRoot } = require('./constants.js');
 
 /**
  * Initialize rangy library if not already available
@@ -25,12 +25,9 @@ function initializeRangy() {
 /**
  * Validate selection based on the original validation rules
  * @param {*} selection - Rangy selection or HTML string
- * @returns {Object} - Validation result with status and message
+ * @returns {number} - Validation result code from SELECTION_VALIDATION
  */
 function validateSelectionContent(selection) {
-    // Use centralized validation codes
-    const VALIDATION_CODES = SELECTION_VALIDATION_CODES;
-
     let selectionHTML;
 
     if (typeof selection === 'string') {
@@ -48,17 +45,17 @@ function validateSelectionContent(selection) {
             selectionHTML = selection.commonAncestorContainer.outerHTML;
         }
     } else {
-        return VALIDATION_CODES.EMPTY;
+        return SELECTION_VALIDATION.EMPTY;
     }
 
     // Check if empty (after potentially getting HTML from an image selection)
     if (!selectionHTML || selectionHTML.trim() === '') {
-        return VALIDATION_CODES.EMPTY;
+        return SELECTION_VALIDATION.EMPTY;
     }
 
     // Check for existing comments
     if (selectionHTML.includes(SMARTCOMMENTS_CLASSES.HIGHLIGHT)) {
-        return VALIDATION_CODES.ALREADY_COMMENTED;
+        return SELECTION_VALIDATION.ALREADY_COMMENTED;
     }
 
     // Check for dynamic content (but allow if the selection IS the dynamic block itself, e.g. for image selection)
@@ -73,7 +70,7 @@ function validateSelectionContent(selection) {
         // For general text selection, finding sc-dynamic-block inside is invalid.
         if (!(firstChild && firstChild.classList && firstChild.classList.contains(SMARTCOMMENTS_CLASSES.DYNAMIC_BLOCK) && tempDiv.childNodes.length === 1)) {
             // It's not SOLELY the dynamic block, so it's embedded dynamic content.
-            // return VALIDATION_CODES.DYNAMIC_CONTENT; // Re-evaluate this rule based on usage
+            // return SELECTION_VALIDATION.DYNAMIC_CONTENT; // Re-evaluate this rule based on usage
         }
     }
 
@@ -81,16 +78,16 @@ function validateSelectionContent(selection) {
     // For outerHTML of elements, line breaks might be part of formatting.
     if (selection.constructor && selection.constructor.name === 'Range') { // Apply only for Rangy Range objects (text selections)
         if (selection.toString().match(/[\n\r]/)) {
-            return VALIDATION_CODES.LINEBREAKS;
+            return SELECTION_VALIDATION.LINEBREAKS;
         }
     }
 
     // Check for HTML content in text selections
     if (selectionHTML && /<[^>]*>/.test(selectionHTML)) {
-        return VALIDATION_CODES.HTML_CONTENT;
+        return SELECTION_VALIDATION.HTML_CONTENT;
     }
 
-    return VALIDATION_CODES.VALID;
+    return SELECTION_VALIDATION.VALID;
 }
 
 /**

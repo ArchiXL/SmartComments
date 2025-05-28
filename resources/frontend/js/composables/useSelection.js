@@ -4,20 +4,11 @@ const {
     validateSelectionContent,
     createImageHash,
     getMediaWikiContentRoot,
-    isSelectionEnabled
+    isSelectionEnabled,
+    formatSelectionForBackend
 } = require('../utils/selectionUtils.js');
+const { SELECTION_ENUMS, SMARTCOMMENTS_CLASSES } = require('../utils/constants.js');
 const useScreenshot = require('./useScreenshot.js');
-
-// Define SELECTION_ENUMS here as the source of truth
-const SELECTION_ENUMS = {
-    SELECTION_VALID: 0,
-    INVALID_SELECTION_ALREADY_COMMENTED: 1,
-    INVALID_SELECTION_INCLUDES_DYNAMIC_CONTENT: 2,
-    INVALID_SELECTION_CONTAINS_LINEBREAKS: 3,
-    INVALID_SELECTION_IS_EMPTY: 4,
-    INVALID_SELECTION_CONTAINS_HTML: 5,
-    UNKNOWN_ERROR: 99
-};
 
 function useSelection() {
     const isSelectionActive = ref(false);
@@ -30,7 +21,7 @@ function useSelection() {
     // Initialize rangy on first use
     let rangyInitialized = false;
     let highlighter = null;
-    const TEMP_HIGHLIGHT_CLASS = 'sc-highlight-temp';
+    const TEMP_HIGHLIGHT_CLASS = SMARTCOMMENTS_CLASSES.HIGHLIGHT_TEMP;
 
     // Screenshot composable instance
     const { takeScreenshot, screenshotSelectionArea } = useScreenshot();
@@ -50,23 +41,6 @@ function useSelection() {
     }
 
     /**
-     * Validates the selection content
-     * @param {*} wrappedSelection - rangy selection or HTML string
-     * @returns {number} - validation result enum
-     */
-    function validateSelection(wrappedSelection) {
-        return validateSelectionContent(wrappedSelection);
-    }
-
-    /**
-     * Gets the MediaWiki content root element
-     * @returns {Element} - The content root element
-     */
-    function getContentRoot() {
-        return getMediaWikiContentRoot();
-    }
-
-    /**
      * Critical word index calculation - MUST match PHP backend expectations
      * This is the most important function - it replicates the original logic exactly
      * @param {Range} selectionRange - The text selection range
@@ -79,7 +53,7 @@ function useSelection() {
                 return;
             }
 
-            const baseEl = getContentRoot();
+            const baseEl = getMediaWikiContentRoot();
             if (!baseEl) {
                 reject(new Error('MediaWiki content root not found for search.'));
                 return;
@@ -104,7 +78,7 @@ function useSelection() {
             };
 
             const asyncSearchHtml = () => {
-                const content = getContentRoot();
+                const content = getMediaWikiContentRoot();
                 if (!content) {
                     reject(new Error('MediaWiki content root not found for HTML search.'));
                     return;
@@ -226,7 +200,7 @@ function useSelection() {
         }
 
         const range = selection.getRangeAt(0);
-        const validationResult = validateSelection(range);
+        const validationResult = validateSelectionContent(range);
 
         if (validationResult !== SELECTION_ENUMS.SELECTION_VALID) {
             // Show specific error message based on validation result
@@ -297,7 +271,7 @@ function useSelection() {
     async function processDynamicBlockSelection(element, event, options = { captureScreenshot: false }) {
         if (!isSelectionEnabled()) return null;
 
-        const validationResult = validateSelection(element.outerHTML);
+        const validationResult = validateSelectionContent(element.outerHTML);
         if (validationResult !== SELECTION_ENUMS.SELECTION_VALID) {
             console.warn('Invalid dynamic block selection:', validationResult);
             return null;
@@ -342,7 +316,7 @@ function useSelection() {
     async function processImageSelection(imgElement, event, options = { captureScreenshot: false }) {
         if (!isSelectionEnabled()) return null;
 
-        const validationResult = validateSelection(imgElement.outerHTML);
+        const validationResult = validateSelectionContent(imgElement.outerHTML);
         if (validationResult !== SELECTION_ENUMS.SELECTION_VALID && validationResult !== SELECTION_ENUMS.INVALID_SELECTION_CONTAINS_LINEBREAKS) { // Linebreaks might be ok for outerHTML
             console.warn('Invalid image selection:', validationResult);
             return null;
@@ -404,7 +378,7 @@ function useSelection() {
             return null;
         }
 
-        const root = getContentRoot();
+        const root = getMediaWikiContentRoot();
         let parentId = null;
         if (selectionData.element) {
             const parentCommentElement = selectionData.element.closest('[data-comment-id]');
@@ -444,7 +418,7 @@ function useSelection() {
      * Set up image wrappers for selection (like the old ImageSelection.bindEvents)
      */
     function setupImageSelection() {
-        const contentRoot = getContentRoot();
+        const contentRoot = getMediaWikiContentRoot();
         if (!contentRoot) {
             console.error("Cannot setup image selection: content root not found.");
             return;
@@ -489,7 +463,6 @@ function useSelection() {
         isCapturing,
 
         // Methods
-        validateSelection,
         processTextSelection,
         processDynamicBlockSelection,
         processImageSelection,
@@ -498,12 +471,9 @@ function useSelection() {
         formatSelectionForAPI,
         screenshotSelectionArea,
 
-        // Enums
-        SELECTION_ENUMS,
-
         // Utility
-        getContentRoot
+        getMediaWikiContentRoot
     };
 }
 
-module.exports = { useSelection, SELECTION_ENUMS }; 
+module.exports = { useSelection }; 
