@@ -12,7 +12,8 @@ module.exports = {
         }
     },
     applyHighlights,
-    clearAllHighlights
+    clearAllHighlights,
+    removeCommentHighlight
 };
 
 /**
@@ -376,4 +377,129 @@ function getTextNodesIn(node, textNodes = []) {
  */
 function decodeHtmlEntities(str) {
     return str.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+}
+
+/**
+ * Remove highlight elements from DOM for a specific comment and unwrap SPAN elements properly.
+ * This is used when a comment is deleted or completed.
+ * 
+ * @param {string|number} commentId - The ID of the comment to remove highlights for
+ * @param {Element} [scopeElement] - The element to search within (defaults to mw-content-text or body)
+ */
+function removeCommentHighlight(commentId, scopeElement = null) {
+    if (!window.rangy) {
+        console.warn('removeCommentHighlight: Rangy not available');
+        return;
+    }
+
+    const targetElement = scopeElement || document.getElementById('mw-content-text') || document.body;
+    const uniqueHighlightClass = `smartcomment-hl-${commentId}`;
+    const commentIdStr = String(commentId);
+
+    // Clear event listeners for this comment
+    if (attachedListeners.has(commentIdStr)) {
+        attachedListeners.get(commentIdStr).forEach(({ element, handler, type }) => {
+            element.removeEventListener(type, handler);
+            element.style.cursor = ''; // Reset cursor
+        });
+        attachedListeners.delete(commentIdStr);
+    }
+
+    // Find all elements with this highlight class
+    const elements = targetElement.querySelectorAll(`.${uniqueHighlightClass}`);
+
+    if (elements.length === 0) {
+        console.log('removeCommentHighlight: No elements found for comment:', commentId);
+        return;
+    }
+
+    // Create a class applier for this specific highlight class to use Rangy's proper removal
+    const classApplier = window.rangy.createClassApplier(uniqueHighlightClass, {
+        ignoreWhiteSpace: true,
+        elementTagName: 'span',
+        normalize: true
+    });
+
+    // Use Rangy to properly remove highlights from text-based selections
+    // This will handle unwrapping SPAN elements created by Rangy automatically
+    elements.forEach(targetEl => {
+        // Check if this element has any other smartcomment highlight classes
+        const hasOtherSmartCommentClass = Array.from(targetEl.classList).some(cls =>
+            cls.startsWith('smartcomment-hl-') && cls !== uniqueHighlightClass
+        );
+
+        // For SPAN elements that were likely created by Rangy's text highlighting,
+        // use Rangy's proper removal method
+        if (targetEl.tagName === 'SPAN' && targetEl.hasAttribute('data-comment-id')) {
+            try {
+                // Create a range that encompasses this element's content
+                const range = window.rangy.createRange();
+                range.selectNodeContents(targetEl);
+
+                // Use the class applier to properly unapply the highlight
+                // This will automatically unwrap the SPAN if it becomes empty
+                classApplier.undoToRange(range);
+
+                // Remove data-comment-id if no other smartcomment classes remain
+                if (!hasOtherSmartCommentClass) {
+                    targetEl.removeAttribute('data-comment-id');
+                }
+            } catch (e) {
+                console.warn('removeCommentHighlight: Error using Rangy undoToRange, falling back to manual removal:', e);
+                // Fallback to manual removal if Rangy method fails
+                manuallyRemoveHighlight(targetEl, uniqueHighlightClass, hasOtherSmartCommentClass);
+            }
+        } else {
+            // For non-SPAN elements (like selector-based highlights), remove manually
+            manuallyRemoveHighlight(targetEl, uniqueHighlightClass, hasOtherSmartCommentClass);
+        }
+    });
+
+    console.log('removeCommentHighlight: Removed highlight for comment:', commentId);
+}
+
+/**
+ * Manually remove highlight class and unwrap if necessary (fallback method)
+ * @param {Element} targetEl - The element to remove highlighting from
+ * @param {string} uniqueHighlightClass - The highlight class to remove
+ * @param {boolean} hasOtherSmartCommentClass - Whether the element has other smartcomment classes
+ */
+function manuallyRemoveHighlight(targetEl, uniqueHighlightClass, hasOtherSmartCommentClass) {
+    targetEl.classList.remove(uniqueHighlightClass);
+
+    // Remove data-comment-id if no other smartcomment classes remain
+    if (!hasOtherSmartCommentClass) {
+        targetEl.removeAttribute('data-comment-id');
+    }
+
+    // Unwrap SPAN elements that were created by highlighting and are now empty/unnecessary
+    if (targetEl.tagName === 'SPAN') {
+        const shouldUnwrap =
+            // No more highlight classes
+            !hasOtherSmartCommentClass &&
+            // Either no classes at all, or only non-smartcomment classes
+            (targetEl.classList.length === 0 ||
+                !Array.from(targetEl.classList).some(cls => cls.startsWith('smartcomment-'))) &&
+            // No other attributes that would make this SPAN meaningful
+            (!targetEl.hasAttributes() ||
+                (targetEl.attributes.length === 1 && targetEl.hasAttribute('class') && targetEl.classList.length === 0));
+
+        if (shouldUnwrap) {
+            const parent = targetEl.parentNode;
+            if (parent) {
+                // Move all child nodes before the SPAN
+                while (targetEl.firstChild) {
+                    parent.insertBefore(targetEl.firstChild, targetEl);
+                }
+                // Remove the empty SPAN
+                parent.removeChild(targetEl);
+                // Normalize to merge adjacent text nodes
+                try {
+                    parent.normalize();
+                } catch (e) {
+                    console.warn('manuallyRemoveHighlight: Error normalizing parent node:', e);
+                }
+            }
+        }
+    }
 }

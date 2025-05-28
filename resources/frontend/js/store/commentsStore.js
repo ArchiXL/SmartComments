@@ -1,5 +1,6 @@
 const { defineStore } = Pinia;
 const useComments = require('../composables/useComments.js');
+const { useHighlight } = require('../composables/useHighlight.js');
 
 module.exports = defineStore('commentsStore', {
     state: () => ({
@@ -27,22 +28,25 @@ module.exports = defineStore('commentsStore', {
         },
 
         getCurrentCommentIndex: (state) => {
-            return state.comments.findIndex(comment =>
+            const openComments = state.comments.filter(comment => comment.status !== 'completed');
+            return openComments.findIndex(comment =>
                 (comment.id && comment.id === state.currentCommentId) ||
                 (comment.data_id && comment.data_id === state.currentCommentId)
             );
         },
 
         hasNextComment: (state) => {
-            const currentIndex = state.comments.findIndex(comment =>
+            const openComments = state.comments.filter(comment => comment.status !== 'completed');
+            const currentIndex = openComments.findIndex(comment =>
                 (comment.id && comment.id === state.currentCommentId) ||
                 (comment.data_id && comment.data_id === state.currentCommentId)
             );
-            return currentIndex !== -1 && currentIndex < state.comments.length - 1;
+            return currentIndex !== -1 && currentIndex < openComments.length - 1;
         },
 
         hasPreviousComment: (state) => {
-            const currentIndex = state.comments.findIndex(comment =>
+            const openComments = state.comments.filter(comment => comment.status !== 'completed');
+            const currentIndex = openComments.findIndex(comment =>
                 (comment.id && comment.id === state.currentCommentId) ||
                 (comment.data_id && comment.data_id === state.currentCommentId)
             );
@@ -50,23 +54,25 @@ module.exports = defineStore('commentsStore', {
         },
 
         getNextComment: (state) => {
-            const currentIndex = state.comments.findIndex(comment =>
+            const openComments = state.comments.filter(comment => comment.status !== 'completed');
+            const currentIndex = openComments.findIndex(comment =>
                 (comment.id && comment.id === state.currentCommentId) ||
                 (comment.data_id && comment.data_id === state.currentCommentId)
             );
-            if (currentIndex !== -1 && currentIndex < state.comments.length - 1) {
-                return state.comments[currentIndex + 1];
+            if (currentIndex !== -1 && currentIndex < openComments.length - 1) {
+                return openComments[currentIndex + 1];
             }
             return null;
         },
 
         getPreviousComment: (state) => {
-            const currentIndex = state.comments.findIndex(comment =>
+            const openComments = state.comments.filter(comment => comment.status !== 'completed');
+            const currentIndex = openComments.findIndex(comment =>
                 (comment.id && comment.id === state.currentCommentId) ||
                 (comment.data_id && comment.data_id === state.currentCommentId)
             );
             if (currentIndex > 0) {
-                return state.comments[currentIndex - 1];
+                return openComments[currentIndex - 1];
             }
             return null;
         }
@@ -265,6 +271,11 @@ module.exports = defineStore('commentsStore', {
 
                 if (result.success === '1' || result.success === true) {
                     this.removeComment(comment.id || comment.data_id);
+
+                    // Clear highlighting for the deleted comment
+                    const { removeCommentHighlight } = useHighlight();
+                    removeCommentHighlight(comment.id || comment.data_id);
+
                     this.closeCommentDialog();
 
                     // Trigger highlight refresh
@@ -297,11 +308,15 @@ module.exports = defineStore('commentsStore', {
                 const result = await updateComment(
                     comment.id || comment.data_id,
                     'completed',
-                    comment.text
+                    '' // Send empty text when updating status
                 );
 
                 if (result.success === '1' || result.success === true) {
                     this.updateComment(comment.id || comment.data_id, { status: 'completed' });
+
+                    // Clear highlighting for the completed comment
+                    const { removeCommentHighlight } = useHighlight();
+                    removeCommentHighlight(comment.id || comment.data_id);
 
                     // Trigger highlight refresh
                     if (typeof window !== 'undefined') {
@@ -310,6 +325,7 @@ module.exports = defineStore('commentsStore', {
                         }));
                     }
                     console.log('CommentsStore: Comment completed successfully');
+                    this.closeCommentDialog();
                 } else {
                     this.setError(result.message || 'Failed to complete comment');
                 }
@@ -326,8 +342,14 @@ module.exports = defineStore('commentsStore', {
          */
         viewPage(comment) {
             console.log('CommentsStore: Viewing page for comment:', comment.id || comment.data_id);
-            // Implementation depends on your page navigation system
-            // This could open a new window, navigate to a different route, etc.
+
+            // Navigate to the SmartComments special page
+            const specialPageUrl = mw.util.getUrl('Special:SmartComments', {
+                page: mw.config.get('wgPageName')
+            });
+
+            // Open in new window/tab to keep the current page accessible
+            window.open(specialPageUrl, '_blank');
         },
 
         /**
@@ -384,6 +406,31 @@ module.exports = defineStore('commentsStore', {
             });
 
             console.log('CommentsStore: Cleared all active highlights');
+        },
+
+        /**
+         * Handle reply added to comment
+         */
+        handleReplyAdded(replyData) {
+            console.log('CommentsStore: Reply added:', replyData);
+
+            // Update the active comment in the store with the new reply
+            if (this.activeComment && replyData.comment) {
+                const commentId = replyData.comment.id || replyData.comment.data_id;
+                this.updateComment(commentId, {
+                    replies: replyData.comment.replies
+                });
+            }
+
+            // Trigger highlight refresh to update timeline indicators
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('smartcomments:refresh-highlights', {
+                    detail: {
+                        replyAdded: true,
+                        replyData
+                    }
+                }));
+            }
         },
     }
 }); 

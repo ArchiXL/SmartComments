@@ -1,4 +1,5 @@
 const { ref } = require('vue');
+const { removeCommentHighlight } = require('../directives/highlightDirective.js');
 
 function useHighlight() {
     const highlightedAnchors = ref([]);
@@ -33,7 +34,8 @@ function useHighlight() {
         addHighlight,
         removeHighlight,
         clearAllHighlights,
-        setHighlights
+        setHighlights,
+        removeCommentHighlight
     };
 }
 

@@ -78,7 +78,8 @@ function useComments() {
 
         try {
             const data = await apiRequest('lista', {
-                page: mw.config.get('wgPageName')
+                page: mw.config.get('wgPageName'),
+                status: 'open'
             });
 
             const rawAnchors = data.smartcomments?.anchors || [];
@@ -147,22 +148,30 @@ function useComments() {
             return { success: '0', message: 'Comment text cannot be empty.' };
         }
 
-        if (!selectionData || !selectionData.text) {
+        // For replies, we only need parentId, not selection text
+        const isReply = selectionData && selectionData.parentId;
+
+        if (!isReply && (!selectionData || !selectionData.text)) {
             console.warn('saveComment called without valid selectionData. This path might be deprecated or require legacy handling.');
             isLoading.value = false;
             return { success: '0', message: 'selection-error-new-system-requires-selectiondata' };
         }
 
         try {
-            const formattedSelection = formatSelectionForBackend(selectionData);
-            const posString = formattedSelection.position;
+            let posString = '';
+
+            // For replies, we don't need position data
+            if (!isReply) {
+                const formattedSelection = formatSelectionForBackend(selectionData);
+                posString = formattedSelection.position;
+            }
 
             const params = {
                 pos: posString,
-                comment: selectionData.parentId || '',
+                comment: selectionData?.parentId || '',
                 text: text,
                 page: mw.config.get('wgPageName'),
-                image: selectionData.image || ''
+                image: selectionData?.image || ''
             };
 
             const data = await apiRequest('new', params);

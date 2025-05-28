@@ -16,20 +16,24 @@
             <comment-body :comment="comment"></comment-body>
 
             <!-- Replies -->
-            <reply-list :replies="comment.replies"></reply-list>
+            <reply-list :replies="comment.replies || []"></reply-list>
 
             <!-- Reply form -->
-            <reply-form :comment="comment"></reply-form>
+            <reply-form 
+                :comment="enhancedComment" 
+                @reply-submitted="handleReplySubmitted"
+            ></reply-form>
         </div>
     </div>
 </template>
 
 <script>
-const { defineComponent } = require('vue');
+const { defineComponent, computed } = require('vue');
 const ReplyForm = require('./ReplyForm.vue');
 const ReplyList = require('./ReplyList.vue');
 const CommentActions = require('./CommentActions.vue');
 const CommentBody = require('./CommentBody.vue');
+const useComments = require('../composables/useComments.js');
 
 module.exports = defineComponent({
     name: 'Comment',
@@ -49,7 +53,7 @@ module.exports = defineComponent({
             default: null,
         },
     },
-    emits: ['close', 'delete', 'complete', 'view', 'navigate'],
+    emits: ['close', 'delete', 'complete', 'view', 'navigate', 'reply-added'],
     computed: {
         panelStyle() {
             if (!this.position) {
@@ -77,17 +81,90 @@ module.exports = defineComponent({
             return {
                 top: `${top}px`,
             };
-            
         },
+        
+        // Enhanced comment object with reply method
+        enhancedComment() {
+            return {
+                ...this.comment,
+                reply: this.submitReply
+            };
+        }
     },
     methods: {
-        handleReplySubmitted() {
-            // Optionally, refresh the reply list or give user feedback
-            console.log('Reply submitted for comment ID:', this.comment.id);
+        async submitReply(replyText) {
+            if (!replyText || replyText.trim() === '') {
+                console.warn('Cannot submit empty reply');
+                return false;
+            }
+
+            try {
+                const { saveComment } = useComments();
+                
+                // For replies, we need to create a fake selection with the parent comment ID
+                // The API expects the parent comment ID in the 'comment' parameter
+                const selectionData = {
+                    text: replyText, // Use the reply text for validation
+                    parentId: this.comment.id || this.comment.data_id, // This will be passed as 'comment' parameter
+                    type: 'reply'
+                };
+
+                const result = await saveComment(replyText, selectionData);
+                
+                if (result.success === '1' || result.success === true) {
+                    // Create a new reply object for immediate UI update
+                    const newReply = {
+                        id: result.comment || Date.now(), // Use returned comment ID or temporary one
+                        text: replyText,
+                        author: mw.config.get('wgUserName'),
+                        datetime: mw.msg('sic-date-justnow') || 'Just now',
+                        modifiedBy: mw.config.get('wgUserName'),
+                        modifiedDateTime: mw.msg('sic-date-justnow') || 'Just now'
+                    };
+
+                    // Add reply to the comment's replies array
+                    if (!this.comment.replies) {
+                        this.comment.replies = [];
+                    }
+                    this.comment.replies.push(newReply);
+
+                    // Emit event for parent component to handle
+                    this.$emit('reply-added', {
+                        comment: this.comment,
+                        reply: newReply
+                    });
+
+                    console.log('Reply submitted successfully for comment ID:', this.comment.id || this.comment.data_id);
+                    return true;
+                } else {
+                    console.error('Failed to submit reply:', result.message);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error submitting reply:', error);
+                return false;
+            }
         },
+        
+        handleReplySubmitted(replyData) {
+            console.log('Reply submitted for comment ID:', this.comment.id || this.comment.data_id);
+            
+            // Trigger refresh of highlights to show updated reply count
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('smartcomments:refresh-highlights', {
+                    detail: { 
+                        replyAdded: true,
+                        comment: this.comment,
+                        reply: replyData 
+                    }
+                }));
+            }
+        },
+        
         handleNext() {
             this.$emit('navigate', { type: 'next' });
         },
+        
         handlePrevious() {
             this.$emit('navigate', { type: 'previous' });
         }

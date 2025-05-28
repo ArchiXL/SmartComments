@@ -10,6 +10,7 @@
             @complete="commentsStore.completeComment"
             @view="commentsStore.viewPage"
             @navigate="handleCommentNavigation"
+            @reply-added="commentsStore.handleReplyAdded"
         ></comment>
         
         <!-- New Comment Dialog - now controlled by store -->

@@ -47,6 +47,7 @@ module.exports = defineComponent({
             reply: '',
             isFocused: false,
             hasContent: false,
+            isSubmitting: false,
         }
     },
     props: {
@@ -55,12 +56,13 @@ module.exports = defineComponent({
             required: true,
         },
     },
+    emits: ['reply-submitted'],
     computed: {
         showActions() {
             return this.isFocused || this.hasContent;
         },
         canSubmit() {
-            return this.reply.trim().length > 0;
+            return this.reply.trim().length > 0 && !this.isSubmitting;
         }
     },
     methods: {
@@ -73,12 +75,46 @@ module.exports = defineComponent({
         onInput() {
             this.hasContent = this.reply.trim().length > 0;
         },
-        submitReply() {
-            if (this.canSubmit) {
-                this.comment.reply(this.reply);
-                this.reply = '';
-                this.hasContent = false;
-                this.isFocused = false;
+        async submitReply() {
+            if (!this.canSubmit) {
+                return;
+            }
+
+            this.isSubmitting = true;
+            
+            try {
+                // Use the reply method from the enhanced comment object
+                if (this.comment.reply && typeof this.comment.reply === 'function') {
+                    const success = await this.comment.reply(this.reply);
+                    
+                    if (success) {
+                        // Create reply data for the event
+                        const replyData = {
+                            text: this.reply,
+                            author: mw.config.get('wgUserName'),
+                            datetime: new Date().toISOString()
+                        };
+
+                        // Emit the reply-submitted event
+                        this.$emit('reply-submitted', replyData);
+
+                        // Reset form
+                        this.reply = '';
+                        this.hasContent = false;
+                        this.isFocused = false;
+                        
+                        console.log('Reply submitted successfully');
+                    } else {
+                        console.error('Failed to submit reply');
+                        // Could show user feedback here
+                    }
+                } else {
+                    console.error('Comment object does not have a reply method');
+                }
+            } catch (error) {
+                console.error('Error submitting reply:', error);
+            } finally {
+                this.isSubmitting = false;
             }
         },
         cancelReply() {

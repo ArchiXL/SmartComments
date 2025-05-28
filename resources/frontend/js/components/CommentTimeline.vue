@@ -88,7 +88,7 @@ module.exports = defineComponent({
         // Computed properties
         const isEnabled = computed(() => appStateStore.isEnabled);
 
-        const comments = computed(() => commentsStore.comments);
+        const comments = computed(() => commentsStore.comments.filter(comment => comment.status !== 'completed'));
 
         const brokenCommentMessage = computed(() => {
             // Use MediaWiki's message system if available, otherwise fallback
