@@ -173,6 +173,7 @@ module.exports = defineComponent({
             enhancedComment,
             handleNext,
             handlePrevious,
+            handleReplySubmitted,
             messages
         };
     }
