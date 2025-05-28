@@ -1,16 +1,13 @@
 module.exports = {
     highlightDirective: {
         mounted(el, binding) {
-            console.log('highlightDirective: MOUNTED. Anchors count:', binding.value && binding.value.anchors ? binding.value.anchors.length : 0, 'Binding value:', binding.value);
             applyHighlights(document.body, binding.value.anchors, binding.value.onClick);
         },
         updated(el, binding) {
-            console.log('highlightDirective: UPDATED. New anchors count:', binding.value && binding.value.anchors ? binding.value.anchors.length : 0, 'Old anchors count:', binding.oldValue && binding.oldValue.anchors ? binding.oldValue.anchors.length : 0, 'Binding value:', binding.value);
             clearAllHighlights(document.body, binding.oldValue ? binding.oldValue.anchors : []);
             applyHighlights(document.body, binding.value.anchors, binding.value.onClick);
         },
         beforeUnmount(el, binding) {
-            console.log('highlightDirective: BEFOREUNMOUNT. Anchors count:', binding.value && binding.value.anchors ? binding.value.anchors.length : 0);
             clearAllHighlights(document.body, binding.value ? binding.value.anchors : []);
         }
     },
@@ -80,7 +77,6 @@ function applyHighlights(scopeElement, highlights, onClick) {
                     attachedListeners.set(currentDataCommentId, []);
                 }
                 attachedListeners.get(currentDataCommentId).push({ element: targetEl, handler: clickHandler, type: 'click' });
-                console.log(`highlightDirective: Click listener ADDED for comment ID ${currentDataCommentId} on element:`, targetEl);
             }
         };
 
@@ -92,7 +88,6 @@ function applyHighlights(scopeElement, highlights, onClick) {
                 elementTagName: 'span',
                 normalize: true,
                 onElementCreate: (spanEl, applier) => {
-                    console.log('highlightDirective: onElementCreate fired for comment ID:', dataCommentId, 'spanEl:', spanEl);
                     spanEl.setAttribute('data-comment-id', dataCommentId);
                     ensureClickListenerIsAttached(spanEl, highlightData.comment);
                 }
@@ -245,7 +240,6 @@ function applySelectorHighlight(scopeElement, highlightData, uniqueHighlightClas
  * @param {Array} [highlightsToClear] - Specific highlights to remove. If not provided, attempts to clear all.
  */
 function clearAllHighlights(scopeElement, highlightsToClear) {
-    console.log('clearAllHighlights called with:', highlightsToClear);
     if (!highlightsToClear || !Array.isArray(highlightsToClear)) {
         console.warn('clearAllHighlights: highlightsToClear was not an array or was null/undefined', highlightsToClear);
         return;

@@ -68,7 +68,6 @@ function formatCommentsForHighlighting(commentsArray) {
 function useSmartCommentsSetup() {
     const commentsComposable = useComments();
     const highlightComposable = useHighlight();
-    const appStateStore = useAppStateStore(); // Use the Pinia store
 
     // Destructure with fallbacks
     const {

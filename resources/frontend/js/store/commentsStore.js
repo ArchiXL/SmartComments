@@ -135,8 +135,6 @@ module.exports = defineStore('commentsStore', {
             this.error = null;
         },
 
-        // === Dialog Management Actions ===
-
         /**
          * Open a comment dialog with the specified comment and position
          */
@@ -154,6 +152,10 @@ module.exports = defineStore('commentsStore', {
                     this.commentPosition = position;
                     this.isCommentDialogVisible = true;
                     this.setCurrentComment(fetchedComment.id || fetchedComment.data_id);
+
+                    // Set active highlight
+                    this.setActiveHighlight(fetchedComment.data_id || fetchedComment.id);
+
                     console.log('CommentsStore: Comment dialog opened successfully');
                 } else {
                     this.setError('Comment not found');
@@ -171,6 +173,9 @@ module.exports = defineStore('commentsStore', {
          * Close the comment dialog
          */
         closeCommentDialog() {
+            // Clear active highlight
+            this.clearActiveHighlight();
+
             this.activeComment = null;
             this.commentPosition = null;
             this.isCommentDialogVisible = false;
@@ -191,6 +196,10 @@ module.exports = defineStore('commentsStore', {
 
                     if (fetchedComment) {
                         this.activeComment = fetchedComment;
+
+                        // Update active highlight to the new comment and scroll it into view
+                        this.setActiveHighlight(fetchedComment.data_id || fetchedComment.id, true);
+
                         // Keep the same position for now, could be enhanced to scroll to highlighted element
                         console.log('CommentsStore: Successfully navigated to', direction, 'comment');
                     } else {
@@ -327,6 +336,54 @@ module.exports = defineStore('commentsStore', {
         closeAllDialogs() {
             this.closeCommentDialog();
             this.closeNewCommentDialog();
-        }
+        },
+
+        /**
+         * Set active highlight for a comment
+         */
+        setActiveHighlight(commentId, scrollIntoView = false) {
+            // First clear any existing active highlights
+            this.clearActiveHighlight();
+
+            // Find elements with the specific comment highlight class
+            const specificClass = `smartcomment-hl-${commentId}`;
+            const highlightElements = document.querySelectorAll(`.${specificClass}`);
+
+            highlightElements.forEach(element => {
+                element.classList.add('active');
+            });
+
+            // Also check for elements with data-comment-id attribute
+            const dataElements = document.querySelectorAll(`[data-comment-id="${commentId}"]`);
+            dataElements.forEach(element => {
+                element.classList.add('active');
+            });
+
+            // Scroll the first active element into view if requested
+            if (scrollIntoView) {
+                const firstActiveElement = highlightElements[0] || dataElements[0];
+                if (firstActiveElement) {
+                    firstActiveElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            }
+
+            console.log('CommentsStore: Set active highlight for comment:', commentId);
+        },
+
+        /**
+         * Clear all active highlights
+         */
+        clearActiveHighlight() {
+            // Remove active class from all highlighted elements
+            const activeElements = document.querySelectorAll('[class*="smartcomment-hl-"].active, [data-comment-id].active');
+            activeElements.forEach(element => {
+                element.classList.remove('active');
+            });
+
+            console.log('CommentsStore: Cleared all active highlights');
+        },
     }
 }); 

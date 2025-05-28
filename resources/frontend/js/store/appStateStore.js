@@ -33,10 +33,16 @@ module.exports = defineStore('appStore', {
         },
 
         /**
-         * Initialize the store's state.
+         * Initialize the store's state and related stores.
          * @returns {void}
          */
         async initializeState() {
+            // Initialize userStore
+            const useUserStore = require('./userStore.js');
+            const userStore = useUserStore();
+            await userStore.fetchUserRights();
+
+            // Initialize toggle button
             const toggleElement = document.getElementById('ca-comments');
             if (toggleElement) {
                 // Use arrow function for onclick to preserve 'this' context

@@ -107,9 +107,9 @@ module.exports = defineComponent({
     overflow: hidden;
     overflow-y: auto;
     padding-left: 3em;
+    z-index: 4;
 
     .smartcomments-commentgroup {
-        z-index: 3;
         background: #ffffee;
         border-left: 3px solid #f6c343;
         border-bottom: 1px solid #ccc;

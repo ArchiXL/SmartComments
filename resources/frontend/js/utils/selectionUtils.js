@@ -3,6 +3,7 @@
  * Maintains compatibility with PHP backend expectations
  */
 const useAppStateStore = require('../store/appStateStore.js');
+const { CONTENT_ROOT_SELECTORS, SELECTION_VALIDATION_CODES, SMARTCOMMENTS_CLASSES, getMediaWikiContentRoot } = require('./constants.js');
 
 /**
  * Initialize rangy library if not already available
@@ -22,44 +23,13 @@ function initializeRangy() {
 }
 
 /**
- * Get the MediaWiki content root for selections
- * @returns {Element|null} - The content root element
- */
-function getMediaWikiContentRoot() {
-    // Try different selectors in order of preference
-    const selectors = [
-        "#mw-content-text > .mw-parser-output",
-        "#mw-content-text",
-        ".mw-body-content",
-        "#content",
-        "body"
-    ];
-
-    for (const selector of selectors) {
-        const element = document.querySelector(selector);
-        if (element) {
-            return element;
-        }
-    }
-
-    return document.body;
-}
-
-/**
  * Validate selection based on the original validation rules
  * @param {*} selection - Rangy selection or HTML string
  * @returns {Object} - Validation result with status and message
  */
 function validateSelectionContent(selection) {
-    // SELECTION_ENUMS will be defined in useSelection.js and imported or passed if needed
-    // For now, we assume these codes are understood by the caller (useSelection.js)
-    const VALIDATION_CODES = {
-        VALID: 0,
-        ALREADY_COMMENTED: 1,
-        DYNAMIC_CONTENT: 2,
-        LINEBREAKS: 3,
-        EMPTY: 4
-    };
+    // Use centralized validation codes
+    const VALIDATION_CODES = SELECTION_VALIDATION_CODES;
 
     let selectionHTML;
 
@@ -87,7 +57,7 @@ function validateSelectionContent(selection) {
     }
 
     // Check for existing comments
-    if (selectionHTML.includes('smartcomment-hl-')) {
+    if (selectionHTML.includes(SMARTCOMMENTS_CLASSES.HIGHLIGHT)) {
         return VALIDATION_CODES.ALREADY_COMMENTED;
     }
 
@@ -97,11 +67,11 @@ function validateSelectionContent(selection) {
     tempDiv.innerHTML = selectionHTML;
     const firstChild = tempDiv.firstChild;
 
-    if (selectionHTML.includes('sc-dynamic-block')) {
+    if (selectionHTML.includes(SMARTCOMMENTS_CLASSES.DYNAMIC_BLOCK)) {
         // If the selection itself is a dynamic block, it might be valid (e.g. selecting an image that is wrapped)
         // This case is typically handled by specific image/dynamic block selection logic, not general text selection.
         // For general text selection, finding sc-dynamic-block inside is invalid.
-        if (!(firstChild && firstChild.classList && firstChild.classList.contains('sc-dynamic-block') && tempDiv.childNodes.length === 1)) {
+        if (!(firstChild && firstChild.classList && firstChild.classList.contains(SMARTCOMMENTS_CLASSES.DYNAMIC_BLOCK) && tempDiv.childNodes.length === 1)) {
             // It's not SOLELY the dynamic block, so it's embedded dynamic content.
             // return VALIDATION_CODES.DYNAMIC_CONTENT; // Re-evaluate this rule based on usage
         }
@@ -191,7 +161,7 @@ function cleanSelectionHTML(html) {
     if (!html) return '';
 
     // Remove any temporary highlighting classes
-    html = html.replace(/class="[^"]*sc-selection-highlight[^"]*"/g, '');
+    html = html.replace(new RegExp(`class="[^"]*${SMARTCOMMENTS_CLASSES.SELECTION_HIGHLIGHT}[^"]*"`, 'g'), '');
 
     // Clean up empty class attributes
     html = html.replace(/\s+class=""\s*/g, ' ');

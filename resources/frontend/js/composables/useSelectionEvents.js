@@ -56,7 +56,7 @@ function useSelectionEvents() {
     /**
      * Handle click events for dynamic blocks and images
      */
-    async function handleClick(event) { // Made async to await selection processing
+    async function handleClick(event) {
         if (!isSelectionEnabled()) return;
 
         const target = event.target;
@@ -251,7 +251,6 @@ function useSelectionEvents() {
         selectionPosition: selection.selectionPosition,
         startPosition: selection.startPosition,
         isCapturing: selection.isCapturing,
-        selectionImage: selection.selectionImage,
 
         // Methods
         bindEvents,
@@ -262,18 +261,11 @@ function useSelectionEvents() {
 
         // Selection processing methods
         processTextSelection: selection.processTextSelection,
-        processTextSelectionWithScreenshot: selection.processTextSelectionWithScreenshot,
         processDynamicBlockSelection: selection.processDynamicBlockSelection,
-        processDynamicBlockSelectionWithScreenshot: selection.processDynamicBlockSelectionWithScreenshot,
         processImageSelection: selection.processImageSelection,
-        processImageSelectionWithScreenshot: selection.processImageSelectionWithScreenshot,
 
         // Formatting methods
         formatSelectionForAPI: selection.formatSelectionForAPI,
-
-        // Screenshot methods
-        screenshot: selection.screenshot,
-        screenshotSelection: selection.screenshotSelection,
 
         // Validation
         validateSelection: selection.validateSelection,

@@ -6,16 +6,15 @@ const {
     getMediaWikiContentRoot,
     isSelectionEnabled
 } = require('../utils/selectionUtils.js');
-const useScreenshot = require('./useScreenshot.js'); // Import the new composable
+const useScreenshot = require('./useScreenshot.js');
 
 // Define SELECTION_ENUMS here as the source of truth
 const SELECTION_ENUMS = {
     SELECTION_VALID: 0,
     INVALID_SELECTION_ALREADY_COMMENTED: 1,
-    INVALID_SELECTION_INCLUDES_DYNAMIC_CONTENT: 2, // This rule might need refinement
+    INVALID_SELECTION_INCLUDES_DYNAMIC_CONTENT: 2,
     INVALID_SELECTION_CONTAINS_LINEBREAKS: 3,
     INVALID_SELECTION_IS_EMPTY: 4,
-    // Add more specific error types if necessary
     UNKNOWN_ERROR: 99
 };
 
@@ -26,12 +25,11 @@ function useSelection() {
     const selectionPosition = reactive({ x: 0, y: 0 });
     const startPosition = reactive({ x: 0, y: 0 });
     const isCapturing = ref(false);
-    // const selectionImage = ref(null); // Store the screenshot - This will be handled by useScreenshot or passed back
 
     // Initialize rangy on first use
     let rangyInitialized = false;
-    let highlighter = null; // Store rangy highlighter instance
-    const TEMP_HIGHLIGHT_CLASS = 'sc-highlight-temp'; // Class for temporary highlight during screenshot
+    let highlighter = null;
+    const TEMP_HIGHLIGHT_CLASS = 'sc-highlight-temp';
 
     // Screenshot composable instance
     const { takeScreenshot, screenshotSelectionArea } = useScreenshot();
@@ -56,7 +54,7 @@ function useSelection() {
      * @returns {number} - validation result enum
      */
     function validateSelection(wrappedSelection) {
-        return validateSelectionContent(wrappedSelection); // This now returns a code directly
+        return validateSelectionContent(wrappedSelection);
     }
 
     /**
@@ -194,7 +192,7 @@ function useSelection() {
     function applyTemporaryHighlight(range) {
         if (highlighter && range) {
             try {
-                highlighter.highlightRange(range);
+                highlighter.highlightRanges(TEMP_HIGHLIGHT_CLASS, [range]);
             } catch (e) {
                 console.error('Error applying temporary highlight:', e);
             }
@@ -204,7 +202,7 @@ function useSelection() {
     function clearTemporaryHighlight() {
         if (highlighter) {
             try {
-                highlighter.unhighlightAll(); // This will remove all highlights made by this highlighter instance
+                highlighter.removeAllHighlights();
             } catch (e) {
                 console.error('Error clearing temporary highlight:', e);
             }
@@ -262,7 +260,7 @@ function useSelection() {
             return selectionData;
         } catch (error) {
             console.error('Error processing text selection:', error);
-            clearTemporaryHighlight(); // Ensure cleanup if error occurs after highlight applied
+            clearTemporaryHighlight();
             clearSelection();
             return null;
         }
@@ -291,7 +289,6 @@ function useSelection() {
 
         if (options.captureScreenshot) {
             try {
-                // For dynamic blocks, screenshot the element itself
                 const screenshotDataUrl = await takeScreenshot(element);
                 selectionData.image = screenshotDataUrl;
             } catch (error) {
@@ -316,14 +313,13 @@ function useSelection() {
     async function processImageSelection(imgElement, event, options = { captureScreenshot: false }) {
         if (!isSelectionEnabled()) return null;
 
-        // Simple validation for image (e.g., ensure it's not inside an existing comment)
         const validationResult = validateSelection(imgElement.outerHTML);
         if (validationResult !== SELECTION_ENUMS.SELECTION_VALID && validationResult !== SELECTION_ENUMS.INVALID_SELECTION_CONTAINS_LINEBREAKS) { // Linebreaks might be ok for outerHTML
             console.warn('Invalid image selection:', validationResult);
             return null;
         }
 
-        const imageHash = createImageHash(imgElement.src); // Assuming createImageHash is still relevant
+        const imageHash = createImageHash(imgElement.src);
 
         const selectionData = {
             text: imgElement.alt || `Image: ${imageHash}`,
@@ -360,7 +356,6 @@ function useSelection() {
         lastRange.value = null;
         isSelectionActive.value = false;
         isCapturing.value = false;
-        // selectionImage.value = null;
 
         // Clear browser selection
         if (window.getSelection) {
@@ -431,7 +426,7 @@ function useSelection() {
             // Skip if already wrapped or if it's an image inside a comment display (e.g., a comment bubble showing an image)
             if ((img.parentElement && img.parentElement.classList.contains('sc-dynamic-block')) ||
                 img.closest('.smartcomment-comment-view') ||
-                img.closest('.sc-comment-component')) { // Add another common class for comment components
+                img.closest('.sc-comment-component')) {
                 return;
             }
 
@@ -463,16 +458,12 @@ function useSelection() {
         selectionPosition,
         startPosition,
         isCapturing,
-        // selectionImage, // Removed, image data is now part of currentSelection.value.image
 
         // Methods
         validateSelection,
         processTextSelection,
-        processTextSelectionWithScreenshot: processTextSelection, // Keep old for compatibility if needed
         processDynamicBlockSelection,
-        processDynamicBlockSelectionWithScreenshot: processDynamicBlockSelection, // Keep old for compatibility if needed
         processImageSelection,
-        processImageSelectionWithScreenshot: processImageSelection, // Keep old for compatibility if needed
         clearSelection,
         setupImageSelection,
         formatSelectionForAPI,

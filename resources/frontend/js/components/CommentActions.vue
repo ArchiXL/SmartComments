@@ -59,18 +59,7 @@ module.exports = defineComponent({
 
         const actions = [
             {
-                icon: 'oo-ui-icon-expand',
-                label: 'Volgende opmerking',
-                align: 'left',
-                action: () => {
-                    emit('next');
-                },
-                when: () => {
-                    return commentsStore.hasNextComment;
-                }
-            },
-            {
-                icon: 'oo-ui-icon-collapse',
+                icon: 'oo-ui-icon-arrowPrevious',
                 label: 'Vorige opmerking',
                 align: 'left',
                 action: () => {
@@ -78,6 +67,17 @@ module.exports = defineComponent({
                 },
                 when: () => {
                     return commentsStore.hasPreviousComment;
+                }
+            },
+            {
+                icon: 'oo-ui-icon-arrowNext',
+                label: 'Volgende opmerking',
+                align: 'left',
+                action: () => {
+                    emit('next');
+                },
+                when: () => {
+                    return commentsStore.hasNextComment;
                 }
             },
             {
@@ -161,11 +161,15 @@ module.exports = defineComponent({
     .smartcomments-comment-actions-item {
         &.align-left {
             order: -1;
-            margin-right: auto;
         }
 
         &.align-right {
             order: 1;
+            margin-left: auto;
+            
+            & + .align-right {
+                margin-left: 0;
+            }
         }
     }
 

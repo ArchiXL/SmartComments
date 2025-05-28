@@ -4,10 +4,6 @@
  * This module ensures VueDemi compatibility with Vue 3 by applying necessary polyfills
  * and fixes. It should be called before using VueDemi in the application.
  */
-
-/**
- * Applies the VueDemi polyfill to ensure compatibility with Vue 3
- */
 function applyVueDemiPolyfill() {
     if (window.Vue && window.VueDemi) {
         const vueToUse = window.Vue;

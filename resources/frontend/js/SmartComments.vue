@@ -20,6 +20,9 @@
             @save="commentsStore.handleCommentSaved"
             @cancel="commentsStore.closeNewCommentDialog"
         ></new-comment-dialog>
+
+        <!-- Comment Timeline -->
+        <comment-timeline></comment-timeline>
     </div>
 </template>
 
@@ -32,12 +35,14 @@ const useAppStateStore = require('./store/appStateStore.js');
 const useCommentsStore = require('./store/commentsStore.js');
 const Comment = require('./components/Comment.vue');
 const NewCommentDialog = require('./components/NewCommentDialog.vue');
+const CommentTimeline = require('./components/CommentTimeline.vue');
 
 module.exports = defineComponent({
     name: 'SmartComments',
     components: {
         Comment,
         NewCommentDialog,
+        CommentTimeline,
     },
     setup() {
         const smartCommentsSetup = useSmartCommentsSetup();
@@ -136,6 +141,12 @@ module.exports = defineComponent({
                 const targetElement = document.getElementById('mw-content-text') || document.body;
                 if (this.smartCommentsSetup.highlightedAnchors?.value) {
                     this.applyHighlights(targetElement, this.smartCommentsSetup.highlightedAnchors.value, this.handleHighlightClick);
+                }
+                
+                // Restore active highlight if dialog is open
+                if (this.commentsStore.isCommentDialogVisible && this.commentsStore.activeComment) {
+                    const commentId = this.commentsStore.activeComment.data_id || this.commentsStore.activeComment.id;
+                    this.commentsStore.setActiveHighlight(commentId);
                 }
             } catch (error) {
                 console.error('SmartComments.vue: Error reloading highlights:', error);
@@ -237,7 +248,7 @@ module.exports = defineComponent({
             position: absolute;
             background: rgba(0, 0, 0, 0.8);
             color: #fff;
-            padding: 5px 10px;
+            padding: 5px;
             border-radius: 5px;
             font-size: 12px;
             z-index: 1000;
@@ -245,7 +256,7 @@ module.exports = defineComponent({
             top: calc(100% + 0.5em);
             
             /* Position relative to right edge to prevent overflow */
-            right: 0;
+            right: -.5em;
             max-width: 250px;
             width: auto;
             white-space: normal;
@@ -289,14 +300,17 @@ module.exports = defineComponent({
             border-right: 1px solid rgba(0, 0, 0, 0.2);
         }
     }
-
-    /* Existing comment highlights */
-    [class*="smartcomment-hl-"] {
-        cursor: pointer;
-        transition: background-color 0.2s ease;
-        
-        &:hover {
-            background-color: rgba(255, 255, 0, 0.3);
+    
+    // Pulse animation for active highlights
+    @keyframes pulse-highlight {
+        0% {
+            box-shadow: 0 0 8px rgba(54, 192, 255, 0.6);
+        }
+        50% {
+            box-shadow: 0 0 15px rgba(54, 192, 255, 0.9);
+        }
+        100% {
+            box-shadow: 0 0 8px rgba(54, 192, 255, 0.6);
         }
     }
 
@@ -314,16 +328,15 @@ module.exports = defineComponent({
 }
 *[class^='smartcomment-hl-'] {
     cursor: pointer;
-    text-decoration: none !important;
+    text-decoration: none;
     color: #000;
     background: #ffffe0;
-    /*blue=#e0ffff; green=#e0ffe0; red=#ffe0e0; yellow=#ffffe0*/
     padding: 0 2px;
-    z-index: 2 !important;
     box-shadow: 0 0 1px #000;
+    transition: all 0.2s ease;
 
     &.active {
-        background: #b4f3ff;
+        background: #ffde8d;
     }
 
     &.image {
@@ -338,6 +351,10 @@ module.exports = defineComponent({
                 &:hover {
                     background: lightyellow;
                 }
+            }
+            
+            &.active:before {
+                background: rgba(54, 192, 255, 0.8);
             }
         }
     }

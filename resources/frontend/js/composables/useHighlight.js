@@ -25,7 +25,6 @@ function useHighlight() {
 
     // Function to set all highlights at once
     const setHighlights = (highlights) => {
-        console.log('Setting highlights:', highlights);
         highlightedAnchors.value = highlights;
     };
 
