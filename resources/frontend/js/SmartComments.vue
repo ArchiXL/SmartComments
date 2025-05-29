@@ -68,6 +68,9 @@ module.exports = defineComponent({
         },
         annotateTooltipText() {
             return this.messages.msg('sic-annotate-tooltip');
+        },
+        buttonOpenText() {
+            return this.messages.msg('sic-button-open');
         }
     },
     mounted() {
@@ -81,6 +84,9 @@ module.exports = defineComponent({
 
         // Set CSS custom property for annotate tooltip text
         this.updateAnnotateTooltipText();
+
+        // Set CSS custom property for button open text
+        this.updateButtonOpenText();
 
         this.$watch(() => this.isEnabled, async (stateNowEnabled) => {
             const targetElement = document.getElementById('mw-content-text') || document.body;
@@ -122,6 +128,11 @@ module.exports = defineComponent({
         // Watch for changes in annotate tooltip text (e.g., language changes)
         this.$watch(() => this.annotateTooltipText, () => {
             this.updateAnnotateTooltipText();
+        });
+
+        // Watch for changes in button open text (e.g., language changes)
+        this.$watch(() => this.buttonOpenText, () => {
+            this.updateButtonOpenText();
         });
 
         // Handle selection events - delegate to store
@@ -313,6 +324,13 @@ module.exports = defineComponent({
          */
         updateAnnotateTooltipText() {
             document.documentElement.style.setProperty('--smartcomments-annotate-text', `"${this.annotateTooltipText}"`);
+        },
+
+        /**
+         * Update CSS custom property for button open text
+         */
+        updateButtonOpenText() {
+            document.documentElement.style.setProperty('--smartcomments-button-open-text', `"${this.buttonOpenText}"`);
         }
     }
 });
@@ -353,29 +371,10 @@ module.exports = defineComponent({
     padding: 0 2px;
     box-shadow: 0 0 1px #000;
     transition: all 0.2s ease;
+    position: relative;
 
     &.active {
         background: #ffde8d;
-    }
-
-    &[data-type="image"] {
-        .sc-dynamic-block {
-            &:before {
-                background: #ffffe0bf;
-                content: " ";
-                width: 100%;
-                height: 100%;
-                position: absolute;
-
-                &:hover {
-                    background: lightyellow;
-                }
-            }
-            
-            &.active:before {
-                background: rgba(54, 192, 255, 0.8);
-            }
-        }
     }
 }
 
@@ -385,7 +384,8 @@ module.exports = defineComponent({
     transition: background-color 0.2s ease;
     position: relative;
 
-    &:hover {
+    &:hover,
+    &[class*="smartcomment-hl-"] {
         &:before {
             position: absolute;
             top: 0;
@@ -394,6 +394,17 @@ module.exports = defineComponent({
             height: 100%;
             background: rgba(255, 255, 224, 0.8);
             border-top: 1px solid rgba(0, 0, 0, 0.2);
+            content: var(--smartcomments-button-open-text, "View comment");
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: black;
+            font-weight: bold;
+        }
+    }
+
+    &:hover:not([class*="smartcomment-hl-"]) {
+        &:before {
             content: var(--smartcomments-annotate-text, "annotate");
         }
     }

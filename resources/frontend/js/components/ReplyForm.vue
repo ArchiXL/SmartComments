@@ -6,6 +6,7 @@
         <div class="smartcomments-reply-form-body">
             <textarea 
                 class="smartcomments-reply-form-body-textarea" 
+                :class="{ 'has-content': hasContent }"
                 v-model="reply" 
                 :placeholder="messages.replyPlaceholder()"
                 @focus="onFocus"
@@ -76,7 +77,7 @@ module.exports = defineComponent({
     },
     computed: {
         showActions() {
-            return this.isFocused || this.hasContent;
+            return this.isFocused || this.hasContent || this.isSubmitting;
         },
         canSubmit() {
             return this.reply.trim().length > 0 && !this.isSubmitting;
@@ -180,6 +181,12 @@ module.exports = defineComponent({
             min-height: 75px;
             outline: 2px solid #36c;
             outline-offset: -1px;
+        }
+
+        &.has-content {
+            height: 75px;
+            min-height: 75px;
+            transition: none;
         }
     }
 
