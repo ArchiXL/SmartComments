@@ -1,29 +1,20 @@
-const { ref, reactive } = require('vue');
 const {
     initializeRangy,
     validateSelectionContent,
-    createImageHash,
     getMediaWikiContentRoot,
     isSelectionEnabled
-} = require('../utils/selectionUtils.js');
-const { SELECTION_ENUMS, SMARTCOMMENTS_CLASSES } = require('../utils/constants.js');
-const useScreenshot = require('./useScreenshot.js');
+} = require('../../utils/selectionUtils.js');
+const { SELECTION_ENUMS, SMARTCOMMENTS_CLASSES } = require('../../utils/constants.js');
+const useScreenshot = require('../useScreenshot.js');
 
-function useSelection() {
-    const isSelectionActive = ref(false);
-    const currentSelection = ref(null);
-    const lastRange = ref(null);
-    const selectionPosition = reactive({ x: 0, y: 0 });
-    const startPosition = reactive({ x: 0, y: 0 });
-    const isCapturing = ref(false);
-
+function useTextSelection() {
     // Initialize rangy on first use
     let rangyInitialized = false;
     let highlighter = null;
     const TEMP_HIGHLIGHT_CLASS = SMARTCOMMENTS_CLASSES.HIGHLIGHT_TEMP;
 
     // Screenshot composable instance
-    const { takeScreenshot, screenshotSelectionArea } = useScreenshot();
+    const { screenshotSelectionArea } = useScreenshot();
 
     /**
      * Ensures rangy is initialized
@@ -40,8 +31,7 @@ function useSelection() {
     }
 
     /**
-     * Critical word index calculation - MUST match PHP backend expectations
-     * This is the most important function - it replicates the original logic exactly
+     * Matches PHP backend expectations
      * @param {Range} selectionRange - The text selection range
      * @returns {Promise} - Promise resolving to {text, index, type}
      */
@@ -186,15 +176,16 @@ function useSelection() {
     /**
      * Process text selection with screenshot
      * @param {Event} event - Mouse event
+     * @param {Object} selectionPosition - Position object to update
+     * @param {Object} startPosition - Start position object to update
      * @returns {Promise} - Promise resolving to selection data with screenshot
      */
-    async function processTextSelection(event, options = { captureScreenshot: false }) {
+    async function processTextSelection(event, selectionPosition, startPosition, options = { captureScreenshot: false }) {
         if (!ensureRangyInitialized() || !isSelectionEnabled()) {
             return null;
         }
         const selection = rangy.getSelection();
         if (!selection.rangeCount || selection.isCollapsed) {
-            clearSelection();
             return null;
         }
 
@@ -226,7 +217,6 @@ function useSelection() {
 
             mw.notify(errorMessage, { type: 'error' });
             console.warn('Invalid selection:', validationResult);
-            clearSelection();
             return null;
         }
 
@@ -248,237 +238,21 @@ function useSelection() {
                 }
             }
 
-            currentSelection.value = selectionData;
-            lastRange.value = range.cloneRange();
-            selectionPosition.x = event.clientX;
-            selectionPosition.y = event.clientY;
-            isSelectionActive.value = true;
             return selectionData;
         } catch (error) {
             console.error('Error processing text selection:', error);
             clearTemporaryHighlight();
-            clearSelection();
             return null;
         }
-    }
-
-    /**
-     * Process dynamic block selection
-     * @param {Element} element - The dynamic block element
-     * @returns {Object} - Selection data
-     */
-    async function processDynamicBlockSelection(element, event, options = { captureScreenshot: false }) {
-        if (!isSelectionEnabled()) return null;
-
-        // Skip HTML validation for dynamic blocks since they are pre-approved content
-        // and can be wrapped in HTML elements like links
-        // Only check for existing comments
-        if (element.outerHTML.includes(SMARTCOMMENTS_CLASSES.HIGHLIGHT)) {
-            console.warn('Invalid dynamic block selection: already commented');
-            return null;
-        }
-
-        // For sc-image-block elements, use the data-hash instead of full HTML
-        let selectionText = element.outerHTML;
-        if (element.classList.contains('sc-image-block') && element.dataset.hash) {
-            selectionText = element.dataset.hash;
-        }
-
-        const selectionData = {
-            text: selectionText,
-            index: -1,
-            type: 'dynamic_block',
-            element: element
-        };
-
-        if (options.captureScreenshot) {
-            try {
-                const rect = element.getBoundingClientRect();
-                const currentSelPos = { x: rect.right, y: rect.bottom };
-                const currentStartPos = { x: rect.left, y: rect.top };
-                // screenshotSelectionArea expects a string for the text, use the derived selectionText
-                const screenshotDataUrl = await screenshotSelectionArea(currentSelPos, currentStartPos, selectionText);
-                selectionData.image = screenshotDataUrl;
-            } catch (error) {
-                console.error('Error taking screenshot for dynamic block:', error);
-                selectionData.image = null;
-            }
-        }
-
-        currentSelection.value = selectionData;
-        const rect = element.getBoundingClientRect();
-        selectionPosition.x = event ? event.clientX : (rect.left + rect.width / 2);
-        selectionPosition.y = event ? event.clientY : (rect.top + rect.height / 2);
-        isSelectionActive.value = true;
-        return selectionData;
-    }
-
-    /**
-     * Process image selection
-     * @param {Element} imgElement - The image element
-     * @returns {Object} - Selection data
-     */
-    async function processImageSelection(imgElement, event, options = { captureScreenshot: false }) {
-        if (!isSelectionEnabled()) return null;
-
-        const validationResult = validateSelectionContent(imgElement.outerHTML);
-        if (validationResult !== SELECTION_ENUMS.SELECTION_VALID && validationResult !== SELECTION_ENUMS.INVALID_SELECTION_CONTAINS_LINEBREAKS) { // Linebreaks might be ok for outerHTML
-            console.warn('Invalid image selection:', validationResult);
-            return null;
-        }
-
-        const imageHash = createImageHash(imgElement.src);
-
-        const selectionData = {
-            text: imgElement.alt || `Image: ${imageHash}`,
-            index: -1,
-            type: 'image',
-            image_hash: imageHash,
-            src: imgElement.src,
-            element: imgElement
-        };
-
-        if (options.captureScreenshot) {
-            try {
-                const screenshotDataUrl = await takeScreenshot(imgElement);
-                selectionData.image = screenshotDataUrl;
-            } catch (error) {
-                console.error('Error taking screenshot for image selection:', error);
-                selectionData.image = null;
-            }
-        }
-
-        currentSelection.value = selectionData;
-        const rect = imgElement.getBoundingClientRect();
-        selectionPosition.x = event ? event.clientX : (rect.left + rect.width / 2);
-        selectionPosition.y = event ? event.clientY : (rect.top + rect.height / 2);
-        isSelectionActive.value = true;
-        return selectionData;
-    }
-
-    /**
-     * Clear current selection
-     */
-    function clearSelection() {
-        currentSelection.value = null;
-        lastRange.value = null;
-        isSelectionActive.value = false;
-        isCapturing.value = false;
-
-        // Clear browser selection
-        if (window.getSelection) {
-            window.getSelection().removeAllRanges();
-        }
-
-        clearTemporaryHighlight(); // Ensure any temp highlights are cleared
-    }
-
-    /**
-     * Format selection data for API request (replaces the functionality from old code)
-     * @param {Object} selectionData - The selection data with screenshot
-     * @returns {Object} - Formatted data for API request
-     */
-    function formatSelectionForAPI(selectionData) {
-        if (!selectionData) {
-            return null;
-        }
-
-        const root = getMediaWikiContentRoot();
-        let parentId = null;
-        if (selectionData.element) {
-            const parentCommentElement = selectionData.element.closest('[data-comment-id]');
-            if (parentCommentElement) {
-                parentId = parentCommentElement.dataset.commentId;
-            }
-        }
-
-        const formattedData = {
-            text: selectionData.text || '',
-            index: selectionData.index === undefined ? -1 : selectionData.index,
-            type: selectionData.type || 'text',
-            image: selectionData.image || null,
-            parentId: parentId,
-            src: selectionData.src,
-            image_hash: selectionData.image_hash
-        };
-
-        // Add additional fields based on selection type
-        if (selectionData.type === 'dynamic-block' && selectionData.element) {
-            formattedData.elementData = {
-                hash: selectionData.element.dataset.hash,
-                type: selectionData.element.dataset.type
-            };
-        } else if (selectionData.type === 'image' && selectionData.element) {
-            formattedData.elementData = {
-                src: selectionData.element.src,
-                width: selectionData.element.width,
-                height: selectionData.element.height
-            };
-        }
-
-        return formattedData;
-    }
-
-    /**
-     * Set up image wrappers for selection (like the old ImageSelection.bindEvents)
-     */
-    function setupImageSelection() {
-        const contentRoot = getMediaWikiContentRoot();
-        if (!contentRoot) {
-            console.error("Cannot setup image selection: content root not found.");
-            return;
-        }
-        const images = contentRoot.querySelectorAll('img');
-
-        images.forEach(img => {
-            // Skip if already wrapped or if it's an image inside a comment display (e.g., a comment bubble showing an image)
-            if ((img.parentElement && img.parentElement.classList.contains('sc-dynamic-block')) ||
-                img.closest('.smartcomment-comment-view') ||
-                img.closest('.sc-comment-component')) {
-                return;
-            }
-
-            // Ensure image has a src, otherwise it might not be a meaningful image to comment on
-            if (!img.src) {
-                return;
-            }
-
-            const hash = createImageHash(img.src, img.width, img.height); // from selectionUtils
-            const wrapper = document.createElement('div');
-            wrapper.className = 'sc-dynamic-block sc-image-block';
-            wrapper.dataset.hash = `img[${hash}]`;
-            wrapper.dataset.type = 'image';
-
-            if (img.parentNode) {
-                img.parentNode.insertBefore(wrapper, img);
-                wrapper.appendChild(img);
-            } else {
-                console.warn("Image has no parentNode, cannot wrap:", img);
-            }
-        });
     }
 
     return {
-        // State
-        isSelectionActive,
-        currentSelection,
-        lastRange,
-        selectionPosition,
-        startPosition,
-        isCapturing,
-
-        // Methods
         processTextSelection,
-        processDynamicBlockSelection,
-        processImageSelection,
-        clearSelection,
-        setupImageSelection,
-        formatSelectionForAPI,
-        screenshotSelectionArea,
-
-        // Utility
-        getMediaWikiContentRoot
+        getTextAndIndexAsync,
+        applyTemporaryHighlight,
+        clearTemporaryHighlight,
+        ensureRangyInitialized
     };
 }
 
-module.exports = { useSelection }; 
+module.exports = { useTextSelection }; 

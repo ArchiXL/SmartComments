@@ -1,4 +1,4 @@
-const { useSelection } = require('./useSelection.js');
+const { useSelection } = require('./selection/useSelection.js');
 const { SELECTION_ENUMS } = require('../utils/constants.js');
 const { getMediaWikiContentRoot } = require('../utils/constants.js');
 const { useHighlight } = require('./useHighlight.js');

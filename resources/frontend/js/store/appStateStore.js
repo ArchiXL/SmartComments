@@ -23,11 +23,15 @@ module.exports = defineStore('appStore', {
                 toggleElement.classList.add('selected');
                 toggleElement.classList.remove('sic-enable-commenting');
                 toggleElement.classList.add('sic-disable-commenting');
+                // Update body class
+                document.body.classList.add('smartcomments-enabled');
             } else {
                 // Comments are disabled, button should offer to enable
                 toggleElement.classList.remove('selected');
                 toggleElement.classList.remove('sic-disable-commenting');
                 toggleElement.classList.add('sic-enable-commenting');
+                // Update body class
+                document.body.classList.remove('smartcomments-enabled');
             }
         },
 
