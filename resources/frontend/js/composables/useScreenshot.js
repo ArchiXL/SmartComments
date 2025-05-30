@@ -32,7 +32,7 @@ function useScreenshot() {
 
         try {
             const canvas = await html2canvas(targetElement, options);
-            canvas.classList.add(SMARTCOMMENTS_CLASSES.CANVAS); // 'sic-canvas' for 'smart-image-comment-canvas' or similar
+            canvas.classList.add(SMARTCOMMENTS_CLASSES.CANVAS);
             const dataURL = canvas.toDataURL("image/jpeg");
             canvas.remove();
             return dataURL;
@@ -73,6 +73,18 @@ function useScreenshot() {
             height: height,
             scale: 1,
             onclone: function (clonedDocument) {
+                const allElements = clonedDocument.getElementsByTagName('*');
+                for (let i = 0; i < allElements.length; i++) {
+                    const element = allElements[i];
+                    const classList = element.classList;
+                    // Check each class for smartcomment-hl- prefix
+                    for (let j = classList.length - 1; j >= 0; j--) {
+                        if (classList[j].indexOf(SMARTCOMMENTS_CLASSES.HIGHLIGHT) === 0) {
+                            classList.remove(classList[j]);
+                        }
+                    }
+                }
+
                 // Style highlighted elements in the clone before screenshotting
                 // This ensures the highlights are part of the image.
                 const activeItems = clonedDocument.getElementsByClassName(SMARTCOMMENTS_CLASSES.HIGHLIGHT_TEMP);

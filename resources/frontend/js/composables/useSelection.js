@@ -271,9 +271,11 @@ function useSelection() {
     async function processDynamicBlockSelection(element, event, options = { captureScreenshot: false }) {
         if (!isSelectionEnabled()) return null;
 
-        const validationResult = validateSelectionContent(element.outerHTML);
-        if (validationResult !== SELECTION_ENUMS.SELECTION_VALID) {
-            console.warn('Invalid dynamic block selection:', validationResult);
+        // Skip HTML validation for dynamic blocks since they are pre-approved content
+        // and can be wrapped in HTML elements like links
+        // Only check for existing comments
+        if (element.outerHTML.includes(SMARTCOMMENTS_CLASSES.HIGHLIGHT)) {
+            console.warn('Invalid dynamic block selection: already commented');
             return null;
         }
 

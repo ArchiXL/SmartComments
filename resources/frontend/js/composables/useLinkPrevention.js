@@ -43,6 +43,12 @@ function useLinkPrevention() {
                 return;
             }
 
+            // Allow clicks on sc-dynamic-block elements for annotation
+            // This allows users to annotate elements even when wrapped in links
+            if (target.closest(`.${SMARTCOMMENTS_CLASSES.DYNAMIC_BLOCK}`)) {
+                return;
+            }
+
             // Don't prevent clicks on internal anchors (same page navigation)
             if (link.href.includes('#') &&
                 link.href.split('#')[0] === window.location.href.split('#')[0]) {
