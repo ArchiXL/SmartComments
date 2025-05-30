@@ -1,14 +1,22 @@
+/**
+ * Selection Events Composable - Refactored
+ * Uses new Strategy pattern for consistent selection handling
+ * Eliminates duplication and provides centralized event management
+ */
 const { useSelection } = require('./selection/useSelection.js');
-const { SELECTION_ENUMS } = require('../utils/constants.js');
 const { getMediaWikiContentRoot } = require('../utils/constants.js');
 const { useHighlight } = require('./useHighlight.js');
+const { useHoverEffects } = require('./useHoverEffects.js');
 const useAppStateStore = require('../store/appStateStore.js');
 const { smartCommentsEvents } = require('../utils/smartCommentsEvents.js');
 const useMessages = require('./useMessages.js');
+const { selectionErrorHandler } = require('./selection/shared/SelectionErrorHandler.js');
+const { SELECTION_TIMEOUTS } = require('./selection/shared/SelectionConstants.js');
 
 function useSelectionEvents() {
     const selection = useSelection();
     const highlight = useHighlight();
+    const hoverEffects = useHoverEffects();
     const { messages } = useMessages();
 
     // Event handlers
@@ -16,8 +24,60 @@ function useSelectionEvents() {
     let isEventsBound = false;
 
     /**
+     * Check if selection is currently enabled
+     * @returns {boolean} - Whether selection is enabled
+     */
+    function isSelectionEnabled() {
+        try {
+            const store = useAppStateStore();
+            return store.isEnabled;
+        } catch (error) {
+            console.warn('Could not check selection enabled state:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Universal selection processor - handles any selection type
+     * @param {*} target - Selection target (element, range, etc.)
+     * @param {Event} event - Interaction event
+     * @param {Object} options - Processing options
+     * @returns {Promise<Object|null>} - Selection result
+     */
+    async function processUniversalSelection(target, event, options = {}) {
+        if (!isSelectionEnabled()) {
+            return null;
+        }
+
+        // Default to capturing screenshots
+        const processingOptions = {
+            captureScreenshot: true,
+            ...options
+        };
+
+        try {
+            const selectionResult = await selection.processSelection(target, event, processingOptions);
+
+            if (selectionResult) {
+                await handleSuccessfulSelection(selectionResult, event);
+                return selectionResult;
+            }
+
+            return null;
+
+        } catch (error) {
+            selectionErrorHandler.handleSelectionError('universal', error, {
+                target,
+                event,
+                options: processingOptions
+            });
+            return null;
+        }
+    }
+
+    /**
      * Create a selection from an element and trigger a selection active event
-     * @param {Element} element - The element to create a selection from
+     * @param {Event} event - Click/interaction event
      */
     function createSelectionFromElement(event) {
         const element = event.target;
@@ -26,14 +86,17 @@ function useSelectionEvents() {
         const svgLink = selection.findSVGLink(element);
         if (svgLink) {
             event.preventDefault();
-            // Handle SVG selection asynchronously
             handleSVGSelection(svgLink, event);
             return;
         }
 
-        const rangySelection = rangy.getSelection();
+        // For other elements, try to create a text selection
+        if (!window.rangy || !rangy.getSelection) {
+            console.warn('Rangy not available for text selection creation');
+            return;
+        }
 
-        // Get the text content to select
+        const rangySelection = rangy.getSelection();
         const textContent = element.textContent || element.innerText || '';
 
         if (textContent.trim()) {
@@ -41,55 +104,44 @@ function useSelectionEvents() {
                 const range = rangy.createRange();
                 range.selectNodeContents(element);
 
+                // Try to find and select the text content
                 if (range.findText && range.findText(textContent.trim())) {
                     rangySelection.setSingleRange(range);
                 } else {
-                    const textRange = rangy.createRange();
-                    textRange.selectNodeContents(element);
-
-                    // Convert to character range and back to ensure text-only selection
-                    if (textRange.toCharacterRange) {
-                        const charRange = textRange.toCharacterRange(element);
-                        textRange.selectCharacters(element, charRange.start, charRange.end);
-                    }
-
-                    rangySelection.setSingleRange(textRange);
+                    // Fallback: select node contents
+                    range.selectNodeContents(element);
+                    rangySelection.setSingleRange(range);
                 }
             } catch (error) {
+                console.warn('Failed to create selection from element:', error);
+                // Final fallback
                 const range = rangy.createRange();
                 range.selectNodeContents(element);
                 rangySelection.setSingleRange(range);
             }
-        } else {
-            // No text content, select element contents as fallback
-            const range = rangy.createRange();
-            range.selectNodeContents(element);
-            rangySelection.setSingleRange(range);
         }
     }
 
     /**
      * Handle SVG selection asynchronously
-     * @param {Element} svgLink - The SVG link element
-     * @param {Event} event - The original click event
+     * @param {Element} svgLink - SVG link element
+     * @param {Event} event - Original click event
      */
     async function handleSVGSelection(svgLink, event) {
         if (!isSelectionEnabled()) return;
 
         try {
-            // Call the SVG selection processor with screenshot option
-            const result = await selection.processSVGSelection(svgLink, event, { captureScreenshot: true });
-            if (result) {
-                await handleSuccessfulSelection(result, event);
-            }
+            const result = await processUniversalSelection(svgLink, event);
+            // Success handling is done in processUniversalSelection
         } catch (error) {
             console.error('SVG selection failed:', error);
-            showSelectionError(error);
+            selectionErrorHandler.handleSelectionError('svg', error, { svgLink, event });
         }
     }
 
     /**
      * Handle mouse down events to track start position
+     * @param {Event} event - Mouse down event
      */
     function handleMouseDown(event) {
         if (!isSelectionEnabled()) return;
@@ -100,6 +152,7 @@ function useSelectionEvents() {
 
     /**
      * Handle mouse move events to track current position
+     * @param {Event} event - Mouse move event
      */
     function handleMouseMove(event) {
         if (!isSelectionEnabled()) return;
@@ -111,276 +164,278 @@ function useSelectionEvents() {
 
     /**
      * Handle mouse up events for text selection
+     * @param {Event} event - Mouse up event
      */
     function handleMouseUp(event) {
         if (!isSelectionEnabled()) return;
 
+        // Add small delay to ensure selection is complete
         setTimeout(async () => {
-            if (!rangy.getSelection().isCollapsed) {
+            if (!window.rangy || !rangy.getSelection) {
+                return;
+            }
+
+            const rangySelection = rangy.getSelection();
+            if (!rangySelection.isCollapsed && rangySelection.rangeCount > 0) {
                 try {
-                    // Call the consolidated function with screenshot option
-                    const result = await selection.processTextSelection(event, { captureScreenshot: true });
-                    if (result) {
-                        await handleSuccessfulSelection(result, event);
-                    }
+                    const range = rangySelection.getRangeAt(0);
+                    await processUniversalSelection(range, event);
                 } catch (error) {
-                    console.error('Text selection failed:', error);
-                    showSelectionError(error);
+                    console.error('Text selection processing failed:', error);
+                    selectionErrorHandler.handleSelectionError('text', error, { event });
                 }
             }
-        }, 1);
+        }, SELECTION_TIMEOUTS.TEXT_SELECTION_DELAY);
     }
 
     /**
-     * Handle click events for dynamic blocks and images
+     * Handle click events for dynamic blocks, images, and SVG elements
+     * @param {Event} event - Click event
      */
     async function handleClick(event) {
         if (!isSelectionEnabled()) return;
 
         const target = event.target;
-        let selectionResult = null;
 
-        // Handle SVG link selection
-        const svgLink = selection.findSVGLink(target);
-        if (svgLink) {
-            event.preventDefault();
-            try {
-                // Call the consolidated function with screenshot option
-                selectionResult = await selection.processSVGSelection(svgLink, event, { captureScreenshot: true });
-            } catch (error) {
-                console.error('SVG selection failed:', error);
-                showSelectionError(error);
+        // Determine what type of element was clicked and process accordingly
+        try {
+            // Check if we can select this element
+            if (selection.canSelectElement(target)) {
+                event.preventDefault();
+                await processUniversalSelection(target, event);
             }
-        }
-        // Handle dynamic block selection
-        else if (target.closest('.sc-dynamic-block')) {
-            const dynamicBlock = target.closest('.sc-dynamic-block');
-            event.preventDefault();
-            try {
-                // Call the consolidated function with screenshot option
-                selectionResult = await selection.processDynamicBlockSelection(dynamicBlock, event, { captureScreenshot: true });
-            } catch (error) {
-                console.error('Dynamic block selection failed:', error);
-                showSelectionError(error);
-            }
-        }
-        // Handle image selection (if not wrapped in dynamic block and not already handled)
-        else if (target.tagName === 'IMG') {
-            event.preventDefault();
-            try {
-                // Call the consolidated function with screenshot option
-                selectionResult = await selection.processImageSelection(target, event, { captureScreenshot: true });
-            } catch (error) {
-                console.error('Image selection failed:', error);
-                showSelectionError(error);
-            }
-        }
-
-        if (selectionResult) {
-            await handleSuccessfulSelection(selectionResult, event);
+        } catch (error) {
+            console.error('Click selection processing failed:', error);
+            selectionErrorHandler.handleSelectionError('click', error, { target, event });
         }
     }
 
     /**
      * Handle successful selection by creating highlight and triggering events
+     * @param {Object} selectionResult - Selection result data
+     * @param {Event} event - Original interaction event
      */
     async function handleSuccessfulSelection(selectionResult, event) {
-        // Create highlight based on selection type
-        const highlightData = createHighlightData(selectionResult);
+        try {
+            // Create highlight data
+            const highlightData = createHighlightData(selectionResult);
 
-        // Add to highlights
-        highlight.addHighlight(selectionResult.type, highlightData);
+            // Add to highlights
+            highlight.addHighlight(selectionResult.type, highlightData);
 
-        // Format data for API usage
-        const apiData = selection.formatSelectionForAPI(selectionResult);
+            // Format data for API usage
+            const apiData = selection.formatSelectionForAPI(selectionResult);
 
-        // Trigger centralized selection active event
-        smartCommentsEvents.triggerSelectionActive({
-            selection: selectionResult,
-            screenshot: selectionResult.screenshot || null,
-            apiData: apiData,
-            position: {
-                x: event.pageX,
-                y: event.pageY
-            },
-            highlight: highlightData
-        });
-
-        // Emit custom event for other components to handle (legacy compatibility)
-        const selectionEvent = new CustomEvent('smartcomments:selection', {
-            detail: {
+            // Create event data
+            const eventData = {
                 selection: selectionResult,
-                screenshot: selectionResult.screenshot || null, // Include screenshot data
-                apiData: apiData, // Include API-ready formatted data
+                screenshot: selectionResult.image || null,
+                apiData: apiData,
                 position: {
-                    x: event.pageX,
-                    y: event.pageY
+                    x: event?.pageX || 0,
+                    y: event?.pageY || 0
                 },
-                highlight: highlightData
-            }
-        });
+                highlight: highlightData,
+                timestamp: Date.now()
+            };
 
-        document.dispatchEvent(selectionEvent);
+            // Trigger centralized selection active event
+            smartCommentsEvents.triggerSelectionActive(eventData);
+
+            // Emit custom event for legacy compatibility
+            const selectionEvent = new CustomEvent('smartcomments:selection', {
+                detail: eventData
+            });
+            document.dispatchEvent(selectionEvent);
+
+            console.log('Selection successfully processed and events triggered:', {
+                type: selectionResult.type,
+                hasScreenshot: !!selectionResult.image,
+                strategy: selectionResult._strategy?.name
+            });
+
+        } catch (error) {
+            console.error('Failed to handle successful selection:', error);
+            selectionErrorHandler.handleSelectionError('event-handling', error, {
+                selectionResult,
+                event
+            });
+        }
     }
 
     /**
      * Create highlight data from selection result
+     * @param {Object} selectionResult - Selection result
+     * @returns {Object} - Highlight data
      */
     function createHighlightData(selectionResult) {
         return {
-            data_id: generateTempId(), // Temporary ID until saved
+            data_id: generateTempId(),
             text: selectionResult.text,
             index: selectionResult.index,
             type: selectionResult.type,
             element: selectionResult.element || null,
-            screenshot: selectionResult.screenshot || null, // Include screenshot in highlight data
-            timestamp: Date.now()
+            screenshot: selectionResult.image || null,
+            timestamp: Date.now(),
+            metadata: selectionResult.metadata || null,
+            pos: selectionResult.pos || selectionResult.selector || null
         };
     }
 
     /**
      * Generate temporary ID for new selections
+     * @returns {string} - Temporary ID
      */
     function generateTempId() {
-        return 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        return `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
 
     /**
-     * Show selection error to user
+     * Show selection error to user (delegated to error handler)
+     * @param {Error} error - Error that occurred
+     * @param {string} selectionType - Type of selection that failed
      */
-    function showSelectionError(error) {
-        // You can customize this to show user-friendly error messages
-        console.error('Selection error:', error);
+    function showSelectionError(error, selectionType = 'unknown') {
+        selectionErrorHandler.handleSelectionError(selectionType, error);
+    }
 
-        // Example error handling - customize based on your notification system
-        if (typeof mw !== 'undefined' && mw.notify) {
-            mw.notify(messages.selectionGenericError(), { type: 'error' });
+    /**
+     * Bind all selection event handlers
+     */
+    function bindEvents() {
+        if (isEventsBound) {
+            console.warn('Selection events already bound');
+            return;
+        }
+
+        try {
+            // Create bound handlers
+            mouseDownHandler = handleMouseDown.bind(this);
+            mouseUpHandler = handleMouseUp.bind(this);
+            mouseMoveHandler = handleMouseMove.bind(this);
+            clickHandler = handleClick.bind(this);
+
+            // Bind to document
+            document.addEventListener('mousedown', mouseDownHandler);
+            document.addEventListener('mouseup', mouseUpHandler);
+            document.addEventListener('mousemove', mouseMoveHandler);
+            document.addEventListener('click', clickHandler);
+
+            // Initialize hover effects
+            hoverEffects.initializeHoverEffects();
+
+            isEventsBound = true;
+            console.log('Selection events and hover effects bound successfully');
+
+        } catch (error) {
+            console.error('Failed to bind selection events:', error);
+            isEventsBound = false;
         }
     }
 
     /**
-     * Check if selection is enabled
-     */
-    function isSelectionEnabled() {
-        const store = useAppStateStore();
-        return store.isEnabled;
-    }
-
-    /**
-     * Add hover effects for dynamic blocks and SVG links
-     */
-    function setupDynamicBlockHover() {
-        const contentRoot = getMediaWikiContentRoot();
-
-        // Use event delegation for better performance
-        contentRoot.addEventListener('mouseover', (event) => {
-            const dynamicBlock = event.target.closest('.sc-dynamic-block');
-            if (dynamicBlock && !dynamicBlock.closest('.smartcomment-hl-')) {
-                dynamicBlock.classList.add('sc-hover');
-            }
-
-            // Add hover effect for SVG links
-            const svgLink = selection.findSVGLink(event.target);
-            if (svgLink && !svgLink.closest('.smartcomment-hl-')) {
-                svgLink.classList.add('sc-svg-hover');
-            }
-        });
-
-        contentRoot.addEventListener('mouseout', (event) => {
-            const dynamicBlock = event.target.closest('.sc-dynamic-block');
-            if (dynamicBlock) {
-                dynamicBlock.classList.remove('sc-hover');
-            }
-
-            // Remove hover effect for SVG links
-            const svgLink = selection.findSVGLink(event.target);
-            if (svgLink) {
-                svgLink.classList.remove('sc-svg-hover');
-            }
-        });
-    }
-
-    /**
-     * Bind all selection events
-     */
-    function bindEvents() {
-        if (isEventsBound) return;
-
-        const contentRoot = getMediaWikiContentRoot();
-
-        // Create bound handlers
-        mouseDownHandler = handleMouseDown.bind(null);
-        mouseUpHandler = handleMouseUp.bind(null);
-        mouseMoveHandler = handleMouseMove.bind(null);
-        clickHandler = handleClick.bind(null);
-
-        // Bind events
-        document.addEventListener('mousedown', mouseDownHandler);
-        contentRoot.addEventListener('mouseup', mouseUpHandler);
-        document.addEventListener('mousemove', mouseMoveHandler);
-        contentRoot.addEventListener('click', clickHandler);
-
-        // Setup image selection wrappers
-        selection.setupImageSelection();
-
-        // Setup dynamic block hover effects
-        setupDynamicBlockHover();
-
-        isEventsBound = true;
-    }
-
-    /**
-     * Unbind all selection events
+     * Unbind all selection event handlers
      */
     function unbindEvents() {
-        if (!isEventsBound) return;
+        if (!isEventsBound) {
+            return;
+        }
 
-        document.removeEventListener('mousedown', mouseDownHandler);
-        getMediaWikiContentRoot().removeEventListener('mouseup', mouseUpHandler);
-        document.removeEventListener('mousemove', mouseMoveHandler);
-        getMediaWikiContentRoot().removeEventListener('click', clickHandler);
+        try {
+            // Remove event listeners
+            if (mouseDownHandler) document.removeEventListener('mousedown', mouseDownHandler);
+            if (mouseUpHandler) document.removeEventListener('mouseup', mouseUpHandler);
+            if (mouseMoveHandler) document.removeEventListener('mousemove', mouseMoveHandler);
+            if (clickHandler) document.removeEventListener('click', clickHandler);
 
-        isEventsBound = false;
+            // Clear handlers
+            mouseDownHandler = null;
+            mouseUpHandler = null;
+            mouseMoveHandler = null;
+            clickHandler = null;
+
+            // Destroy hover effects
+            hoverEffects.destroyHoverEffects();
+
+            isEventsBound = false;
+            console.log('Selection events and hover effects unbound successfully');
+
+        } catch (error) {
+            console.error('Failed to unbind selection events:', error);
+        }
     }
 
     /**
-     * Handle selection creation (triggered by successful selection)
+     * Set up callback for selection creation events
+     * @param {Function} callback - Callback function
+     * @returns {Function} - Cleanup function
      */
     function onSelectionCreate(callback) {
-        const handler = (event) => callback(event.detail);
-        document.addEventListener('smartcomments:selection', handler);
+        if (typeof callback !== 'function') {
+            throw new Error('Selection create callback must be a function');
+        }
+
+        // Listen for the custom selection event
+        const eventHandler = (event) => {
+            callback(event.detail);
+        };
+
+        document.addEventListener('smartcomments:selection', eventHandler);
 
         // Return cleanup function
-        return () => document.removeEventListener('smartcomments:selection', handler);
+        return () => {
+            document.removeEventListener('smartcomments:selection', eventHandler);
+        };
+    }
+
+    /**
+     * Get event system statistics
+     * @returns {Object} - Event system statistics
+     */
+    function getEventStats() {
+        return {
+            isEventsBound,
+            selectionStats: selection.getSelectionStats(),
+            errorStats: selectionErrorHandler.getErrorStats(),
+            timestamp: Date.now()
+        };
+    }
+
+    /**
+     * Reset event system (for testing)
+     */
+    function resetEventSystem() {
+        unbindEvents();
+        selection.clearSelection();
+        selectionErrorHandler.clearErrorStats();
+        console.log('Selection event system reset');
     }
 
     return {
-        // State from selection composable
-        isSelectionActive: selection.isSelectionActive,
-        currentSelection: selection.currentSelection,
-        selectionPosition: selection.selectionPosition,
-        startPosition: selection.startPosition,
-        isCapturing: selection.isCapturing,
-
-        // Methods
+        // Event management
         bindEvents,
         unbindEvents,
         onSelectionCreate,
-        isSelectionEnabled,
-        clearSelection: selection.clearSelection,
+
+        // Selection processing
+        processUniversalSelection,
         createSelectionFromElement,
+        handleSVGSelection,
 
-        // Selection processing methods
-        processTextSelection: selection.processTextSelection,
-        processDynamicBlockSelection: selection.processDynamicBlockSelection,
-        processImageSelection: selection.processImageSelection,
-        processSVGSelection: selection.processSVGSelection,
+        // Event handlers
+        handleMouseDown,
+        handleMouseMove,
+        handleMouseUp,
+        handleClick,
 
-        // Formatting methods
-        formatSelectionForAPI: selection.formatSelectionForAPI,
+        // Utility and information
+        isSelectionEnabled,
+        showSelectionError,
+        getEventStats,
+        resetEventSystem,
 
-        // Constants
-        SELECTION_ENUMS
+        // State access
+        get isEventsBound() { return isEventsBound; }
     };
 }
 

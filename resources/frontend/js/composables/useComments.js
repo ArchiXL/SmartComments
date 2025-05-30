@@ -2,7 +2,7 @@ const { ref } = require('vue');
 const {
     formatSelectionForBackend,
     parseSelectionFromBackend
-} = require('../utils/selectionUtils.js');
+} = require('./selection/shared/SelectionUtils.js');
 const useMessages = require('./useMessages.js');
 
 /**

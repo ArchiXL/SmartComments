@@ -96,6 +96,16 @@ module.exports = defineComponent({
                 this.smartCommentsEvents.triggerCommentsEnabled();
                 
                 if (this.selectionEvents) this.selectionEvents.bindEvents();
+                
+                // Setup image selection to create dynamic block wrappers
+                try {
+                    const { useSelection } = require('./composables/selection/useSelection.js');
+                    const selection = useSelection();
+                    selection.setupSelection(); // This calls selectionStrategyFactory.setupStrategies()
+                } catch (error) {
+                    console.error('Failed to setup selection strategies:', error);
+                }
+                
                 // Bind link prevention events when comment mode is enabled
                 if (this.linkPrevention) this.linkPrevention.bindEvents();
                 if (this.smartCommentsSetup.highlightedAnchors?.value) {

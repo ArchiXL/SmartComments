@@ -1,22 +1,57 @@
 const { ref } = require('vue');
-const { removeCommentHighlight } = require('../directives/highlightDirective.js');
+const { errorHandler } = require('./highlights/shared/HighlightErrorHandler.js');
+const { sanitizeCommentId } = require('./highlights/shared/HighlightUtils.js');
 
 function useHighlight() {
     const highlightedAnchors = ref([]);
 
     // Function to add a new highlight instruction
     const addHighlight = (type, commentData) => {
-        highlightedAnchors.value.push({
-            type: type,
-            comment: commentData
-        });
+        try {
+            // Basic validation for type
+            if (!type || typeof type !== 'string') {
+                errorHandler.handleValidationError('Highlight type must be a valid string', { type, commentData });
+                return;
+            }
+
+            // Basic validation for commentData
+            if (!commentData || typeof commentData !== 'object') {
+                errorHandler.handleValidationError('Comment data must be a valid object', { type, commentData });
+                return;
+            }
+
+            // For temporary highlights during selection, we don't need full validation
+            // Only validate data_id if it exists (for saved highlights)
+            if (commentData.data_id !== undefined && commentData.data_id !== null) {
+                try {
+                    sanitizeCommentId(commentData.data_id);
+                } catch (error) {
+                    errorHandler.handleValidationError('Invalid comment ID', { type, commentData }, error);
+                    return;
+                }
+            }
+
+            // Add the highlight to the array
+            highlightedAnchors.value.push({
+                type: type,
+                comment: commentData
+            });
+        } catch (error) {
+            // Log error but don't throw - this allows the selection process to continue
+            errorHandler.handleDOMError('Failed to add highlight', { type, commentData }, error);
+        }
     };
 
     // Function to clear a specific highlight (by comment data_id)
     const removeHighlight = (commentId) => {
-        highlightedAnchors.value = highlightedAnchors.value.filter(
-            h => h.comment.data_id !== commentId
-        );
+        try {
+            const sanitizedId = sanitizeCommentId(commentId);
+            highlightedAnchors.value = highlightedAnchors.value.filter(
+                h => h.comment.data_id !== sanitizedId
+            );
+        } catch (error) {
+            errorHandler.handleDOMError('Failed to remove highlight', { commentId }, error);
+        }
     };
 
     // Function to clear all highlights
@@ -24,9 +59,39 @@ function useHighlight() {
         highlightedAnchors.value = [];
     };
 
-    // Function to set all highlights at once
+    // Function to set all highlights at once (for loaded highlights)
     const setHighlights = (highlights) => {
-        highlightedAnchors.value = highlights;
+        if (!Array.isArray(highlights)) {
+            errorHandler.handleValidationError('Highlights must be an array', { highlights });
+            return;
+        }
+
+        try {
+            // Only validate existing highlights that should have complete data
+            const validatedHighlights = highlights.filter(highlight => {
+                try {
+                    // Only do full validation for highlights that appear to be complete
+                    if (highlight.comment && highlight.comment.data_id) {
+                        errorHandler.validateHighlightData(highlight);
+                    }
+                    return true;
+                } catch (error) {
+                    errorHandler.handleDOMError('Skipping invalid highlight during setHighlights', { highlight }, error);
+                    return false;
+                }
+            });
+
+            highlightedAnchors.value = validatedHighlights;
+        } catch (error) {
+            errorHandler.handleDOMError('Failed to set highlights', { highlights }, error);
+        }
+    };
+
+    // Remove comment highlight function (moved from directive)
+    const removeCommentHighlight = (commentId, scopeElement = null) => {
+        const { useHighlightManager } = require('./highlights/useHighlightManager.js');
+        const { removeCommentHighlight: managerRemove } = useHighlightManager();
+        return managerRemove(commentId, scopeElement);
     };
 
     return {

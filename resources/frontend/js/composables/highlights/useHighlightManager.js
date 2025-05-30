@@ -1,17 +1,58 @@
 /**
- * Main highlight manager composable that orchestrates different highlight types
+ * Refactored highlight manager using Strategy pattern and shared utilities
+ * This eliminates code duplication and improves maintainability
  */
 
 const { useTextHighlight } = require('./useTextHighlight.js');
 const { useSelectorHighlight } = require('./useSelectorHighlight.js');
 const { useSVGHighlight } = require('./useSVGHighlight.js');
 const { useHighlightListeners } = require('./useHighlightListeners.js');
+const {
+    generateHighlightClass,
+    findHighlightedElements,
+    batchRemoveHighlights,
+    cleanupHighlightElement,
+    hasOtherSmartCommentClasses,
+    unwrapEmptySpan,
+    HIGHLIGHT_CLASS_PREFIX
+} = require('./shared/HighlightUtils.js');
+const { errorHandler } = require('./shared/HighlightErrorHandler.js');
+
+/**
+ * Strategy factory for creating highlight strategies
+ */
+class HighlightStrategyFactory {
+    static strategies = null;
+
+    static initialize() {
+        if (this.strategies) return this.strategies;
+
+        const { applyTextHighlight, removeTextHighlight } = useTextHighlight();
+        const { applySelectorHighlight, removeSelectorHighlight } = useSelectorHighlight();
+        const { applySVGHighlight, removeSVGHighlight } = useSVGHighlight();
+
+        this.strategies = {
+            'wordIndex': { apply: applyTextHighlight, remove: removeTextHighlight },
+            'selector': { apply: applySelectorHighlight, remove: removeSelectorHighlight },
+            'svg': { apply: applySVGHighlight, remove: removeSVGHighlight }
+        };
+
+        return this.strategies;
+    }
+
+    static getStrategy(type) {
+        const strategies = this.initialize();
+        const strategy = strategies[type];
+
+        if (!strategy) {
+            errorHandler.handleValidationError(`Unknown highlight type: ${type}`, { type });
+        }
+
+        return strategy;
+    }
+}
 
 function useHighlightManager() {
-    // Initialize composables
-    const { applyTextHighlight, removeTextHighlight } = useTextHighlight();
-    const { applySelectorHighlight, removeSelectorHighlight } = useSelectorHighlight();
-    const { applySVGHighlight, removeSVGHighlight } = useSVGHighlight();
     const {
         ensureClickListenerIsAttached,
         clearListenersForCommentId,
@@ -19,183 +60,184 @@ function useHighlightManager() {
     } = useHighlightListeners();
 
     /**
-     * Apply highlights to the given element.
+     * Apply highlights to the given element using Strategy pattern
      * 
-     * @param {Element} scopeElement - The element to apply highlights to.
-     * @param {Array} highlights - The highlights to apply.
-     * @param {Function} [onClick] - Optional callback for when a highlight is clicked.
+     * @param {Element} scopeElement - The element to apply highlights to
+     * @param {Array} highlights - The highlights to apply
+     * @param {Function} [onClick] - Optional callback for when a highlight is clicked
      */
     function applyHighlights(scopeElement, highlights, onClick) {
+        // Input validation
         if (!highlights || !Array.isArray(highlights)) {
-            console.warn('useHighlightManager: highlights must be an array of highlight objects.');
+            errorHandler.handleValidationError('Highlights must be an array of highlight objects', { highlights });
             return;
         }
+
         if (!window.rangy) {
-            console.error("Rangy not initialized. Cannot apply highlights.");
+            errorHandler.handleRangyError('Rangy not initialized. Cannot apply highlights');
             return;
         }
 
         highlights.forEach(highlightData => {
-            if (!highlightData || !highlightData.type || !highlightData.comment || !highlightData.comment.rawComment) {
-                console.warn('Skipping invalid highlightData (missing rawComment?):', highlightData);
-                return;
-            }
+            errorHandler.safeExecute(() => {
+                // Validate highlight data
+                errorHandler.validateHighlightData(highlightData);
 
-            const uniqueHighlightClass = `smartcomment-hl-${highlightData.comment.data_id}`;
+                const uniqueHighlightClass = generateHighlightClass(highlightData.comment.data_id);
 
-            // Create a wrapper function to ensure click listener attachment
-            const ensureClickListener = (targetEl, commentForListener) => {
-                ensureClickListenerIsAttached(targetEl, commentForListener, onClick);
-            };
+                // Create click listener wrapper
+                const ensureClickListener = (targetEl, commentForListener) => {
+                    ensureClickListenerIsAttached(targetEl, commentForListener, onClick);
+                };
 
-            // Route to appropriate highlight handler based on type
-            if (highlightData.type === 'selector') {
-                applySelectorHighlight(scopeElement, highlightData, uniqueHighlightClass, ensureClickListener);
-            } else if (highlightData.type === 'wordIndex') {
-                applyTextHighlight(scopeElement, highlightData, uniqueHighlightClass, ensureClickListener);
-            } else if (highlightData.type === 'svg') {
-                applySVGHighlight(scopeElement, highlightData, uniqueHighlightClass, ensureClickListener);
-            } else {
-                console.warn('Unknown highlight type:', highlightData.type);
-            }
+                // Get strategy for this highlight type
+                const strategy = HighlightStrategyFactory.getStrategy(highlightData.type);
+
+                // Apply highlight using strategy
+                strategy.apply(scopeElement, highlightData, uniqueHighlightClass, ensureClickListener);
+
+            }, `apply ${highlightData?.type || 'unknown'} highlight`, {
+                commentId: highlightData?.comment?.data_id,
+                type: highlightData?.type
+            });
         });
     }
 
     /**
-     * Clear specific highlights from the given element.
+     * Clear specific highlights using Strategy pattern
      * 
-     * @param {Element} scopeElement - The element to clear highlights from.
-     * @param {Array} [highlightsToClear] - Specific highlights to remove. If not provided, attempts to clear all.
+     * @param {Element} scopeElement - The element to clear highlights from
+     * @param {Array} [highlightsToClear] - Specific highlights to remove
      */
     function clearHighlights(scopeElement, highlightsToClear) {
         if (!highlightsToClear || !Array.isArray(highlightsToClear)) {
-            console.warn('clearHighlights: highlightsToClear was not an array or was null/undefined', highlightsToClear);
+            errorHandler.handleValidationError('highlightsToClear must be an array', { highlightsToClear });
             return;
         }
-        if (!window.rangy) return;
+
+        if (!window.rangy) {
+            errorHandler.handleRangyError('Rangy not available for clearing highlights');
+            return;
+        }
 
         highlightsToClear.forEach(highlightData => {
-            if (!highlightData || !highlightData.comment || !highlightData.comment.data_id) return;
+            errorHandler.safeExecute(() => {
+                if (!highlightData?.comment?.data_id) {
+                    return; // Skip invalid data
+                }
 
-            const dataCommentIdStr = String(highlightData.comment.data_id);
-            const uniqueHighlightClass = `smartcomment-hl-${dataCommentIdStr}`;
+                const commentIdStr = String(highlightData.comment.data_id);
+                const uniqueHighlightClass = generateHighlightClass(commentIdStr);
 
-            // Clear event listeners for this comment
-            clearListenersForCommentId(dataCommentIdStr);
+                // Clear event listeners
+                clearListenersForCommentId(commentIdStr);
 
-            // Find elements with this highlight class
-            const elements = scopeElement.querySelectorAll(`.${uniqueHighlightClass}`);
+                // Find elements with this highlight class
+                const elements = findHighlightedElements(scopeElement, commentIdStr);
+                if (elements.length === 0) return;
 
-            if (elements.length === 0) return;
+                // Get strategy and remove highlights
+                const strategy = HighlightStrategyFactory.getStrategy(highlightData.type);
+                strategy.remove(uniqueHighlightClass, scopeElement, Array.from(elements));
 
-            // Route to appropriate removal handler based on type
-            if (highlightData.type === 'wordIndex') {
-                removeTextHighlight(uniqueHighlightClass, scopeElement, elements);
-            } else if (highlightData.type === 'selector') {
-                removeSelectorHighlight(uniqueHighlightClass, scopeElement, elements);
-            } else if (highlightData.type === 'svg') {
-                removeSVGHighlight(uniqueHighlightClass, scopeElement, elements);
-            }
+            }, `clear ${highlightData?.type || 'unknown'} highlight`, {
+                commentId: highlightData?.comment?.data_id,
+                type: highlightData?.type
+            });
         });
     }
 
     /**
-     * Clear all highlights from the given element (fallback method).
-     * This is used when specific highlight data is not available.
+     * Clear all highlights (optimized fallback method)
      * 
-     * @param {Element} scopeElement - The element to clear highlights from.
+     * @param {Element} scopeElement - The element to clear highlights from
      */
     function clearAllHighlights(scopeElement) {
-        clearAllListeners();
+        errorHandler.safeExecute(() => {
+            clearAllListeners();
 
-        // Clear all DOM elements that might have been highlighted
-        const potentiallyHighlighted = scopeElement.querySelectorAll('[data-comment-id], [class*="smartcomment-hl-"]');
-        potentiallyHighlighted.forEach(el => {
-            // Remove all smartcomment highlight classes
-            el.classList.forEach(cls => {
-                if (cls.startsWith('smartcomment-hl-')) {
-                    el.classList.remove(cls);
+            // Find all potentially highlighted elements
+            const potentiallyHighlighted = scopeElement.querySelectorAll(
+                `[data-comment-id], [class*="${HIGHLIGHT_CLASS_PREFIX}"]`
+            );
+
+            potentiallyHighlighted.forEach(element => {
+                // Remove all smartcomment highlight classes
+                const classesToRemove = Array.from(element.classList)
+                    .filter(cls => cls.startsWith(HIGHLIGHT_CLASS_PREFIX));
+
+                classesToRemove.forEach(cls => {
+                    cleanupHighlightElement(element, cls);
+                });
+
+                // Unwrap empty SPAN elements
+                if (element.tagName === 'SPAN') {
+                    unwrapEmptySpan(element);
                 }
             });
 
-            // Remove data-comment-id if no smartcomment classes remain
-            const hasSmartCommentClass = Array.from(el.classList).some(cls => cls.startsWith('smartcomment-hl-'));
-            if (!hasSmartCommentClass) {
-                el.removeAttribute('data-comment-id');
-            }
-
-            // Unwrap empty SPAN elements
-            if (el.tagName === 'SPAN' &&
-                el.classList.length === 0 &&
-                !el.hasAttributes() &&
-                el.innerHTML === el.textContent) {
-
-                const parent = el.parentNode;
-                if (parent) {
-                    while (el.firstChild) {
-                        parent.insertBefore(el.firstChild, el);
-                    }
-                    parent.removeChild(el);
-                    try {
-                        parent.normalize();
-                    } catch (e) {
-                        console.warn("Error normalizing parent node during general cleanup", e);
-                    }
-                }
-            }
-        });
+        }, 'clear all highlights', { scopeElement: scopeElement?.tagName });
     }
 
     /**
-     * Remove highlight elements from DOM for a specific comment and unwrap SPAN elements properly.
-     * This is used when a comment is deleted or completed.
+     * Remove highlights for a specific comment with type detection
      * 
      * @param {string|number} commentId - The ID of the comment to remove highlights for
-     * @param {Element} [scopeElement] - The element to search within (defaults to mw-content-text or body)
+     * @param {Element} [scopeElement] - The element to search within
      */
     function removeCommentHighlight(commentId, scopeElement = null) {
-        if (!window.rangy) {
-            console.warn('removeCommentHighlight: Rangy not available');
-            return;
-        }
-
         const targetElement = scopeElement || document.getElementById('mw-content-text') || document.body;
-        const uniqueHighlightClass = `smartcomment-hl-${commentId}`;
-        const commentIdStr = String(commentId);
 
-        // Clear event listeners for this comment
-        clearListenersForCommentId(commentIdStr);
+        errorHandler.safeExecute(() => {
+            if (!window.rangy) {
+                errorHandler.handleRangyError('Rangy not available for comment highlight removal', { commentId });
+                return;
+            }
 
-        // Find all elements with this highlight class
-        const elements = targetElement.querySelectorAll(`.${uniqueHighlightClass}`);
+            const commentIdStr = String(commentId);
+            clearListenersForCommentId(commentIdStr);
 
-        if (elements.length === 0) {
-            return;
-        }
+            const elements = findHighlightedElements(targetElement, commentIdStr);
+            if (elements.length === 0) return;
 
-        // We need to determine the type to use the appropriate removal method
-        // Check if elements are SPAN elements (likely text highlights)
-        const hasSpanElements = Array.from(elements).some(el =>
+            // Detect highlight type based on element characteristics
+            const highlightType = detectHighlightType(Array.from(elements));
+
+            if (highlightType) {
+                const strategy = HighlightStrategyFactory.getStrategy(highlightType);
+                const uniqueHighlightClass = generateHighlightClass(commentIdStr);
+                strategy.remove(uniqueHighlightClass, targetElement, Array.from(elements));
+            } else {
+                // Fallback to manual cleanup
+                const uniqueHighlightClass = generateHighlightClass(commentIdStr);
+                batchRemoveHighlights(targetElement, uniqueHighlightClass);
+            }
+
+        }, 'remove comment highlight', { commentId, scopeElement: targetElement?.tagName });
+    }
+
+    /**
+     * Detect highlight type based on element characteristics
+     * 
+     * @param {Element[]} elements - Elements to analyze
+     * @returns {string|null} - Detected highlight type or null
+     */
+    function detectHighlightType(elements) {
+        // Check for SPAN elements (likely text highlights)
+        const hasSpanElements = elements.some(el =>
             el.tagName === 'SPAN' && el.hasAttribute('data-comment-id')
         );
 
-        // Check if elements have SVG-related attributes (likely SVG highlights)
-        const hasSVGElements = Array.from(elements).some(el =>
+        // Check for SVG-related elements
+        const hasSVGElements = elements.some(el =>
             el.hasAttribute('data-svg-id') ||
             el.closest('svg') ||
             (el.tagName === 'a' && el.closest('svg'))
         );
 
-        if (hasSpanElements) {
-            // Use text highlight removal for SPAN elements
-            removeTextHighlight(uniqueHighlightClass, targetElement, elements);
-        } else if (hasSVGElements) {
-            // Use SVG highlight removal for SVG elements
-            removeSVGHighlight(uniqueHighlightClass, targetElement, elements);
-        } else {
-            // Use selector highlight removal for other elements
-            removeSelectorHighlight(uniqueHighlightClass, targetElement, elements);
-        }
+        if (hasSpanElements) return 'wordIndex';
+        if (hasSVGElements) return 'svg';
+        return 'selector'; // Default to selector for other elements
     }
 
     return {
