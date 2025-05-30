@@ -116,6 +116,13 @@ function useMessages() {
         markComplete: () => msg('sic-mark-complete'),
         markDelete: () => msg('sic-mark-delete'),
         viewOverview: () => msg('sic-view-overview'),
+
+        // Link prevention messages
+        linkDisabledWarn: () => msg('sic-link-disabled-warn'),
+        linkCommentHighlightWarn: () => msg('sic-link-comment-highlight-warn'),
+
+        // Generic error messages
+        selectionGenericError: () => msg('sic-selection-generic-error'),
     };
 
     return {

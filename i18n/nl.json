@@ -118,5 +118,8 @@
 	"sic-mark-complete": "Markeer als voltooid",
 	"sic-mark-delete": "Verwijderen",
 	"sic-view-overview": "Bekijk paginaoverzicht",
-	"sic-annotate-tooltip": "Annoteren"
+	"sic-annotate-tooltip": "Annoteren",
+	"sic-link-disabled-warn": "Linknavigatie is uitgeschakeld terwijl de opmerkingenmodus actief is.",
+	"sic-link-comment-highlight-warn": "Klik op de gemarkeerde tekst om de opmerking te bekijken, of schakel de opmerkingenmodus uit om de link te volgen.",
+	"sic-selection-generic-error": "Er is een fout opgetreden tijdens tekst selectie."
 }

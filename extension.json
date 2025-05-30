@@ -157,7 +157,10 @@
 				"sic-mark-delete",
 				"sic-view-overview",
 				"sic-annotate-tooltip",
-				"sic-button-open"
+				"sic-button-open",
+				"sic-link-disabled-warn",
+				"sic-link-comment-highlight-warn",
+				"sic-selection-generic-error"
 			],
 			"targets": [
 				"desktop",

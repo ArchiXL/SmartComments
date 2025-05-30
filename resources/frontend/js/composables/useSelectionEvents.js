@@ -4,10 +4,12 @@ const { getMediaWikiContentRoot } = require('../utils/constants.js');
 const { useHighlight } = require('./useHighlight.js');
 const useAppStateStore = require('../store/appStateStore.js');
 const { smartCommentsEvents } = require('../utils/smartCommentsEvents.js');
+const useMessages = require('./useMessages.js');
 
 function useSelectionEvents() {
     const selection = useSelection();
     const highlight = useHighlight();
+    const { messages } = useMessages();
 
     // Event handlers
     let mouseDownHandler, mouseUpHandler, mouseMoveHandler, clickHandler;
@@ -167,7 +169,7 @@ function useSelectionEvents() {
 
         // Example error handling - customize based on your notification system
         if (typeof mw !== 'undefined' && mw.notify) {
-            mw.notify('Selection error: ' + error.message, { type: 'error' });
+            mw.notify(messages.selectionGenericError(), { type: 'error' });
         }
     }
 

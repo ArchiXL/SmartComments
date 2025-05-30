@@ -1,5 +1,6 @@
 const useAppStateStore = require('../store/appStateStore.js');
 const { MEDIAWIKI_SELECTORS, SMARTCOMMENTS_CLASSES } = require('../utils/constants.js');
+const useMessages = require('./useMessages.js');
 
 /**
  * Composable for handling link prevention when comment mode is enabled
@@ -7,6 +8,7 @@ const { MEDIAWIKI_SELECTORS, SMARTCOMMENTS_CLASSES } = require('../utils/constan
 function useLinkPrevention() {
     let clickHandler = null;
     let isEventsBound = false;
+    const { messages } = useMessages();
 
     /**
      * Handle clicks on links and prevent default behavior when comment mode is enabled
@@ -65,7 +67,7 @@ function useLinkPrevention() {
                 event.stopPropagation();
 
                 // Show a more specific message for links with comments
-                mw.notify('Click on the highlighted text to view the comment, or disable comment mode to follow the link.', {
+                mw.notify(messages.linkCommentHighlightWarn(), {
                     type: 'warn',
                     autoHide: true,
                     autoHideSeconds: 4
@@ -77,7 +79,7 @@ function useLinkPrevention() {
             event.preventDefault();
             event.stopPropagation();
 
-            mw.notify('Link navigation is disabled while comment mode is active.', {
+            mw.notify(messages.linkDisabledWarn(), {
                 type: 'warn',
                 autoHide: true,
                 autoHideSeconds: 3

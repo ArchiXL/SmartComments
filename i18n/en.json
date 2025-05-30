@@ -118,5 +118,8 @@
 	"sic-mark-complete": "Mark as complete",
 	"sic-mark-delete": "Delete",
 	"sic-view-overview": "View overview",
-	"sic-annotate-tooltip": "Annotate"
+	"sic-annotate-tooltip": "Annotate",
+	"sic-link-disabled-warn": "Link navigation is disabled while comment mode is active.",
+	"sic-link-comment-highlight-warn": "Click on the highlighted text to view the comment, or disable comment mode to follow the link.",
+	"sic-selection-generic-error": "An error occurred during text selection."
 }
