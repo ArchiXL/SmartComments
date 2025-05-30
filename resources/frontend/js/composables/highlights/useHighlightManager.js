@@ -106,9 +106,6 @@ function useHighlightManager() {
      * @param {Element} scopeElement - The element to clear highlights from.
      */
     function clearAllHighlights(scopeElement) {
-        console.warn('clearAllHighlights called without specific highlights. Clearing all managed listeners and DOM elements.');
-
-        // Clear all known listeners
         clearAllListeners();
 
         // Clear all DOM elements that might have been highlighted
