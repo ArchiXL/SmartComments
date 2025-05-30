@@ -116,8 +116,8 @@ module.exports = defineComponent({
                 if (result.success === '1' || result.success === true) {
                     // Create a new reply object for immediate UI update
                     const newReply = {
-                        id: result.comment || Date.now(), // Use returned comment ID or temporary one
-                        text: replyText,
+                        id: result.comment || Date.now(),
+                        text: `<div class="sic-text"><p>${replyText}</p></div>`,
                         author: `<a href="${mw.util.getUrl('User:' + mw.config.get('wgUserName'))}">${mw.config.get('wgUserName')}</a>`,
                         datetime: messages.justNow(),
                         modifiedBy: mw.config.get('wgUserName'),

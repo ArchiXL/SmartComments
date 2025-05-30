@@ -181,12 +181,22 @@ module.exports = defineComponent({
          */
         async reloadHighlightsAndComments() {
             try {
+                const targetElement = document.getElementById('mw-content-text') || document.body;
+                
+                // Clear existing highlights first (like enable/disable process)
+                if (this.smartCommentsSetup.highlightedAnchors?.value) {
+                    clearAllHighlights(targetElement, this.smartCommentsSetup.highlightedAnchors.value);
+                }
+                
+                // Reload comments and highlights from server
                 await this.smartCommentsSetup.loadAndSetHighlights();
-                // Update the comments store with the loaded comments
+                
+                // Update the comments store with the freshly loaded comments
                 if (this.smartCommentsSetup.comments?.value) {
                     this.commentsStore.setComments(this.smartCommentsSetup.comments.value);
                 }
-                const targetElement = document.getElementById('mw-content-text') || document.body;
+                
+                // Apply the fresh highlights
                 if (this.smartCommentsSetup.highlightedAnchors?.value) {
                     this.applyHighlights(targetElement, this.smartCommentsSetup.highlightedAnchors.value, this.handleHighlightClick);
                 }
@@ -315,6 +325,13 @@ module.exports = defineComponent({
                         // Handle opening specific comment
                         this.commentsStore.openCommentById(event.detail.commentId);
                     }
+                })
+            );
+
+            // Listen for comment created events
+            this.smartCommentsEventsCleanup.push(
+                this.smartCommentsEvents.on(EVENTS.COMMENT_CREATED, (event) => {
+                    this.reloadHighlightsAndComments();
                 })
             );
         },

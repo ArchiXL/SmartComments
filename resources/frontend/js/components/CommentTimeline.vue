@@ -199,8 +199,11 @@ module.exports = defineComponent({
                     commentsStore.openCommentDialog(comment, position);
                 }
             } else if (highlightElement) {
-                // For normal comments, click the highlight element
-                highlightElement.click();
+                highlightElement.dispatchEvent(new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                }));
             }
         };
 

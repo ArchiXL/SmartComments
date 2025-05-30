@@ -161,16 +161,10 @@ module.exports = defineComponent({
                     // Reset form
                     commentText.value = '';
                     
-                    // Show success message and refresh page
+                    // Show success message
                     if (window.mw && window.mw.notify) {
-                        window.mw.notify(messages.commentAddedRefreshing(), { type: 'success' });
+                        window.mw.notify(messages.commentAdded(), { type: 'success' });
                     }
-                    
-                    setTimeout(() => {
-                        const parser = new URL(window.location);
-                        parser.searchParams.set('action', 'screfresh');
-                        window.location = parser.href;
-                    }, 2000);
                     
                     emit('close');
                 } else {

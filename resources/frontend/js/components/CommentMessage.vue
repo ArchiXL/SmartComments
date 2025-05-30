@@ -4,7 +4,7 @@
             <div class="smartcomments-message-header-author" v-html="comment.author"></div>
             <div class="smartcomments-message-header-date" v-html="comment.datetime"></div>
         </div>
-        <div class="smartcomments-message-body" v-html="decodedCommentText"></div>
+        <div class="smartcomments-message-body" v-html="commentText"></div>
     </div>
 </template>
 
@@ -15,8 +15,9 @@ function unescapeHtml(html) {
   if (typeof html !== 'string') {
     return html;
   }
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  return doc.documentElement.textContent;
+  const textarea = document.createElement('textarea');
+  textarea.innerHTML = html;
+  return textarea.value;
 }
 
 module.exports = defineComponent({
@@ -28,7 +29,7 @@ module.exports = defineComponent({
         },
     },
     computed: {
-        decodedCommentText() {
+        commentText() {
             if (this.comment && typeof this.comment.text === 'string') {
                 return unescapeHtml(this.comment.text);
             }
