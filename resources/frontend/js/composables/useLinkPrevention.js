@@ -1,6 +1,7 @@
 const useAppStateStore = require('../store/appStateStore.js');
 const { MEDIAWIKI_SELECTORS, SMARTCOMMENTS_CLASSES } = require('../utils/constants.js');
 const useMessages = require('./useMessages.js');
+const { useSelectionEvents } = require('./useSelectionEvents.js');
 
 /**
  * Composable for handling link prevention when comment mode is enabled
@@ -15,6 +16,7 @@ function useLinkPrevention() {
      */
     function handleLinkClick(event) {
         const store = useAppStateStore();
+        const selectOnClick = mw.config.get('wgSmartComments')?.selectLinksOnClick;
 
         // Only prevent links when comment mode is enabled
         if (!store.isEnabled) {
@@ -79,11 +81,17 @@ function useLinkPrevention() {
             event.preventDefault();
             event.stopPropagation();
 
-            mw.notify(messages.linkDisabledWarn(), {
-                type: 'warn',
-                autoHide: true,
-                autoHideSeconds: 3
-            });
+            if (selectOnClick) {
+                const { createSelectionFromElement } = useSelectionEvents();
+                createSelectionFromElement(event);
+                return;
+            } else {
+                mw.notify(messages.linkDisabledWarn(), {
+                    type: 'warn',
+                    autoHide: true,
+                    autoHideSeconds: 3
+                });
+            }
         }
     }
 

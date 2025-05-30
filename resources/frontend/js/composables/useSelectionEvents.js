@@ -16,6 +16,49 @@ function useSelectionEvents() {
     let isEventsBound = false;
 
     /**
+     * Create a selection from an element and trigger a selection active event
+     * @param {Element} element - The element to create a selection from
+     */
+    function createSelectionFromElement(event) {
+        const element = event.target;
+        const selection = rangy.getSelection();
+
+        // Get the text content to select
+        const textContent = element.textContent || element.innerText || '';
+
+        if (textContent.trim()) {
+            try {
+                const range = rangy.createRange();
+                range.selectNodeContents(element);
+
+                if (range.findText && range.findText(textContent.trim())) {
+                    selection.setSingleRange(range);
+                } else {
+                    const textRange = rangy.createRange();
+                    textRange.selectNodeContents(element);
+
+                    // Convert to character range and back to ensure text-only selection
+                    if (textRange.toCharacterRange) {
+                        const charRange = textRange.toCharacterRange(element);
+                        textRange.selectCharacters(element, charRange.start, charRange.end);
+                    }
+
+                    selection.setSingleRange(textRange);
+                }
+            } catch (error) {
+                const range = rangy.createRange();
+                range.selectNodeContents(element);
+                selection.setSingleRange(range);
+            }
+        } else {
+            // No text content, select element contents as fallback
+            const range = rangy.createRange();
+            range.selectNodeContents(element);
+            selection.setSingleRange(range);
+        }
+    }
+
+    /**
      * Handle mouse down events to track start position
      */
     function handleMouseDown(event) {
@@ -271,6 +314,7 @@ function useSelectionEvents() {
         onSelectionCreate,
         isSelectionEnabled,
         clearSelection: selection.clearSelection,
+        createSelectionFromElement,
 
         // Selection processing methods
         processTextSelection: selection.processTextSelection,

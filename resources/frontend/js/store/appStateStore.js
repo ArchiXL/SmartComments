@@ -5,7 +5,7 @@ module.exports = defineStore('appStore', {
         isEnabled: false
     }),
     getters: {
-        getIsEnabled: (state) => state.isEnabled,
+        getIsEnabled: (state) => state.isEnabled
     },
     actions: {
         /**

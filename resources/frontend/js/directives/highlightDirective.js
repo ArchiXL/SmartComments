@@ -1,21 +1,3 @@
-module.exports = {
-    highlightDirective: {
-        mounted(el, binding) {
-            applyHighlights(document.body, binding.value.anchors, binding.value.onClick);
-        },
-        updated(el, binding) {
-            clearAllHighlights(document.body, binding.oldValue ? binding.oldValue.anchors : []);
-            applyHighlights(document.body, binding.value.anchors, binding.value.onClick);
-        },
-        beforeUnmount(el, binding) {
-            clearAllHighlights(document.body, binding.value ? binding.value.anchors : []);
-        }
-    },
-    applyHighlights,
-    clearAllHighlights,
-    removeCommentHighlight
-};
-
 /**
  * Store attached event listeners to be able to remove them later.
  * Key: data-comment-id (string), Value: Array of { element: HTMLElement, handler: Function, type: string }
@@ -514,3 +496,21 @@ function manuallyRemoveHighlight(targetEl, uniqueHighlightClass, hasOtherSmartCo
         }
     }
 }
+
+module.exports = {
+    highlightDirective: {
+        mounted(el, binding) {
+            applyHighlights(document.body, binding.value.anchors, binding.value.onClick);
+        },
+        updated(el, binding) {
+            clearAllHighlights(document.body, binding.oldValue ? binding.oldValue.anchors : []);
+            applyHighlights(document.body, binding.value.anchors, binding.value.onClick);
+        },
+        beforeUnmount(el, binding) {
+            clearAllHighlights(document.body, binding.value ? binding.value.anchors : []);
+        }
+    },
+    applyHighlights,
+    clearAllHighlights,
+    removeCommentHighlight
+};

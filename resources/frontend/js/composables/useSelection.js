@@ -4,8 +4,7 @@ const {
     validateSelectionContent,
     createImageHash,
     getMediaWikiContentRoot,
-    isSelectionEnabled,
-    formatSelectionForBackend
+    isSelectionEnabled
 } = require('../utils/selectionUtils.js');
 const { SELECTION_ENUMS, SMARTCOMMENTS_CLASSES } = require('../utils/constants.js');
 const useScreenshot = require('./useScreenshot.js');

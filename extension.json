@@ -195,7 +195,8 @@
 	},
 	"config": {
 		"SmartCommentsSelectLinksOnClick": {
-			"value": true
+			"value": true,
+			"@description": "If commenting mode is enabled, clicking on links will select the link text for commenting and thus opening a new comment dialog."
 		},
 		"SmartCommentsDirectComment": {
 			"value": true

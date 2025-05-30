@@ -81,10 +81,11 @@ class Hooks {
 	 * @return bool
 	 */
 	public static function onResourceLoaderGetConfigVars( &$vars ) {
-		global $wgSmartComments, $wgSmartCommentsSpecialMaxItems;
+		global $wgSmartCommentsSelectLinksOnClick, $wgSmartCommentsSpecialMaxItems;
 
 		$vars[ 'wgSmartComments' ] = [
 			'maxCommentsShownOnSpecial' => $wgSmartCommentsSpecialMaxItems,
+			'selectLinksOnClick' => $wgSmartCommentsSelectLinksOnClick,
 		];
 		return true;
 	}
