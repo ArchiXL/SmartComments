@@ -341,12 +341,12 @@ module.exports = defineComponent({
     }
 
     .smartcomments-selected-content {
-        padding: 16px;
-        border-bottom: 1px solid #eaecf0;
         background: #f8f9fa;
 
         .smartcomments-selected-text {
+            padding: 16px;
             margin-bottom: 12px;
+            display: none;
 
             strong {
                 display: block;
@@ -369,8 +369,7 @@ module.exports = defineComponent({
         .smartcomments-selected-image {
             max-width: 100%;
             max-height: 150px;
-            border: 1px solid #a2a9b1;
-            border-radius: 2px;
+            border-bottom: 1px solid #eaecf0;
         }
     }
 

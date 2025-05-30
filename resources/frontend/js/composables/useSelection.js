@@ -294,7 +294,11 @@ function useSelection() {
 
         if (options.captureScreenshot) {
             try {
-                const screenshotDataUrl = await takeScreenshot(element);
+                const rect = element.getBoundingClientRect();
+                const currentSelPos = { x: rect.right, y: rect.bottom };
+                const currentStartPos = { x: rect.left, y: rect.top };
+                // screenshotSelectionArea expects a string for the text, use the derived selectionText
+                const screenshotDataUrl = await screenshotSelectionArea(currentSelPos, currentStartPos, selectionText);
                 selectionData.image = screenshotDataUrl;
             } catch (error) {
                 console.error('Error taking screenshot for dynamic block:', error);

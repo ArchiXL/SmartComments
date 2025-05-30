@@ -99,6 +99,13 @@ function useScreenshot() {
                         activeItems[i].style.borderRight = "1px solid rgba(0,0,0,0.2)";
                     }
                 }
+
+                const dynamicBlocks = clonedDocument.getElementsByClassName(SMARTCOMMENTS_CLASSES.DYNAMIC_BLOCK);
+                if (dynamicBlocks.length > 0) {
+                    for (let i = 0; i < dynamicBlocks.length; i++) {
+                        dynamicBlocks[i].classList.remove(SMARTCOMMENTS_CLASSES.DYNAMIC_BLOCK);
+                    }
+                }
             }
         };
 
