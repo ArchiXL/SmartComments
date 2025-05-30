@@ -39,6 +39,9 @@ function formatCommentsForHighlighting(commentsArray) {
         } else if (comment.highlight_type === 'selector') {
             // For selector type (images, dynamic blocks), the 'text' field of parsedSelection is the selector string.
             highlightPos = comment.parsedSelection.text;
+        } else if (comment.highlight_type === 'svg') {
+            // For SVG type, the 'text' field of parsedSelection is the svg[id] selector string.
+            highlightPos = comment.parsedSelection.text;
         } else {
             console.warn(`Unknown highlight_type '${comment.highlight_type}' for comment:`, comment);
             return null; // Filter out if type is not recognized for highlighting

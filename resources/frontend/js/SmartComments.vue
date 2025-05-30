@@ -425,30 +425,63 @@ module.exports = defineComponent({
     }
 }
 
-
-/* Text selection highlighting */
-.sc-selection-highlight {
-    background-color: rgba(255, 255, 224, 0.8);
-    border-top: 1px solid rgba(0, 0, 0, 0.2);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-    
-    &:first-child {
-        border-left: 1px solid rgba(0, 0, 0, 0.2);
-    }
-    
-    &:last-child {
-        border-right: 1px solid rgba(0, 0, 0, 0.2);
-    }
-}
-
-/* Selection disabled state */
-&.selection-disabled {
-    .sc-dynamic-block {
-        cursor: default;
+.smartcomments-enabled {
+    svg a {
+        cursor: pointer;
+        transition: all 0.2s ease;
         
-        &:hover {
-            background-color: transparent;
-            outline: none;
+        &.sc-svg-hover {
+            rect, path, circle, polygon {
+                stroke: rgba(255, 255, 0, 0.8) !important;
+                stroke-width: 2 !important;
+                filter: drop-shadow(0 0 3px rgba(255, 255, 0, 0.6));
+            }
+            
+            text {
+                font-weight: bold;
+                filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3));
+            }
+        }
+        
+        &[class*="smartcomment-hl-"] {
+            rect {
+                stroke: rgba(255, 222, 141, 0.8) !important;
+                stroke-width: 2 !important;
+                fill: rgba(255, 255, 224, 0.4) !important;
+            }
+            
+            &.active {
+                rect {
+                    fill: rgba(255, 222, 141, 0.6) !important;
+                }
+            }
+        }
+    }
+
+    /* Text selection highlighting */
+    .sc-selection-highlight {
+        background-color: rgba(255, 255, 224, 0.8);
+        border-top: 1px solid rgba(0, 0, 0, 0.2);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+        
+        &:first-child {
+            border-left: 1px solid rgba(0, 0, 0, 0.2);
+        }
+        
+        &:last-child {
+            border-right: 1px solid rgba(0, 0, 0, 0.2);
+        }
+    }
+
+    /* Selection disabled state */
+    &.selection-disabled {
+        .sc-dynamic-block {
+            cursor: default;
+            
+            &:hover {
+                background-color: transparent;
+                outline: none;
+            }
         }
     }
 }

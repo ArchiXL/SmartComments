@@ -3,6 +3,7 @@ const { getMediaWikiContentRoot } = require('../../utils/selectionUtils.js');
 const { useTextSelection } = require('./useTextSelection.js');
 const { useDynamicBlockSelection } = require('./useDynamicBlockSelection.js');
 const { useImageSelection } = require('./useImageSelection.js');
+const { useSVGSelection } = require('./useSVGSelection.js');
 const useScreenshot = require('../useScreenshot.js');
 
 function useSelection() {
@@ -17,6 +18,7 @@ function useSelection() {
     const textSelection = useTextSelection();
     const dynamicBlockSelection = useDynamicBlockSelection();
     const imageSelection = useImageSelection();
+    const svgSelection = useSVGSelection();
     const { screenshotSelectionArea } = useScreenshot();
 
     /**
@@ -89,6 +91,29 @@ function useSelection() {
     }
 
     /**
+     * Process SVG selection
+     * @param {Element} svgElement - The SVG element or SVG child element
+     * @param {Event} event - Mouse event
+     * @param {Object} options - Options including captureScreenshot
+     * @returns {Promise} - Promise resolving to selection data with screenshot
+     */
+    async function processSVGSelection(svgElement, event, options = { captureScreenshot: false }) {
+        const selectionData = await svgSelection.processSVGSelection(svgElement, event, options);
+
+        if (selectionData) {
+            currentSelection.value = selectionData;
+            lastRange.value = null;
+            const rect = selectionData.element.getBoundingClientRect();
+            selectionPosition.x = event ? event.clientX : (rect.left + rect.width / 2);
+            selectionPosition.y = event ? event.clientY : (rect.top + rect.height / 2);
+            isSelectionActive.value = true;
+            return selectionData;
+        }
+
+        return null;
+    }
+
+    /**
      * Clear current selection
      */
     function clearSelection() {
@@ -149,6 +174,12 @@ function useSelection() {
                 width: selectionData.element.width,
                 height: selectionData.element.height
             };
+        } else if (selectionData.type === 'svg' && selectionData.element) {
+            formattedData.elementData = {
+                svg_id: selectionData.svg_id,
+                href: selectionData.href,
+                metadata: selectionData.metadata
+            };
         }
 
         return formattedData;
@@ -174,13 +205,17 @@ function useSelection() {
         processTextSelection,
         processDynamicBlockSelection,
         processImageSelection,
+        processSVGSelection,
         clearSelection,
         setupImageSelection,
         formatSelectionForAPI,
         screenshotSelectionArea,
 
         // Utility
-        getMediaWikiContentRoot
+        getMediaWikiContentRoot,
+
+        // SVG utilities
+        findSVGLink: svgSelection.findSVGLink
     };
 }
 

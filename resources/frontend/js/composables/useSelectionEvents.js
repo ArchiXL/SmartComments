@@ -21,7 +21,17 @@ function useSelectionEvents() {
      */
     function createSelectionFromElement(event) {
         const element = event.target;
-        const selection = rangy.getSelection();
+
+        // Check if this is an SVG link click
+        const svgLink = selection.findSVGLink(element);
+        if (svgLink) {
+            event.preventDefault();
+            // Handle SVG selection asynchronously
+            handleSVGSelection(svgLink, event);
+            return;
+        }
+
+        const rangySelection = rangy.getSelection();
 
         // Get the text content to select
         const textContent = element.textContent || element.innerText || '';
@@ -32,7 +42,7 @@ function useSelectionEvents() {
                 range.selectNodeContents(element);
 
                 if (range.findText && range.findText(textContent.trim())) {
-                    selection.setSingleRange(range);
+                    rangySelection.setSingleRange(range);
                 } else {
                     const textRange = rangy.createRange();
                     textRange.selectNodeContents(element);
@@ -43,18 +53,38 @@ function useSelectionEvents() {
                         textRange.selectCharacters(element, charRange.start, charRange.end);
                     }
 
-                    selection.setSingleRange(textRange);
+                    rangySelection.setSingleRange(textRange);
                 }
             } catch (error) {
                 const range = rangy.createRange();
                 range.selectNodeContents(element);
-                selection.setSingleRange(range);
+                rangySelection.setSingleRange(range);
             }
         } else {
             // No text content, select element contents as fallback
             const range = rangy.createRange();
             range.selectNodeContents(element);
-            selection.setSingleRange(range);
+            rangySelection.setSingleRange(range);
+        }
+    }
+
+    /**
+     * Handle SVG selection asynchronously
+     * @param {Element} svgLink - The SVG link element
+     * @param {Event} event - The original click event
+     */
+    async function handleSVGSelection(svgLink, event) {
+        if (!isSelectionEnabled()) return;
+
+        try {
+            // Call the SVG selection processor with screenshot option
+            const result = await selection.processSVGSelection(svgLink, event, { captureScreenshot: true });
+            if (result) {
+                await handleSuccessfulSelection(result, event);
+            }
+        } catch (error) {
+            console.error('SVG selection failed:', error);
+            showSelectionError(error);
         }
     }
 
@@ -110,9 +140,21 @@ function useSelectionEvents() {
         const target = event.target;
         let selectionResult = null;
 
+        // Handle SVG link selection
+        const svgLink = selection.findSVGLink(target);
+        if (svgLink) {
+            event.preventDefault();
+            try {
+                // Call the consolidated function with screenshot option
+                selectionResult = await selection.processSVGSelection(svgLink, event, { captureScreenshot: true });
+            } catch (error) {
+                console.error('SVG selection failed:', error);
+                showSelectionError(error);
+            }
+        }
         // Handle dynamic block selection
-        const dynamicBlock = target.closest('.sc-dynamic-block');
-        if (dynamicBlock) {
+        else if (target.closest('.sc-dynamic-block')) {
+            const dynamicBlock = target.closest('.sc-dynamic-block');
             event.preventDefault();
             try {
                 // Call the consolidated function with screenshot option
@@ -225,7 +267,7 @@ function useSelectionEvents() {
     }
 
     /**
-     * Add hover effects for dynamic blocks
+     * Add hover effects for dynamic blocks and SVG links
      */
     function setupDynamicBlockHover() {
         const contentRoot = getMediaWikiContentRoot();
@@ -236,12 +278,24 @@ function useSelectionEvents() {
             if (dynamicBlock && !dynamicBlock.closest('.smartcomment-hl-')) {
                 dynamicBlock.classList.add('sc-hover');
             }
+
+            // Add hover effect for SVG links
+            const svgLink = selection.findSVGLink(event.target);
+            if (svgLink && !svgLink.closest('.smartcomment-hl-')) {
+                svgLink.classList.add('sc-svg-hover');
+            }
         });
 
         contentRoot.addEventListener('mouseout', (event) => {
             const dynamicBlock = event.target.closest('.sc-dynamic-block');
             if (dynamicBlock) {
                 dynamicBlock.classList.remove('sc-hover');
+            }
+
+            // Remove hover effect for SVG links
+            const svgLink = selection.findSVGLink(event.target);
+            if (svgLink) {
+                svgLink.classList.remove('sc-svg-hover');
             }
         });
     }
@@ -320,6 +374,7 @@ function useSelectionEvents() {
         processTextSelection: selection.processTextSelection,
         processDynamicBlockSelection: selection.processDynamicBlockSelection,
         processImageSelection: selection.processImageSelection,
+        processSVGSelection: selection.processSVGSelection,
 
         // Formatting methods
         formatSelectionForAPI: selection.formatSelectionForAPI,

@@ -145,6 +145,16 @@ function parseSelectionFromBackend(position) {
         };
     }
 
+    // Check if it's an SVG selection
+    if (position.startsWith('svg[') && position.endsWith(']')) {
+        return {
+            text: position,
+            index: 0,
+            type: 'svg',
+            position: position
+        };
+    }
+
     // Default to dynamic block or simple text
     return {
         text: position,
@@ -218,6 +228,25 @@ function createImageHash(src, width, height) {
 }
 
 /**
+ * Create SVG hash for consistent identification
+ * @param {string} uniqueId - The unique ID generated for the SVG
+ * @param {string} href - The href attribute of the SVG link
+ * @param {string} textContent - The text content of the SVG
+ * @returns {string} - SVG hash
+ */
+function createSVGHash(uniqueId, href, textContent) {
+    const data = `${uniqueId}|${href || ''}|${textContent || ''}`;
+
+    // Try to use MD5 if available (from old codebase)
+    if (typeof hex_md5 === 'function') {
+        return hex_md5(data);
+    }
+
+    // Fallback to simple hash
+    return simpleHash(data);
+}
+
+/**
  * Gets the root element for comments, ensuring it's valid.
  * @returns {HTMLElement} The content root element.
  * @throws {Error} If the content root is not found or is invalid.
@@ -264,6 +293,7 @@ module.exports = {
     isSelectionEnabled,
     simpleHash,
     createImageHash,
+    createSVGHash,
     getContentRoot,
     getCleanText,
     isSmartCommentsEnabled

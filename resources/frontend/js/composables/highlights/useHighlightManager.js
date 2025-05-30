@@ -4,12 +4,14 @@
 
 const { useTextHighlight } = require('./useTextHighlight.js');
 const { useSelectorHighlight } = require('./useSelectorHighlight.js');
+const { useSVGHighlight } = require('./useSVGHighlight.js');
 const { useHighlightListeners } = require('./useHighlightListeners.js');
 
 function useHighlightManager() {
     // Initialize composables
     const { applyTextHighlight, removeTextHighlight } = useTextHighlight();
     const { applySelectorHighlight, removeSelectorHighlight } = useSelectorHighlight();
+    const { applySVGHighlight, removeSVGHighlight } = useSVGHighlight();
     const {
         ensureClickListenerIsAttached,
         clearListenersForCommentId,
@@ -51,6 +53,8 @@ function useHighlightManager() {
                 applySelectorHighlight(scopeElement, highlightData, uniqueHighlightClass, ensureClickListener);
             } else if (highlightData.type === 'wordIndex') {
                 applyTextHighlight(scopeElement, highlightData, uniqueHighlightClass, ensureClickListener);
+            } else if (highlightData.type === 'svg') {
+                applySVGHighlight(scopeElement, highlightData, uniqueHighlightClass, ensureClickListener);
             } else {
                 console.warn('Unknown highlight type:', highlightData.type);
             }
@@ -89,6 +93,8 @@ function useHighlightManager() {
                 removeTextHighlight(uniqueHighlightClass, scopeElement, elements);
             } else if (highlightData.type === 'selector') {
                 removeSelectorHighlight(uniqueHighlightClass, scopeElement, elements);
+            } else if (highlightData.type === 'svg') {
+                removeSVGHighlight(uniqueHighlightClass, scopeElement, elements);
             }
         });
     }
@@ -171,14 +177,24 @@ function useHighlightManager() {
         }
 
         // We need to determine the type to use the appropriate removal method
-        // Check if elements are SPAN elements (likely text highlights) or other elements (likely selector highlights)
+        // Check if elements are SPAN elements (likely text highlights)
         const hasSpanElements = Array.from(elements).some(el =>
             el.tagName === 'SPAN' && el.hasAttribute('data-comment-id')
+        );
+
+        // Check if elements have SVG-related attributes (likely SVG highlights)
+        const hasSVGElements = Array.from(elements).some(el =>
+            el.hasAttribute('data-svg-id') ||
+            el.closest('svg') ||
+            (el.tagName === 'a' && el.closest('svg'))
         );
 
         if (hasSpanElements) {
             // Use text highlight removal for SPAN elements
             removeTextHighlight(uniqueHighlightClass, targetElement, elements);
+        } else if (hasSVGElements) {
+            // Use SVG highlight removal for SVG elements
+            removeSVGHighlight(uniqueHighlightClass, targetElement, elements);
         } else {
             // Use selector highlight removal for other elements
             removeSelectorHighlight(uniqueHighlightClass, targetElement, elements);

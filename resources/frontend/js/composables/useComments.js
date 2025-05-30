@@ -95,6 +95,8 @@ function useComments() {
                         processedAnchor.highlight_type = 'wordIndex';
                     } else if (selectionDetails.type === 'image' || selectionDetails.type === 'dynamic-block') {
                         processedAnchor.highlight_type = 'selector';
+                    } else if (selectionDetails.type === 'svg') {
+                        processedAnchor.highlight_type = 'svg';
                     } else {
                         processedAnchor.highlight_type = 'unknown';
                         console.warn('fetchComments: Unknown highlight type for anchor:', anchor);

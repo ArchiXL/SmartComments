@@ -24,10 +24,30 @@ function useLinkPrevention() {
         }
 
         const target = event.target;
-        const link = target.closest('a[href]');
 
-        // If we found a link element with an href attribute
-        if (link && link.href) {
+        // Function to find link element (HTML or SVG)
+        function findLinkElement(element) {
+            let current = element;
+            while (current && current !== document) {
+                // Check for regular HTML link or SVG link
+                if ((current.tagName === 'A' && current.href) ||
+                    (current.tagName === 'a' && current.getAttributeNS('http://www.w3.org/1999/xlink', 'href'))) {
+                    return current;
+                }
+                current = current.parentElement;
+            }
+            return null;
+        }
+
+        const link = findLinkElement(target);
+
+        if (link) {
+            // Get href value, handling both regular links and SVG animated strings
+            let hrefValue = link.href || link.getAttributeNS('http://www.w3.org/1999/xlink', 'href');
+            if (hrefValue?.baseVal !== undefined) hrefValue = hrefValue.baseVal;
+
+            if (!hrefValue || typeof hrefValue !== 'string') return;
+
             // Only apply link prevention within MediaWiki content area
             const contentArea = document.getElementById(MEDIAWIKI_SELECTORS.CONTENT_TEXT);
             if (!contentArea || !contentArea.contains(link)) {
@@ -41,34 +61,27 @@ function useLinkPrevention() {
             }
 
             // Check if this is a click directly on a comment highlight
-            // If the target itself or its closest parent has a smartcomment-hl class, allow it
             if (target.closest(`[class*="${SMARTCOMMENTS_CLASSES.HIGHLIGHT}"]`) ||
                 link.classList.toString().includes(SMARTCOMMENTS_CLASSES.HIGHLIGHT)) {
                 return;
             }
 
             // Allow clicks on sc-dynamic-block elements for annotation
-            // This allows users to annotate elements even when wrapped in links
             if (target.closest(`.${SMARTCOMMENTS_CLASSES.DYNAMIC_BLOCK}`)) {
                 return;
             }
 
             // Don't prevent clicks on internal anchors (same page navigation)
-            if (link.href.includes('#') &&
-                link.href.split('#')[0] === window.location.href.split('#')[0]) {
+            if (hrefValue.includes('#') &&
+                hrefValue.split('#')[0] === window.location.href.split('#')[0]) {
                 return;
             }
 
             // Check if the link contains comment highlights but the click is not on the highlight itself
-            // In this case, we want to prevent the link navigation but allow comment interaction
             const hasCommentHighlight = link.querySelector(`[class*="${SMARTCOMMENTS_CLASSES.HIGHLIGHT}"]`);
             if (hasCommentHighlight) {
-                // If the link contains comment highlights but the click target is not on a highlight,
-                // we should prevent the link navigation
                 event.preventDefault();
                 event.stopPropagation();
-
-                // Show a more specific message for links with comments
                 mw.notify(messages.linkCommentHighlightWarn(), {
                     type: 'warn',
                     autoHide: true,
