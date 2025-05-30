@@ -145,12 +145,12 @@ module.exports = defineComponent({
 <style lang="less">
 .smartcomments-reply-form {
     margin-left: -3px;
-    padding: .5em 1em 1em;
-    padding-left: ~"calc(1em + 3px)";
+    padding: 8px 16px 16px;
+    padding-left: ~"calc(16px + 3px)";
     background: #f9f9f9;
     border-top: 1px solid #ccc;
     border-left: 1px solid #ccc;
-    font-size: .85em;
+    font-size: 14px;
 
     &-footer {
         transition: all 0.2s ease-in-out;
@@ -158,7 +158,7 @@ module.exports = defineComponent({
 
     &-actions {
         display: flex;
-        gap: 0.5em;
+        gap: 8px;
         justify-content: flex-end;
         align-items: center;
     }
@@ -169,9 +169,9 @@ module.exports = defineComponent({
         padding: 5px 8px;
         font-family: inherit;
         resize: vertical;
-        margin-bottom: .5em;
-        height: 2.2em;
-        min-height: 2.2em;
+        margin-bottom: 8px;
+        height: 35px;
+        min-height: 35px;
         transition: height 0.2s ease-in-out;
         width: 100%;
         box-sizing: border-box;
@@ -193,10 +193,10 @@ module.exports = defineComponent({
     button {
         border: 1px solid #a2a9b1;
         border-radius: 2px;
-        padding: .5em 1em;
+        padding: 8px 16px;
         font-weight: bold;
         cursor: pointer;
-        font-size: .9em;
+        font-size: 14px;
         transition: all 0.15s ease-in-out;
 
         &:disabled {

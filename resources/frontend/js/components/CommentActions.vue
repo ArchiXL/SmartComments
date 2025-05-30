@@ -158,7 +158,7 @@ module.exports = defineComponent({
 .smartcomments-comment-actions {
     display: flex;
     align-items: center;
-    padding: .5em .5em 0;
+    padding: 8px 8px 0;
 
     .smartcomments-comment-actions-item {
         &.align-left {
@@ -187,7 +187,7 @@ module.exports = defineComponent({
         background: transparent;
         cursor: pointer;
         position: relative;
-        padding: .5em;
+        padding: 8px;
         display: flex;
         border: none;
 
@@ -220,7 +220,7 @@ module.exports = defineComponent({
                 background: transparent;
                 border: none;
                 cursor: pointer;
-                font-size: .8em;
+                font-size: 13px;
                 
                 &:hover {
                     background: #e0e0e0;

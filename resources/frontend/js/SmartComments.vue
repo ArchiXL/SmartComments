@@ -351,10 +351,10 @@ module.exports = defineComponent({
             font-size: 12px;
             z-index: 1000;
             pointer-events: none;
-            top: calc(100% + 0.5em);
+            top: calc(100% + 8px);
             
             /* Position relative to right edge to prevent overflow */
-            right: -.5em;
+            right: -8px;
             max-width: 250px;
             width: auto;
             white-space: normal;

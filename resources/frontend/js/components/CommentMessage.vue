@@ -40,13 +40,13 @@ module.exports = defineComponent({
 
 <style lang="less">
 .smartcomments-message {
-    padding: .5em 1em;
+    padding: 8px 16px;
     border-bottom: 1px dotted #ccc;
-    font-size: .85em;
+    font-size: 14px;
 
     .smartcomments-message-header {
         display: flex;
-        padding: .5em 0;
+        padding: 8px 0;
         align-items: center;
 
         .smartcomments-message-header-author {
@@ -62,7 +62,7 @@ module.exports = defineComponent({
         .smartcomments-message-header-date {
             text-align: right;
             color: #999;
-            font-size: .90em;
+            font-size: 14px;
         }
     }
 }
