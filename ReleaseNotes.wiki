@@ -1,9 +1,11 @@
 ; Version 2.1.0 (TBA)
 * Refactored frontend -- now using Vue
 * Improved UI
+* Added SVG and image support
 * Skip loading frontend if comment mode has been disabled
 * Enabling commenting on on own comments (in favor of https://github.com/ArchiXL/SmartComments/issues/13)
 * Removed slots migration script
+* Fixed CVE for Rangy 1.3.1
 
 ; Version 2.0.5 (May 7, 2025)
 * Fixed fatal TypeError to be able to use SmartComments on 1.43 
