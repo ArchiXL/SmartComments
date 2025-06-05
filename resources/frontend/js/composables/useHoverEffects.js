@@ -26,7 +26,6 @@ function useHoverEffects() {
             bindSVGHoverEffects();
 
             isInitialized = true;
-            console.log('Hover effects initialized');
         } catch (error) {
             console.error('Failed to initialize hover effects:', error);
         }
@@ -228,7 +227,6 @@ function useHoverEffects() {
             clearAllHoverEffects();
 
             isInitialized = false;
-            console.log('Hover effects destroyed');
         } catch (error) {
             console.error('Failed to destroy hover effects:', error);
         }

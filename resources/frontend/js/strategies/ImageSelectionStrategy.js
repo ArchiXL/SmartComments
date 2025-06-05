@@ -212,7 +212,6 @@ class ImageSelectionStrategy extends BaseSelectionStrategy {
                 }
             });
 
-            console.log(`Image selection setup completed. Wrapped ${wrappedCount} images.`);
             this.setupCompleted = true;
 
         } catch (error) {
@@ -254,7 +253,7 @@ class ImageSelectionStrategy extends BaseSelectionStrategy {
             const hash = createImageHash(img.src, img.width, img.height);
             const wrapper = document.createElement('div');
 
-            wrapper.className = `${SELECTION_CLASSES.DYNAMIC_BLOCK} ${SELECTION_CLASSES.IMAGE_BLOCK}`;
+            wrapper.className = SELECTION_CLASSES.DYNAMIC_BLOCK + ' ' + SELECTION_CLASSES.IMAGE_BLOCK;
             wrapper.dataset.hash = `${SELECTION_PATTERNS.IMAGE_POSITION_PREFIX}${hash}]`;
             wrapper.dataset.type = 'image';
 

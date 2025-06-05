@@ -35,7 +35,7 @@ function sanitizeCommentId(commentId) {
  * @returns {string} - Unique highlight class name
  */
 function generateHighlightClass(commentId) {
-    return `${HIGHLIGHT_CLASS_PREFIX}${sanitizeCommentId(commentId)}`;
+    return `${HIGHLIGHT_CLASS_PREFIX}${sanitizeCommentId(commentId)}`.trim();
 }
 
 /**

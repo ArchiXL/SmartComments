@@ -10,6 +10,24 @@ function useScreenshot() {
     const currentSelectionTextLength = ref(0);
 
     /**
+     * Default onclone function for screenshots that handles SmartComments styling.
+     * @param {Document} clonedDocument - The cloned document being processed for screenshot
+     */
+    function defaultOnClone(clonedDocument) {
+        const allElements = clonedDocument.getElementsByTagName('*');
+        for (let i = 0; i < allElements.length; i++) {
+            const element = allElements[i];
+            const classList = element.classList;
+            // Loop over each class in the element and remove the ones that start with smartcomment-hl-
+            for (let j = classList.length - 1; j >= 0; j--) {
+                if (classList[j].indexOf(SMARTCOMMENTS_CLASSES.HIGHLIGHT) !== -1) {
+                    classList.remove(classList[j]);
+                }
+            }
+        }
+    }
+
+    /**
      * Generic screenshot utility function.
      * @param {string|Element} element - Element to screenshot or "default" (for mw-content-text).
      * @param {Object} options - html2canvas options.
@@ -31,7 +49,13 @@ function useScreenshot() {
         }
 
         try {
-            const canvas = await html2canvas(targetElement, options);
+            // Use default onclone if not provided in options
+            const finalOptions = {
+                onclone: defaultOnClone,
+                ...options
+            };
+
+            const canvas = await html2canvas(targetElement, finalOptions);
             canvas.classList.add(SMARTCOMMENTS_CLASSES.CANVAS);
             const dataURL = canvas.toDataURL("image/jpeg");
             canvas.remove();
@@ -72,41 +96,7 @@ function useScreenshot() {
             width: width,
             height: height,
             scale: 1,
-            onclone: function (clonedDocument) {
-                const allElements = clonedDocument.getElementsByTagName('*');
-                for (let i = 0; i < allElements.length; i++) {
-                    const element = allElements[i];
-                    const classList = element.classList;
-                    // Check each class for smartcomment-hl- prefix
-                    for (let j = classList.length - 1; j >= 0; j--) {
-                        if (classList[j].indexOf(SMARTCOMMENTS_CLASSES.HIGHLIGHT) === 0) {
-                            classList.remove(classList[j]);
-                        }
-                    }
-                }
-
-                // Style highlighted elements in the clone before screenshotting
-                // This ensures the highlights are part of the image.
-                const activeItems = clonedDocument.getElementsByClassName(SMARTCOMMENTS_CLASSES.HIGHLIGHT_TEMP);
-                for (let i = 0; i < activeItems.length; i++) {
-                    activeItems[i].style.background = "#ffffe0"; // Light yellow
-                    activeItems[i].style.borderTop = "1px solid rgba(0,0,0,0.2)";
-                    activeItems[i].style.borderBottom = "1px solid rgba(0,0,0,0.2)";
-                    if (i === 0) {
-                        activeItems[i].style.borderLeft = "1px solid rgba(0,0,0,0.2)";
-                    }
-                    if (i === activeItems.length - 1) {
-                        activeItems[i].style.borderRight = "1px solid rgba(0,0,0,0.2)";
-                    }
-                }
-
-                const dynamicBlocks = clonedDocument.getElementsByClassName(SMARTCOMMENTS_CLASSES.DYNAMIC_BLOCK);
-                if (dynamicBlocks.length > 0) {
-                    for (let i = 0; i < dynamicBlocks.length; i++) {
-                        dynamicBlocks[i].classList.remove(SMARTCOMMENTS_CLASSES.DYNAMIC_BLOCK);
-                    }
-                }
-            }
+            onclone: defaultOnClone
         };
 
         return takeScreenshot(document.body, screenshotOptions);

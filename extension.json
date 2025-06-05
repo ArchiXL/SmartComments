@@ -79,6 +79,7 @@
 			]
 		},
 		"ext.smartcomments.frontend": {
+			"es6": true,
 			"packageFiles": [
 				"resources/frontend/js/App.js",
 				"resources/frontend/js/directives/highlightDirective.js",

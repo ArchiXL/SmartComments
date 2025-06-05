@@ -90,7 +90,14 @@ module.exports = defineComponent({
         // Computed properties
         const isEnabled = computed(() => appStateStore.isEnabled);
 
-        const comments = computed(() => commentsStore.comments.filter(comment => comment.status !== 'completed'));
+        const comments = computed(() => {
+            // Ensure we have a valid comments array before filtering
+            if (!Array.isArray(commentsStore.comments)) {
+                console.warn('CommentTimeline: commentsStore.comments is not an array:', commentsStore.comments);
+                return [];
+            }
+            return commentsStore.comments.filter(comment => comment && comment.status !== 'completed');
+        });
 
         const brokenCommentMessage = computed(() => {
             return messages.unlocalizedComment();
@@ -116,6 +123,11 @@ module.exports = defineComponent({
             const usedPositions = [];
             const brokenComments = [];
             const normalComments = [];
+
+            // Early return if no comments to avoid unnecessary processing
+            if (!comments.value || comments.value.length === 0) {
+                return [];
+            }
 
             // First pass: separate broken and normal comments
             comments.value.forEach(comment => {

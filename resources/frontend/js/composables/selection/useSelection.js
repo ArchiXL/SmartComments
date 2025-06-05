@@ -44,13 +44,6 @@ function useSelection() {
                 currentSelection.value = selectionData;
                 updateSelectionState(selectionData, event);
                 isSelectionActive.value = true;
-
-                console.log('Selection processed successfully:', {
-                    type: selectionData.type,
-                    strategy: selectionData._strategy?.name,
-                    text: selectionData.text?.substring(0, 50) + '...'
-                });
-
                 return selectionData;
             }
 
@@ -174,8 +167,6 @@ function useSelection() {
                 console.warn('Failed to clear rangy selection:', error);
             }
         }
-
-        console.log('Selection cleared');
     }
 
     /**
@@ -187,6 +178,7 @@ function useSelection() {
         if (!selectionData) {
             return null;
         }
+
 
         const root = getMediaWikiContentRoot();
         let parentId = null;
@@ -265,7 +257,6 @@ function useSelection() {
     function setupSelection() {
         try {
             selectionStrategyFactory.setupStrategies();
-            console.log('Selection system setup completed');
         } catch (error) {
             console.error('Failed to setup selection system:', error);
         }

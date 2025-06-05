@@ -385,13 +385,11 @@ class TextSelectionStrategy extends BaseSelectionStrategy {
             // Surround the range contents with the highlight span
             if (range.canSurroundContents()) {
                 range.surroundContents(span);
-                console.log('Temporary highlight applied for screenshot');
             } else {
                 // Fallback for complex selections
                 const contents = range.extractContents();
                 span.appendChild(contents);
                 range.insertNode(span);
-                console.log('Temporary highlight applied for screenshot (complex selection)');
             }
         } catch (error) {
             console.warn('Failed to apply temporary highlight:', error);
@@ -414,7 +412,6 @@ class TextSelectionStrategy extends BaseSelectionStrategy {
                 }
             });
 
-            console.log('Temporary highlights cleared');
         } catch (error) {
             console.warn('Failed to clear temporary highlight:', error);
         }

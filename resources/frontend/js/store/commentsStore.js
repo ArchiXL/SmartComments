@@ -103,11 +103,20 @@ module.exports = defineStore('commentsStore', {
         },
 
         removeComment(commentId) {
-            this.comments = this.comments.filter(comment =>
-                (comment.id && comment.id !== commentId) &&
-                (comment.data_id && comment.data_id !== commentId)
-            );
-            if (this.currentCommentId === commentId) {
+            const originalLength = this.comments.length;
+            this.comments = this.comments.filter(comment => {
+                // Keep comment if neither id nor data_id matches the commentId to remove
+                const idMatch = comment.id && comment.id == commentId;
+                const dataIdMatch = comment.data_id && comment.data_id == commentId;
+                return !idMatch && !dataIdMatch;
+            });
+
+            // Log for debugging if comment removal seems unexpected
+            if (this.comments.length === originalLength) {
+                console.warn('CommentsStore: removeComment called but no comment was removed', { commentId, totalComments: originalLength });
+            }
+
+            if (this.currentCommentId == commentId) {
                 this.currentCommentId = null;
             }
         },

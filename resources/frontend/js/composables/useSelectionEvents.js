@@ -248,12 +248,6 @@ function useSelectionEvents() {
             });
             document.dispatchEvent(selectionEvent);
 
-            console.log('Selection successfully processed and events triggered:', {
-                type: selectionResult.type,
-                hasScreenshot: !!selectionResult.image,
-                strategy: selectionResult._strategy?.name
-            });
-
         } catch (error) {
             console.error('Failed to handle successful selection:', error);
             selectionErrorHandler.handleSelectionError('event-handling', error, {
@@ -325,7 +319,6 @@ function useSelectionEvents() {
             hoverEffects.initializeHoverEffects();
 
             isEventsBound = true;
-            console.log('Selection events and hover effects bound successfully');
 
         } catch (error) {
             console.error('Failed to bind selection events:', error);
@@ -358,7 +351,6 @@ function useSelectionEvents() {
             hoverEffects.destroyHoverEffects();
 
             isEventsBound = false;
-            console.log('Selection events and hover effects unbound successfully');
 
         } catch (error) {
             console.error('Failed to unbind selection events:', error);
@@ -408,7 +400,6 @@ function useSelectionEvents() {
         unbindEvents();
         selection.clearSelection();
         selectionErrorHandler.clearErrorStats();
-        console.log('Selection event system reset');
     }
 
     return {

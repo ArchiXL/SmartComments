@@ -33,10 +33,6 @@ class SelectionStrategyFactory {
             // Set default strategy
             this.defaultStrategy = this.strategies.get('text');
             this.initialized = true;
-
-            console.log('Selection Strategy Factory initialized with strategies:',
-                Array.from(this.strategies.keys()));
-
         } catch (error) {
             console.error('Failed to initialize Selection Strategy Factory:', error);
             this.initialized = false;
@@ -228,8 +224,6 @@ class SelectionStrategyFactory {
         if (imageStrategy && typeof imageStrategy.setupImageSelection === 'function') {
             imageStrategy.setupImageSelection();
         }
-
-        console.log('Selection strategies setup completed');
     }
 
     /**

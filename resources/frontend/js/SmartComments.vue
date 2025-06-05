@@ -202,8 +202,13 @@ module.exports = defineComponent({
                 await this.smartCommentsSetup.loadAndSetHighlights();
                 
                 // Update the comments store with the freshly loaded comments
-                if (this.smartCommentsSetup.comments?.value) {
+                // Always update the store, even with an empty array, to ensure consistency
+                if (this.smartCommentsSetup.comments?.value !== undefined) {
                     this.commentsStore.setComments(this.smartCommentsSetup.comments.value);
+                } else {
+                    // Fallback: if comments is undefined, set empty array to maintain consistency
+                    console.warn('SmartComments.vue: comments.value is undefined after loadAndSetHighlights, setting empty array');
+                    this.commentsStore.setComments([]);
                 }
                 
                 // Apply the fresh highlights
