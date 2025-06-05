@@ -1,6 +1,7 @@
 /**
  * SVG highlighting composable for svg[id] type highlights
  */
+const { sanitizeIdString } = require('../selection/shared/SelectionUtils.js');
 
 function useSVGHighlight() {
     /**
@@ -29,7 +30,16 @@ function useSVGHighlight() {
         }
 
         const svgId = selector.slice(4, -1); // Remove 'svg[' and ']'
-        applySVGSelectorHighlight(scopeElement, svgId, comment, classesToAdd, dataCommentId, addClickListener);
+
+        // Try immediate highlighting first
+        const immediateResult = applySVGSelectorHighlight(scopeElement, svgId, comment, classesToAdd, dataCommentId, addClickListener);
+
+        // If not found immediately and we're likely in a non-debug environment, try again after a short delay
+        if (!immediateResult) {
+            setTimeout(() => {
+                applySVGSelectorHighlight(scopeElement, svgId, comment, classesToAdd, dataCommentId, addClickListener);
+            }, 100); // 100ms delay to allow DOM to fully load
+        }
     }
 
     /**
@@ -41,6 +51,7 @@ function useSVGHighlight() {
      * @param {Array} classesToAdd - Classes to add for highlighting
      * @param {string} dataCommentId - The comment ID as string
      * @param {Function} addClickListener - Function to add click listener
+     * @returns {boolean} - True if highlighting was successfully applied
      */
     function applySVGSelectorHighlight(scopeElement, svgId, comment, classesToAdd, dataCommentId, addClickListener) {
         let found = false;
@@ -59,7 +70,7 @@ function useSVGHighlight() {
         // Strategy 2: Look for SVG anchor elements and try to match based on href or content
         if (!found) {
             const svgLinks = scopeElement.querySelectorAll('svg a');
-            svgLinks.forEach(svgLink => {
+            svgLinks.forEach((svgLink, index) => {
                 if (matchesSVGId(svgLink, svgId)) {
                     // Store the SVG ID as a data attribute for future reference
                     svgLink.setAttribute('data-svg-id', svgId);
@@ -74,7 +85,7 @@ function useSVGHighlight() {
         // Strategy 3: Fallback - look for any SVG elements that might contain the ID in various attributes
         if (!found) {
             const allSvgElements = scopeElement.querySelectorAll('svg *[href], svg *[xlink\\:href]');
-            allSvgElements.forEach(element => {
+            allSvgElements.forEach((element, index) => {
                 if (matchesSVGId(element, svgId)) {
                     const targetElement = element.closest('a') || element;
                     targetElement.setAttribute('data-svg-id', svgId);
@@ -89,6 +100,8 @@ function useSVGHighlight() {
         if (!found) {
             console.warn('applySVGHighlight: SVG element not found for ID:', svgId);
         }
+
+        return found;
     }
 
     /**
@@ -113,12 +126,24 @@ function useSVGHighlight() {
                 const url = new URL(href);
                 const pathSegments = url.pathname.split('/').filter(Boolean);
                 const lastSegment = pathSegments[pathSegments.length - 1];
-                if (lastSegment && svgId === `svg-href-${lastSegment}`) {
-                    return true;
+
+                if (lastSegment && lastSegment !== 'index.php') {
+                    // Apply the same sanitization logic as SVGSelectionStrategy
+                    const sanitizedSegment = sanitizeIdString(lastSegment);
+                    const expectedId = `svg-href-${sanitizedSegment}`.trim();
+                    const cleanSvgId = svgId.trim();
+
+                    if (cleanSvgId === expectedId) {
+                        return true;
+                    }
                 }
             } catch (e) {
-                const cleanHref = href.replace(/[^a-zA-Z0-9-_]/g, '-');
-                if (svgId === `svg-href-${cleanHref}`) {
+                // Invalid URL, use as is but sanitized
+                const sanitizedHref = sanitizeIdString(href);
+                const expectedId = `svg-href-${sanitizedHref}`.trim();
+                const cleanSvgId = svgId.trim();
+
+                if (cleanSvgId === expectedId) {
                     return true;
                 }
             }
@@ -130,8 +155,9 @@ function useSVGHighlight() {
             if (textContent) {
                 const rect = svgElement.getBoundingClientRect();
                 const positionHash = `${Math.round(rect.left)}-${Math.round(rect.top)}`;
-                const cleanText = textContent.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+                const cleanText = sanitizeIdString(textContent.toLowerCase());
                 const expectedId = `svg-text-${cleanText}-${positionHash}`;
+
                 if (svgId === expectedId) {
                     return true;
                 }
@@ -149,6 +175,7 @@ function useSVGHighlight() {
                 };
                 const fallbackHash = btoa(JSON.stringify(elementInfo)).replace(/[^a-zA-Z0-9]/g, '').substring(0, 16);
                 const expectedId = `svg-fallback-${fallbackHash}`;
+
                 if (svgId === expectedId) {
                     return true;
                 }
@@ -159,6 +186,8 @@ function useSVGHighlight() {
 
         return false;
     }
+
+
 
     /**
      * Extract text content from SVG element (helper function)

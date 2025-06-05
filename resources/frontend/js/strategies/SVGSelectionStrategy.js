@@ -6,7 +6,8 @@ const { BaseSelectionStrategy } = require('./BaseSelectionStrategy.js');
 const {
     validateSelectionContent,
     createSVGHash,
-    getMediaWikiContentRoot
+    getMediaWikiContentRoot,
+    sanitizeIdString
 } = require('../composables/selection/shared/SelectionUtils.js');
 const { SELECTION_ENUMS } = require('../utils/constants.js');
 const { SELECTION_PATTERNS } = require('../composables/selection/shared/SelectionConstants.js');
@@ -52,6 +53,17 @@ class SVGSelectionStrategy extends BaseSelectionStrategy {
 
             // Generate unique ID and extract metadata
             const uniqueId = this.generateSVGUniqueId(svgLink);
+
+            if (!uniqueId) {
+                console.warn('SVGSelectionStrategy: uniqueId is undefined/null for svgLink:', svgLink);
+                console.warn('SVGSelectionStrategy: svgLink attributes:', {
+                    href: svgLink.getAttribute('href'),
+                    xlinkHref: svgLink.getAttribute('xlink:href'),
+                    innerHTML: svgLink.innerHTML,
+                    outerHTML: svgLink.outerHTML
+                });
+            }
+
             const textContent = this.extractSVGTextContent(svgLink);
             const href = svgLink.getAttribute('xlink:href') || svgLink.getAttribute('href');
             const metadata = this.extractSVGMetadata(svgLink);
@@ -100,7 +112,7 @@ class SVGSelectionStrategy extends BaseSelectionStrategy {
      */
     createSVGSelectionData(uniqueId, textContent, href, metadata, svgLink) {
         const svgHash = createSVGHash(uniqueId, href, textContent);
-        const selectionText = `${SELECTION_PATTERNS.SVG_POSITION_PREFIX}${uniqueId}]`;
+        const selectionText = `${SELECTION_PATTERNS.SVG_POSITION_PREFIX}${uniqueId}]`.trim();
 
         // Create descriptive text for display
         const displayText = textContent ||
@@ -131,16 +143,21 @@ class SVGSelectionStrategy extends BaseSelectionStrategy {
         // 3. Fallback hash based on element structure
 
         const href = svgLink.getAttribute('xlink:href') || svgLink.getAttribute('href');
+
         if (href) {
-            return this.generateIdFromHref(href);
+            const hrefId = this.generateIdFromHref(href);
+            return hrefId;
         }
 
         const textContent = this.extractSVGTextContent(svgLink);
+
         if (textContent) {
-            return this.generateIdFromTextAndPosition(svgLink, textContent);
+            const textId = this.generateIdFromTextAndPosition(svgLink, textContent);
+            return textId;
         }
 
-        return this.generateFallbackId(svgLink);
+        const fallbackId = this.generateFallbackId(svgLink);
+        return fallbackId;
     }
 
     /**
@@ -155,14 +172,17 @@ class SVGSelectionStrategy extends BaseSelectionStrategy {
             const lastSegment = pathSegments[pathSegments.length - 1];
 
             if (lastSegment && lastSegment !== 'index.php') {
-                return `svg-href-${this.sanitizeId(lastSegment)}`;
+                const result = `svg-href-${sanitizeIdString(lastSegment)}`;
+                return result;
             }
         } catch (e) {
             // Invalid URL, use as is but sanitized
-            return `svg-href-${this.sanitizeId(href)}`;
+            const result = `svg-href-${sanitizeIdString(href)}`;
+            return result;
         }
 
-        return `svg-href-${this.sanitizeId(href)}`;
+        const result = `svg-href-${sanitizeIdString(href)}`;
+        return result;
     }
 
     /**
@@ -174,8 +194,10 @@ class SVGSelectionStrategy extends BaseSelectionStrategy {
     generateIdFromTextAndPosition(svgLink, textContent) {
         const rect = svgLink.getBoundingClientRect();
         const positionHash = `${Math.round(rect.left)}-${Math.round(rect.top)}`;
-        const cleanText = this.sanitizeId(textContent.toLowerCase());
-        return `svg-text-${cleanText}-${positionHash}`;
+        const cleanText = sanitizeIdString(textContent.toLowerCase());
+        const result = `svg-text-${cleanText}-${positionHash}`;
+
+        return result;
     }
 
     /**
@@ -195,17 +217,12 @@ class SVGSelectionStrategy extends BaseSelectionStrategy {
             .replace(/[^a-zA-Z0-9]/g, '')
             .substring(0, 16);
 
-        return `svg-fallback-${fallbackHash}`;
+        const result = `svg-fallback-${fallbackHash}`;
+
+        return result;
     }
 
-    /**
-     * Sanitize string for use in ID
-     * @param {string} str - String to sanitize
-     * @returns {string} - Sanitized string
-     */
-    sanitizeId(str) {
-        return str.replace(/[^a-zA-Z0-9-_]/g, '-').replace(/-+/g, '-');
-    }
+
 
     /**
      * Extract path from href for display

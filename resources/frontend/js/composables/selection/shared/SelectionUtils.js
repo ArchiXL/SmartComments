@@ -485,6 +485,20 @@ function isValidURL(url) {
 }
 
 /**
+ * Sanitize string for use in SVG/selection IDs
+ * Removes non-alphanumeric characters (except hyphens and underscores) and collapses multiple hyphens
+ * @param {string} str - String to sanitize
+ * @returns {string} - Sanitized string safe for use as HTML ID
+ */
+function sanitizeIdString(str) {
+    if (str == null || str === undefined) {
+        return 'undefined-value';
+    }
+
+    return String(str).replace(/[^a-zA-Z0-9-_]/g, '-').replace(/-+/g, '-');
+}
+
+/**
  * Get performance metrics for selection utilities
  * @returns {Object} - Performance metrics
  */
@@ -514,6 +528,7 @@ module.exports = {
     isValidURL,
     clearElementCache,
     getPerformanceMetrics,
+    sanitizeIdString,
 
     // Enhanced utilities
     sanitizeHTMLForValidation,
