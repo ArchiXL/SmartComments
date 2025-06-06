@@ -49,6 +49,7 @@
 	},
 	"ResourceModules": {
 		"ext.smartcomments.special": {
+			"group": "ext.smartcomments",
 			"styles": [
 				"resources/special/less/smartcomments.less"
 			],
@@ -60,11 +61,13 @@
 			]
 		},
 		"ext.smartcomments.vue-demi": {
+			"group": "ext.smartcomments",
 			"scripts": [
 				"resources/frontend/upstream/vue-demi.iife.js"
 			]
 		},
 		"ext.smartcomments.pinia": {
+			"group": "ext.smartcomments",
 			"scripts": [
 				"resources/frontend/upstream/pinia.iife.js",
 				"resources/frontend/js/piniaWrapper.js"
@@ -80,6 +83,8 @@
 		},
 		"ext.smartcomments.frontend": {
 			"es6": true,
+			"noflip": true,
+			"group": "ext.smartcomments",
 			"packageFiles": [
 				"resources/frontend/js/utils/constants.js",
 				"resources/frontend/js/utils/vueDemiPolyfill.js",
@@ -142,6 +147,10 @@
 				"ext.smartcomments.upstream",
 				"ext.smartcomments.pinia"
 			],
+			"targets": [
+				"desktop",
+				"mobile"
+			],
 			"messages": [
 				"sic-title-new",
 				"sic-button-new-comment",
@@ -190,6 +199,7 @@
 			]
 		},
 		"ext.smartcomments.upstream": {
+			"group": "ext.smartcomments",
 			"scripts": [
 				"resources/frontend/upstream/rangy/lib/rangy-core.js",
 				"resources/frontend/upstream/rangy/lib/rangy-classapplier.js",
