@@ -3,7 +3,7 @@
  * Implements common functionality and defines interface for all selection types
  */
 const { selectionErrorHandler } = require('../composables/selection/shared/SelectionErrorHandler.js');
-const { useSelectionScreenshot } = require('../composables/useSelectionScreenshot.js');
+const { useSelectionScreenshot } = require('../composables/features/useSelectionScreenshot.js');
 const { isSelectionEnabled } = require('../composables/selection/shared/SelectionUtils.js');
 const { SELECTION_LIMITS } = require('../composables/selection/shared/SelectionConstants.js');
 

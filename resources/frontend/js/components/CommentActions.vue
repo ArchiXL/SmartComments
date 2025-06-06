@@ -44,7 +44,7 @@
 const { defineComponent, computed, ref } = require('vue');
 const useUserStore = require('../store/userStore.js');
 const useCommentsStore = require('../store/commentsStore.js');
-const useMessages = require('../composables/useMessages.js');
+const useMessages = require('../composables/core/useMessages.js');
 
 module.exports = defineComponent({
     name: 'CommentActions',

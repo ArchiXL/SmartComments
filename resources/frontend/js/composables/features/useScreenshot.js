@@ -1,5 +1,5 @@
 const { reactive, ref } = require('vue');
-const { SMARTCOMMENTS_CLASSES, getMediaWikiContentRoot } = require('../utils/constants.js');
+const { SMARTCOMMENTS_CLASSES, getMediaWikiContentRoot } = require('../../utils/constants.js');
 
 /**
  * Composable for handling screenshot functionality.

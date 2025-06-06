@@ -1,8 +1,12 @@
 const { ref } = require('vue');
-const { errorHandler } = require('./highlights/shared/HighlightErrorHandler.js');
-const { sanitizeCommentId } = require('./highlights/shared/HighlightUtils.js');
+const { errorHandler } = require('./shared/HighlightErrorHandler.js');
+const { sanitizeCommentId } = require('./shared/HighlightUtils.js');
 
-function useHighlight() {
+/**
+ * Composable for managing highlight data structures and CRUD operations
+ * This handles the reactive highlight data array and provides validation
+ */
+function useHighlightData() {
     const highlightedAnchors = ref([]);
 
     // Function to add a new highlight instruction
@@ -87,21 +91,13 @@ function useHighlight() {
         }
     };
 
-    // Remove comment highlight function (moved from directive)
-    const removeCommentHighlight = (commentId, scopeElement = null) => {
-        const { useHighlightManager } = require('./highlights/useHighlightManager.js');
-        const { removeCommentHighlight: managerRemove } = useHighlightManager();
-        return managerRemove(commentId, scopeElement);
-    };
-
     return {
         highlightedAnchors,
         addHighlight,
         removeHighlight,
         clearAllHighlights,
-        setHighlights,
-        removeCommentHighlight
+        setHighlights
     };
 }
 
-module.exports = { useHighlight };
+module.exports = { useHighlightData };

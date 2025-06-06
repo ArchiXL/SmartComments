@@ -1,10 +1,9 @@
-const { onMounted, ref } = require('vue');
-const useComments = require('./useComments.js');
-const { useHighlight } = require('./useHighlight.js');
-const useAppStateStore = require('../store/appStateStore.js');
+const { ref } = require('vue');
+const useComments = require('../features/useComments.js');
+const { useHighlightData } = require('../highlights/useHighlightData.js');
 
 /**
- * @typedef {import('./useComments.js').Comment} Comment
+ * @typedef {import('../features/useComments.js').Comment} Comment
  */
 
 /**
@@ -70,7 +69,7 @@ function formatCommentsForHighlighting(commentsArray) {
  */
 function useSmartCommentsSetup() {
     const commentsComposable = useComments();
-    const highlightComposable = useHighlight();
+    const highlightComposable = useHighlightData();
 
     // Destructure with fallbacks
     const {

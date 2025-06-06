@@ -1,3 +1,5 @@
+const { SELECTION_CLASSES, SCREENSHOT_CONFIG, SELECTION_TIMEOUTS } = require('../composables/selection/shared/SelectionConstants.js');
+
 /**
  * Global constants for SmartComments frontend
  */
@@ -79,8 +81,11 @@ module.exports = {
     MEDIAWIKI_SELECTORS,
     CONTENT_ROOT_SELECTORS,
     SELECTION_VALIDATION,
-    SELECTION_VALIDATION_CODES, // Legacy alias
-    SELECTION_ENUMS, // Legacy alias
+    SELECTION_VALIDATION_CODES,
+    SELECTION_ENUMS,
     SMARTCOMMENTS_CLASSES,
-    getMediaWikiContentRoot
+    getMediaWikiContentRoot,
+    SELECTION_CLASSES,
+    SCREENSHOT_CONFIG,
+    SELECTION_TIMEOUTS
 }; 

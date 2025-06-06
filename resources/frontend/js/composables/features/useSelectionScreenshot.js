@@ -3,7 +3,7 @@
  * Eliminates duplication and provides consistent error handling
  */
 const useScreenshot = require('./useScreenshot.js');
-const { SCREENSHOT_CONFIG, SELECTION_ERRORS } = require('./selection/shared/SelectionConstants.js');
+const { SCREENSHOT_CONFIG } = require('../../utils/constants.js');
 
 function useSelectionScreenshot() {
     const { screenshotSelectionArea, takeScreenshot } = useScreenshot();

@@ -5,8 +5,8 @@ const { useHighlightListeners } = require('./useHighlightListeners.js');
 const { useHighlightManager } = require('./useHighlightManager.js');
 
 // Import shared utilities
-const HighlightUtils = require('./shared/HighlightUtils.js');
-const { errorHandler, HighlightError, ERROR_TYPES, SEVERITY_LEVELS } = require('./shared/HighlightErrorHandler.js');
+const HighlightUtils = require('../shared/HighlightUtils.js');
+const { errorHandler, HighlightError, ERROR_TYPES, SEVERITY_LEVELS } = require('../shared/HighlightErrorHandler.js');
 
 module.exports = {
     useTextHighlight,

@@ -2,8 +2,8 @@ const { ref } = require('vue');
 const {
     formatSelectionForBackend,
     parseSelectionFromBackend
-} = require('./selection/shared/SelectionUtils.js');
-const useMessages = require('./useMessages.js');
+} = require('../selection/shared/SelectionUtils.js');
+const useMessages = require('../core/useMessages.js');
 
 /**
  * @typedef {Object} Comment

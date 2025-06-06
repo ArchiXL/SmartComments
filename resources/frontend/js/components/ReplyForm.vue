@@ -40,7 +40,7 @@
 
 <script>
 const { defineComponent, computed } = require('vue');
-const useMessages = require('../composables/useMessages.js');
+const useMessages = require('../composables/core/useMessages.js');
 
 module.exports = defineComponent({
     name: 'ReplyForm',

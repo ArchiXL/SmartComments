@@ -1,7 +1,7 @@
-const useAppStateStore = require('../store/appStateStore.js');
-const { MEDIAWIKI_SELECTORS, SMARTCOMMENTS_CLASSES } = require('../utils/constants.js');
-const useMessages = require('./useMessages.js');
-const { useSelectionEvents } = require('./useSelectionEvents.js');
+const useAppStateStore = require('../../store/appStateStore.js');
+const { MEDIAWIKI_SELECTORS, SMARTCOMMENTS_CLASSES } = require('../../utils/constants.js');
+const useMessages = require('../core/useMessages.js');
+const { useSelectionEvents } = require('../selection/useSelectionEvents.js');
 
 /**
  * Composable for handling link prevention when comment mode is enabled

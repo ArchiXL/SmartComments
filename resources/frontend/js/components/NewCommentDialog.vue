@@ -73,8 +73,8 @@
 
 <script>
 const { defineComponent, ref, computed, nextTick, onMounted, onUnmounted } = require('vue');
-const useComments = require('../composables/useComments.js');
-const useMessages = require('../composables/useMessages.js');
+const useComments = require('../composables/features/useComments.js');
+const useMessages = require('../composables/core/useMessages.js');
 
 module.exports = defineComponent({
     name: 'NewCommentDialog',

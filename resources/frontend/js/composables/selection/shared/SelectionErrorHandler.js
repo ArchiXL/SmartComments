@@ -2,7 +2,6 @@
  * Centralized error handling for selection operations
  * Provides consistent error reporting and user feedback
  */
-const { SELECTION_ERRORS } = require('./SelectionConstants.js');
 const { SELECTION_ENUMS } = require('../../../utils/constants.js');
 
 class SelectionErrorHandler {

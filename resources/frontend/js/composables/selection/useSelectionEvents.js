@@ -3,21 +3,18 @@
  * Uses new Strategy pattern for consistent selection handling
  * Eliminates duplication and provides centralized event management
  */
-const { useSelection } = require('./selection/useSelection.js');
-const { getMediaWikiContentRoot } = require('../utils/constants.js');
-const { useHighlight } = require('./useHighlight.js');
-const { useHoverEffects } = require('./useHoverEffects.js');
-const useAppStateStore = require('../store/appStateStore.js');
-const { smartCommentsEvents } = require('../utils/smartCommentsEvents.js');
-const useMessages = require('./useMessages.js');
-const { selectionErrorHandler } = require('./selection/shared/SelectionErrorHandler.js');
-const { SELECTION_TIMEOUTS } = require('./selection/shared/SelectionConstants.js');
+const { useSelection } = require('./useSelection.js');
+const { useHighlightData } = require('../highlights/useHighlightData.js');
+const { useHoverEffects } = require('../ui/useHoverEffects.js');
+const useAppStateStore = require('../../store/appStateStore.js');
+const { smartCommentsEvents } = require('../../utils/smartCommentsEvents.js');
+const { selectionErrorHandler } = require('../selection/shared/SelectionErrorHandler.js');
+const { SELECTION_TIMEOUTS } = require('../../utils/constants.js');
 
 function useSelectionEvents() {
     const selection = useSelection();
-    const highlight = useHighlight();
+    const highlight = useHighlightData();
     const hoverEffects = useHoverEffects();
-    const { messages } = useMessages();
 
     // Event handlers
     let mouseDownHandler, mouseUpHandler, mouseMoveHandler, clickHandler;

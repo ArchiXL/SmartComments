@@ -42,7 +42,7 @@
 const { defineComponent, ref, computed, onMounted, onBeforeUnmount, nextTick } = require('vue');
 const useCommentsStore = require('../store/commentsStore.js');
 const useAppStateStore = require('../store/appStateStore.js');
-const useMessages = require('../composables/useMessages.js');
+const useMessages = require('../composables/core/useMessages.js');
 
 module.exports = defineComponent({
     name: 'CommentTimeline',

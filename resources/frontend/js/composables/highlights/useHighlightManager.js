@@ -12,7 +12,6 @@ const {
     findHighlightedElements,
     batchRemoveHighlights,
     cleanupHighlightElement,
-    hasOtherSmartCommentClasses,
     unwrapEmptySpan,
     HIGHLIGHT_CLASS_PREFIX
 } = require('./shared/HighlightUtils.js');

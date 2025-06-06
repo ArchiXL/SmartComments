@@ -29,13 +29,17 @@
 
 <script>
 const { defineComponent } = require('vue');
-const useSmartCommentsSetup = require('./composables/useSmartCommentsSetup.js');
-const { useSelectionEvents } = require('./composables/useSelectionEvents.js');
-const { useLinkPrevention } = require('./composables/useLinkPrevention.js');
-const { applyHighlights, clearAllHighlights } = require('./directives/highlightDirective.js');
+const useSmartCommentsSetup = require('./composables/setup/useSmartCommentsSetup.js');
+const { useSelectionEvents } = require('./composables/selection/useSelectionEvents.js');
+const { useLinkPrevention } = require('./composables/features/useLinkPrevention.js');
 const useAppStateStore = require('./store/appStateStore.js');
 const useCommentsStore = require('./store/commentsStore.js');
-const useMessages = require('./composables/useMessages.js');
+const useMessages = require('./composables/core/useMessages.js');
+const useHighlightOrchestrator = require('./composables/highlights/useHighlightOrchestrator.js');
+const useKeyboardShortcuts = require('./composables/ui/useKeyboardShortcuts.js');
+const useCustomProperties = require('./composables/core/useCustomProperties.js');
+const useSmartCommentsEventHandlers = require('./composables/ui/useSmartCommentsEventHandlers.js');
+const useUrlNavigation = require('./composables/features/useUrlNavigation.js');
 const Comment = require('./components/Comment.vue');
 const NewCommentDialog = require('./components/NewCommentDialog.vue');
 const CommentTimeline = require('./components/CommentTimeline.vue');
@@ -54,44 +58,103 @@ module.exports = defineComponent({
         const commentsStore = useCommentsStore();
         const messages = useMessages();
         const linkPrevention = useLinkPrevention();
-        return { smartCommentsSetup, store, commentsStore, applyHighlights, smartCommentsEvents, EVENTS, messages, linkPrevention };
+        
+        // Initialize specialized composables
+        const highlightsManager = useHighlightOrchestrator(smartCommentsSetup, commentsStore, smartCommentsEvents);
+        const keyboardShortcuts = useKeyboardShortcuts(commentsStore);
+        const customProperties = useCustomProperties(messages);
+        const eventHandlers = useSmartCommentsEventHandlers(smartCommentsEvents, EVENTS, store, commentsStore, highlightsManager);
+        const urlNavigation = useUrlNavigation(commentsStore);
+        
+        return { 
+            smartCommentsSetup, 
+            store, 
+            commentsStore, 
+            smartCommentsEvents, 
+            EVENTS, 
+            messages, 
+            linkPrevention,
+            highlightsManager,
+            keyboardShortcuts,
+            customProperties,
+            eventHandlers,
+            urlNavigation
+        };
     },
     data() {
         return {
             selectionEvents: null,
-            selectionCleanup: null,
+            cleanupFunctions: [],
         };
     },
     computed: {
         isEnabled() {
             return this.store.isEnabled;
-        },
-        annotateTooltipText() {
-            return this.messages.msg('sic-annotate-tooltip');
-        },
-        buttonOpenText() {
-            return this.messages.msg('sic-button-open');
         }
     },
     mounted() {
         this.selectionEvents = useSelectionEvents();
 
-        // Set up highlight refresh event listener
-        this.setupHighlightRefreshListener();
-        
-        // Setup SmartComments events
-        this.setupSmartCommentsEvents();
-
-        // Set CSS custom property for annotate tooltip text
-        this.updateAnnotateTooltipText();
-
-        // Set CSS custom property for button open text
-        this.updateButtonOpenText();
+        // Setup all systems
+        this.setupSystems();
 
         this.$watch(() => this.isEnabled, async (stateNowEnabled) => {
-            const targetElement = document.getElementById('mw-content-text') || document.body;
-
             if (stateNowEnabled) {
+                await this.enableSmartComments();
+            } else {
+                await this.disableSmartComments();
+            }
+        }, { immediate: true });
+
+        // Handle selection events - delegate to store
+        this.cleanupFunctions.push(
+            this.selectionEvents.onSelectionCreate(this.handleNewSelection)
+        );
+    },
+    beforeUnmount() {
+        this.highlightsManager.clearHighlights();
+        if (this.selectionEvents) this.selectionEvents.unbindEvents();
+        if (this.linkPrevention) this.linkPrevention.unbindEvents();
+        
+        // Clean up all registered functions
+        this.cleanupFunctions.forEach(cleanup => cleanup());
+    },
+    methods: {
+        /**
+         * Setup all systems and event handlers
+         */
+        setupSystems() {
+            // Setup highlight refresh listener
+            this.cleanupFunctions.push(
+                this.highlightsManager.setupHighlightRefreshListener()
+            );
+            
+            // Setup SmartComments events
+            this.cleanupFunctions.push(
+                this.eventHandlers.setupSmartCommentsEvents()
+            );
+            
+            // Setup keyboard shortcuts
+            this.cleanupFunctions.push(
+                this.keyboardShortcuts.setupKeyboardShortcuts()
+            );
+            
+            // Setup CSS custom properties watchers
+            this.cleanupFunctions.push(
+                this.customProperties.setupCustomPropertiesWatchers()
+            );
+            
+            // Setup URL navigation
+            this.cleanupFunctions.push(
+                this.urlNavigation.setupUrlNavigation(() => this.isEnabled)
+            );
+        },
+
+        /**
+         * Enable SmartComments system
+         */
+        async enableSmartComments() {
+            try {
                 // Trigger comments enabled event
                 this.smartCommentsEvents.triggerCommentsEnabled();
                 
@@ -101,159 +164,39 @@ module.exports = defineComponent({
                 try {
                     const { useSelection } = require('./composables/selection/useSelection.js');
                     const selection = useSelection();
-                    selection.setupSelection(); // This calls selectionStrategyFactory.setupStrategies()
+                    selection.setupSelection();
                 } catch (error) {
                     console.error('Failed to setup selection strategies:', error);
                 }
                 
                 // Bind link prevention events when comment mode is enabled
                 if (this.linkPrevention) this.linkPrevention.bindEvents();
-                if (this.smartCommentsSetup.highlightedAnchors?.value) {
-                    clearAllHighlights(targetElement, this.smartCommentsSetup.highlightedAnchors.value);
-                }
                 
-                try {
-                    await this.reloadHighlightsAndComments();
-                    
-                    // Check URL parameters and open comment if specified
-                    await this.commentsStore.checkAndOpenCommentFromUrl();
-                } catch (e) {
-                    console.error('SmartComments.vue isEnabled watcher (enabled): Error loading or applying highlights:', e);
-                }
-            } else {
-                // Trigger comments disabled event
-                this.smartCommentsEvents.triggerCommentsDisabled();
+                this.highlightsManager.clearHighlights();
                 
-                if (this.selectionEvents) this.selectionEvents.unbindEvents();
-                // Unbind link prevention events when comment mode is disabled
-                if (this.linkPrevention) this.linkPrevention.unbindEvents();
-                if (this.smartCommentsSetup.highlightedAnchors?.value) {
-                    clearAllHighlights(targetElement, this.smartCommentsSetup.highlightedAnchors.value);
-                }
-                // Close all dialogs when disabling
-                this.commentsStore.closeAllDialogs();
-            }
-        }, { immediate: true });
-
-        // Watch for changes in annotate tooltip text (e.g., language changes)
-        this.$watch(() => this.annotateTooltipText, () => {
-            this.updateAnnotateTooltipText();
-        });
-
-        // Watch for changes in button open text (e.g., language changes)
-        this.$watch(() => this.buttonOpenText, () => {
-            this.updateButtonOpenText();
-        });
-
-        // Handle selection events - delegate to store
-        this.selectionCleanup = this.selectionEvents.onSelectionCreate(this.handleNewSelection);
-        document.addEventListener('keydown', this.handleKeydown);
-
-        // Listen for URL changes (back/forward navigation)
-        this.handlePopState = async () => {
-            if (this.isEnabled) {
+                await this.highlightsManager.reloadHighlightsAndComments();
+                
+                // Check URL parameters and open comment if specified
                 await this.commentsStore.checkAndOpenCommentFromUrl();
-            }
-        };
-        window.addEventListener('popstate', this.handlePopState);
-    },
-    beforeUnmount() {
-        const targetElement = document.getElementById('mw-content-text') || document.body;
-        if (this.smartCommentsSetup.highlightedAnchors?.value) {
-            clearAllHighlights(targetElement, this.smartCommentsSetup.highlightedAnchors.value);
-        }
-        document.removeEventListener('keydown', this.handleKeydown);
-        document.removeEventListener('smartcomments:refresh-highlights', this.handleHighlightRefresh);
-        if (this.selectionEvents) this.selectionEvents.unbindEvents();
-        // Clean up link prevention events
-        if (this.linkPrevention) this.linkPrevention.unbindEvents();
-        if (this.selectionCleanup) this.selectionCleanup();
-        window.removeEventListener('popstate', this.handlePopState);
-        
-        // Clean up SmartComments events
-        if (this.smartCommentsEventsCleanup) {
-            this.smartCommentsEventsCleanup.forEach(cleanup => cleanup());
-        }
-    },
-    methods: {
-        /**
-         * Set up event listener for highlight refresh events
-         */
-        setupHighlightRefreshListener() {
-            this.handleHighlightRefresh = async (event) => {
-                await this.reloadHighlightsAndComments();
-            };
-            document.addEventListener('smartcomments:refresh-highlights', this.handleHighlightRefresh);
-        },
-
-        /**
-         * Reload highlights and update comments store
-         */
-        async reloadHighlightsAndComments() {
-            try {
-                const targetElement = document.getElementById('mw-content-text') || document.body;
-                
-                // Clear existing highlights first (like enable/disable process)
-                if (this.smartCommentsSetup.highlightedAnchors?.value) {
-                    clearAllHighlights(targetElement, this.smartCommentsSetup.highlightedAnchors.value);
-                }
-                
-                // Reload comments and highlights from server
-                await this.smartCommentsSetup.loadAndSetHighlights();
-                
-                // Update the comments store with the freshly loaded comments
-                // Always update the store, even with an empty array, to ensure consistency
-                if (this.smartCommentsSetup.comments?.value !== undefined) {
-                    this.commentsStore.setComments(this.smartCommentsSetup.comments.value);
-                } else {
-                    // Fallback: if comments is undefined, set empty array to maintain consistency
-                    console.warn('SmartComments.vue: comments.value is undefined after loadAndSetHighlights, setting empty array');
-                    this.commentsStore.setComments([]);
-                }
-                
-                // Apply the fresh highlights
-                if (this.smartCommentsSetup.highlightedAnchors?.value) {
-                    this.applyHighlights(targetElement, this.smartCommentsSetup.highlightedAnchors.value, this.handleHighlightClick);
-                }
-                
-                // Restore active highlight if dialog is open
-                if (this.commentsStore.isCommentDialogVisible && this.commentsStore.activeComment) {
-                    const commentId = this.commentsStore.activeComment.data_id || this.commentsStore.activeComment.id;
-                    this.commentsStore.setActiveHighlight(commentId);
-                }
-            } catch (error) {
-                console.error('SmartComments.vue: Error reloading highlights:', error);
+            } catch (e) {
+                console.error('SmartComments.vue enableSmartComments: Error:', e);
             }
         },
 
         /**
-         * Handle highlight click - delegate to store
+         * Disable SmartComments system
          */
-        handleHighlightClick(event, commentData, position) {
-            if (event && event.preventDefault) {
-                event.preventDefault();
-            }
+        async disableSmartComments() {
+            // Trigger comments disabled event
+            this.smartCommentsEvents.triggerCommentsDisabled();
             
-            // Trigger events
-            this.smartCommentsEvents.triggerHighlightClicked(commentData, position);
-            this.smartCommentsEvents.triggerCommentGroupOpen(commentData, position);
+            if (this.selectionEvents) this.selectionEvents.unbindEvents();
+            if (this.linkPrevention) this.linkPrevention.unbindEvents();
             
-            this.commentsStore.openCommentDialog(commentData, position);
-        },
-
-        /**
-         * Handle keyboard shortcuts
-         */
-        handleKeydown(event) {
-            if (event.key === 'Escape' && this.commentsStore.isCommentDialogVisible) {
-                this.commentsStore.closeCommentDialog();
-            } else if (event.key === 'Delete' && this.commentsStore.activeComment) {
-                this.commentsStore.deleteComment(this.commentsStore.activeComment);
-            } else if (event.key === 'ArrowDown' && this.commentsStore.hasNextComment) {
-                this.commentsStore.navigateComment('next');
-            } else if (event.key === 'ArrowUp' && this.commentsStore.hasPreviousComment) {
-                this.commentsStore.navigateComment('previous');
-            }
+            this.highlightsManager.clearHighlights();
+            
+            // Close all dialogs when disabling
+            this.commentsStore.closeAllDialogs();
         },
 
         /**
@@ -276,93 +219,14 @@ module.exports = defineComponent({
          * Manual highlight reload (for debugging)
          */
         async reloadHighlights() {
-            if (!this.isEnabled) {
-                console.warn('SmartComments.vue: Cannot reload highlights, system is disabled.');
-                return;
-            }
-            const targetElement = document.getElementById('mw-content-text') || document.body;
-            if (this.smartCommentsSetup?.loadAndSetHighlights) {
-                try {
-                    if (this.smartCommentsSetup.highlightedAnchors?.value) {
-                        clearAllHighlights(targetElement, this.smartCommentsSetup.highlightedAnchors.value);
-                    }
-
-                    await this.reloadHighlightsAndComments();
-                } catch (error) {
-                    console.error('SmartComments.vue reloadHighlights: Error:', error);
-                }
-            } else {
-                console.error('SmartComments.vue reloadHighlights: smartCommentsSetup.loadAndSetHighlights not available.');
-            }
+            await this.highlightsManager.reloadHighlights(this.isEnabled);
         },
 
         /**
          * Check URL parameters and open comment (for debugging)
          */
         async checkUrlParameters() {
-            if (!this.isEnabled) {
-                console.warn('SmartComments.vue: Cannot check URL parameters, system is disabled.');
-                return;
-            }
-            await this.commentsStore.checkAndOpenCommentFromUrl();
-        },
-
-        /**
-         * Setup SmartComments events
-         */
-        setupSmartCommentsEvents() {
-            // Store cleanup functions for event listeners
-            this.smartCommentsEventsCleanup = [];
-            
-            // Listen for debug mode events
-            this.smartCommentsEventsCleanup.push(
-                this.smartCommentsEvents.on(EVENTS.DEBUG_MODE, (event) => {
-                    if (event.detail.enabled && !this.isEnabled) {
-                        this.store.setEnabled(true);
-                    }
-                })
-            );
-            
-            // Listen for selection active events
-            this.smartCommentsEventsCleanup.push(
-                this.smartCommentsEvents.on(EVENTS.SELECTION_ACTIVE, (event) => {
-                    // Close any open comment dialogs when a new selection is made
-                    if (this.commentsStore.isCommentDialogVisible) {
-                        this.commentsStore.closeCommentDialog();
-                    }
-                })
-            );
-            
-            // Listen for open comment events
-            this.smartCommentsEventsCleanup.push(
-                this.smartCommentsEvents.on(EVENTS.OPEN_COMMENT_ID, (event) => {
-                    if (event.detail.commentId) {
-                        // Handle opening specific comment
-                        this.commentsStore.openCommentById(event.detail.commentId);
-                    }
-                })
-            );
-
-            // Listen for comment created events
-            this.smartCommentsEventsCleanup.push(
-                this.smartCommentsEvents.on(EVENTS.COMMENT_CREATED, (event) => {
-                    this.reloadHighlightsAndComments();
-                })
-            );
-        },
-
-        /**
-         * Update CSS custom property for annotate tooltip text
-         */
-        updateAnnotateTooltipText() {
-            document.documentElement.style.setProperty('--smartcomments-annotate-text', `"${this.annotateTooltipText}"`);
-        },
-
-        /**
-         * Update CSS custom property for button open text
-         */
-        updateButtonOpenText() {
-            document.documentElement.style.setProperty('--smartcomments-button-open-text', `"${this.buttonOpenText}"`);
+            await this.urlNavigation.checkUrlParameters(() => this.isEnabled);
         }
     }
 });

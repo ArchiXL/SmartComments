@@ -33,8 +33,8 @@ const ReplyForm = require('./ReplyForm.vue');
 const ReplyList = require('./ReplyList.vue');
 const CommentActions = require('./CommentActions.vue');
 const CommentBody = require('./CommentBody.vue');
-const useComments = require('../composables/useComments.js');
-const useMessages = require('../composables/useMessages.js');
+const useComments = require('../composables/features/useComments.js');
+const useMessages = require('../composables/core/useMessages.js');
 
 module.exports = defineComponent({
     name: 'Comment',

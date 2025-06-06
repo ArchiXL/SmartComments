@@ -3,8 +3,8 @@
  * Manages hover visual effects for selection targets
  * Restores missing hover functionality after refactoring
  */
-const { SELECTION_CLASSES } = require('./selection/shared/SelectionConstants.js');
-const { isSelectionEnabled } = require('./selection/shared/SelectionUtils.js');
+const { SELECTION_CLASSES } = require('../../utils/constants.js');
+const { isSelectionEnabled } = require('../selection/shared/SelectionUtils.js');
 
 function useHoverEffects() {
     let isInitialized = false;

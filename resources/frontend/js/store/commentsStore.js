@@ -1,6 +1,7 @@
 const { defineStore } = Pinia;
-const useComments = require('../composables/useComments.js');
-const { useHighlight } = require('../composables/useHighlight.js');
+const useComments = require('../composables/features/useComments.js');
+const { useHighlightData } = require('../composables/highlights/useHighlightData.js');
+const { useHighlightManager } = require('../composables/highlights/useHighlightManager.js');
 const { smartCommentsEvents, EVENTS } = require('../utils/smartCommentsEvents.js');
 
 module.exports = defineStore('commentsStore', {
@@ -286,7 +287,7 @@ module.exports = defineStore('commentsStore', {
                     smartCommentsEvents.triggerCommentDeleted(comment);
 
                     // Clear highlighting for the deleted comment
-                    const { removeCommentHighlight } = useHighlight();
+                    const { removeCommentHighlight } = useHighlightManager();
                     removeCommentHighlight(comment.id || comment.data_id);
 
                     this.closeCommentDialog();
@@ -329,7 +330,7 @@ module.exports = defineStore('commentsStore', {
                     smartCommentsEvents.triggerCommentCompleted(comment);
 
                     // Clear highlighting for the completed comment
-                    const { removeCommentHighlight } = useHighlight();
+                    const { removeCommentHighlight } = useHighlightManager();
                     removeCommentHighlight(comment.id || comment.data_id);
 
                     // Trigger highlight refresh

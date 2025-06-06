@@ -6,7 +6,7 @@
 const { ref, reactive } = require('vue');
 const { selectionStrategyFactory } = require('../../factories/SelectionStrategyFactory.js');
 const { getMediaWikiContentRoot } = require('./shared/SelectionUtils.js');
-const { SELECTION_TIMEOUTS } = require('./shared/SelectionConstants.js');
+const { SELECTION_TIMEOUTS } = require('../../utils/constants.js');
 
 function useSelection() {
     // State management
