@@ -331,6 +331,55 @@ export default defineComponent({
     }
 }
 
+/* Screenshot creation state - hide all SmartComments styling except active highlight */
+body.smartcomments-creating-screenshot {
+    .smartcomments {
+        *[data-tooltip]:hover:after {
+            display: none;
+        }
+    }
+
+    .sc-dynamic-block {
+        &:hover,
+        &[class*="smartcomment-hl-"]:not(.active) {
+            &:before {
+                display: none;
+            }
+        }
+
+        &.sc-hover {
+            background-color: transparent;
+            outline: none;
+        }
+    }
+
+    *[class^='smartcomment-hl-']:not(.active) {
+        background: transparent;
+        box-shadow: none;
+        padding: 0;
+    }
+
+    .smartcomments-enabled {
+        svg a:not(.active) {
+            rect, path, circle, polygon {
+                stroke: inherit !important;
+                stroke-width: inherit !important;
+                filter: none;
+            }
+            
+            text {
+                font-weight: inherit;
+                filter: none;
+            }
+        }
+
+        .sc-selection-highlight:not(.active) {
+            background-color: transparent;
+            border: none;
+        }
+    }
+}
+
 .smartcomments-enabled {
     svg a {
         cursor: pointer;

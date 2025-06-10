@@ -80,12 +80,14 @@ class BaseSelectionStrategy {
 
         // Handle screenshot if requested
         if (options.captureScreenshot && !selectionData.image) {
+            document.body.classList.add('smartcomments-creating-screenshot');
             try {
                 const element = target?.getBoundingClientRect ? target : null;
                 selectionData.image = await this.screenshot.captureSelectionScreenshot(element, null, event);
             } catch (error) {
                 this.errorHandler.handleScreenshotError(this.selectionType, error, selectionData);
             }
+            document.body.classList.remove('smartcomments-creating-screenshot');
         }
 
         // Validate final selection data

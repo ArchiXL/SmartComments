@@ -14,43 +14,19 @@ function useScreenshot() {
      * @param {Document} clonedDocument - The cloned document being processed for screenshot
      */
     function defaultOnClone(clonedDocument) {
-        // First handle SmartComments styling
-        const allElements = clonedDocument.getElementsByTagName('*');
-        for (let i = 0; i < allElements.length; i++) {
-            const element = allElements[i];
-            const classList = element.classList;
-            // Loop over each class in the element and remove the ones that start with smartcomment-hl-
-            for (let j = classList.length - 1; j >= 0; j--) {
-                if (classList[j].indexOf(SMARTCOMMENTS_CLASSES.HIGHLIGHT) !== -1) {
-                    classList.remove(classList[j]);
+        const svgs = clonedDocument.getElementsByTagName('svg');
+        for (let i = 0; i < svgs.length; i++) {
+            const svg = svgs[i];
+            const image = svg.getElementsByTagName('image');
+            for (let j = 0; j < image.length; j++) {
+                const img = image[j];
+                // Check if the xlink:href or href is an URL that's 
+                // a different domain than the current page, to prevent
+                // CORS issues.
+                const href = img.getAttribute('xlink:href') || img.getAttribute('href');
+                if (href && !href.startsWith(window.location.origin)) {
+                    img.remove();
                 }
-            }
-        }
-
-        // Special handling for SVG elements
-        const svgElements = clonedDocument.getElementsByTagName('svg');
-        for (let i = 0; i < svgElements.length; i++) {
-            const svg = svgElements[i];
-            // Ensure SVG namespace is preserved
-            if (!svg.getAttribute('xmlns')) {
-                svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-            }
-            // Copy all computed styles to inline styles to preserve appearance
-            const computedStyle = window.getComputedStyle(svg);
-            for (let j = 0; j < computedStyle.length; j++) {
-                const prop = computedStyle[j];
-                svg.style[prop] = computedStyle.getPropertyValue(prop);
-            }
-        }
-
-        // Handle SVG links and references
-        const svgLinks = clonedDocument.querySelectorAll('a[*|href]');
-        for (let i = 0; i < svgLinks.length; i++) {
-            const link = svgLinks[i];
-            // Ensure xlink:href is preserved
-            const href = link.getAttributeNS('http://www.w3.org/1999/xlink', 'href');
-            if (href) {
-                link.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', href);
             }
         }
     }
