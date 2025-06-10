@@ -50,9 +50,6 @@
 	"ResourceModules": {
 		"ext.smartcomments.special": {
 			"group": "ext.smartcomments",
-			"styles": [
-				"resources/special/less/smartcomments.less"
-			],
 			"scripts": [
 				"resources/special/js/smartcomments.js"
 			],
@@ -60,92 +57,18 @@
 				"sic-sp-adminbutton-confirm"
 			]
 		},
-		"ext.smartcomments.vue-demi": {
-			"group": "ext.smartcomments",
-			"scripts": [
-				"resources/frontend/upstream/vue-demi.iife.js"
-			]
-		},
-		"ext.smartcomments.pinia": {
-			"group": "ext.smartcomments",
-			"scripts": [
-				"resources/frontend/upstream/pinia.iife.js",
-				"resources/frontend/js/piniaWrapper.js"
-			],
-			"dependencies": [
-				"vue",
-				"ext.smartcomments.vue-demi"
-			],
-			"targets": [
-				"desktop",
-				"mobile"
-			]
-		},
 		"ext.smartcomments.frontend": {
 			"es6": true,
-			"noflip": true,
 			"group": "ext.smartcomments",
-			"packageFiles": [
-				"resources/frontend/js/utils/constants.js",
-				"resources/frontend/js/utils/vueDemiPolyfill.js",
-				"resources/frontend/js/utils/smartCommentsEvents.js",
-				"resources/frontend/js/piniaWrapper.js",
-				"resources/frontend/js/directives/highlightDirective.js",
-				"resources/frontend/js/composables/selection/shared/SelectionConstants.js",
-				"resources/frontend/js/composables/selection/shared/SelectionUtils.js",
-				"resources/frontend/js/composables/selection/shared/SelectionErrorHandler.js",
-				"resources/frontend/js/composables/highlights/shared/HighlightUtils.js",
-				"resources/frontend/js/composables/highlights/shared/HighlightErrorHandler.js",
-				"resources/frontend/js/strategies/BaseSelectionStrategy.js",
-				"resources/frontend/js/factories/SelectionStrategyFactory.js",
-				"resources/frontend/js/strategies/TextSelectionStrategy.js",
-				"resources/frontend/js/strategies/ImageSelectionStrategy.js",
-				"resources/frontend/js/strategies/DynamicBlockSelectionStrategy.js",
-				"resources/frontend/js/strategies/SVGSelectionStrategy.js",
-				"resources/frontend/js/store/userStore.js",
-				"resources/frontend/js/store/appStateStore.js",
-				"resources/frontend/js/store/commentsStore.js",
-				"resources/frontend/js/composables/core/useMessages.js",
-				"resources/frontend/js/composables/core/useCustomProperties.js",
-				"resources/frontend/js/composables/selection/useSelection.js",
-				"resources/frontend/js/composables/selection/index.js",
-				"resources/frontend/js/composables/selection/useSelectionEvents.js",
-				"resources/frontend/js/composables/features/useSelectionScreenshot.js",
-				"resources/frontend/js/composables/highlights/useHighlightData.js",
-				"resources/frontend/js/composables/highlights/useHighlightManager.js",
-				"resources/frontend/js/composables/highlights/useHighlightListeners.js",
-				"resources/frontend/js/composables/highlights/useSelectorHighlight.js",
-				"resources/frontend/js/composables/highlights/useTextHighlight.js",
-				"resources/frontend/js/composables/highlights/useSVGHighlight.js",
-				"resources/frontend/js/composables/highlights/index.js",
-				"resources/frontend/js/composables/highlights/useHighlightOrchestrator.js",
-				"resources/frontend/js/composables/features/useComments.js",
-				"resources/frontend/js/composables/features/useScreenshot.js",
-				"resources/frontend/js/composables/features/useUrlNavigation.js",
-				"resources/frontend/js/composables/features/useLinkPrevention.js",
-				"resources/frontend/js/composables/ui/useKeyboardShortcuts.js",
-				"resources/frontend/js/composables/ui/useHoverEffects.js",
-				"resources/frontend/js/composables/ui/useSmartCommentsEventHandlers.js",
-				"resources/frontend/js/composables/setup/useSmartCommentsSetup.js",
-				"resources/frontend/js/components/CommentBody.vue",
-				"resources/frontend/js/components/CommentMessage.vue",
-				"resources/frontend/js/components/CommentActions.vue",
-				"resources/frontend/js/components/Comment.vue",
-				"resources/frontend/js/components/ReplyForm.vue",
-				"resources/frontend/js/components/ReplyList.vue",
-				"resources/frontend/js/components/CommentTimeline.vue",
-				"resources/frontend/js/components/NewCommentDialog.vue",
-				"resources/frontend/js/SmartComments.vue",
-				"resources/frontend/js/App.js"
+			"scripts": [
+				"resources/frontend/dist/smartcomments.min.js"
 			],
 			"styles": [
-				"resources/frontend/less/smartcomments.less"
+				"resources/frontend/dist/smartcomments.min.css"
 			],
 			"dependencies": [
 				"mediawiki.api",
-				"mediawiki.user",
-				"ext.smartcomments.upstream",
-				"ext.smartcomments.pinia"
+				"mediawiki.user"
 			],
 			"targets": [
 				"desktop",
@@ -196,18 +119,6 @@
 				"sic-link-disabled-warn",
 				"sic-link-comment-highlight-warn",
 				"sic-selection-generic-error"
-			]
-		},
-		"ext.smartcomments.upstream": {
-			"group": "ext.smartcomments",
-			"scripts": [
-				"resources/frontend/upstream/rangy/lib/rangy-core.js",
-				"resources/frontend/upstream/rangy/lib/rangy-classapplier.js",
-				"resources/frontend/upstream/rangy/lib/rangy-highlighter.js",
-				"resources/frontend/upstream/rangy/lib/rangy-serializer.js",
-				"resources/frontend/upstream/rangy/lib/rangy-textrange.js",
-				"resources/frontend/upstream/rangy/lib/rangy-selectionsaverestore.js",
-				"resources/frontend/upstream/html2canvas/dist/html2canvas.js"
 			]
 		}
 	},

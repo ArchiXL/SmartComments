@@ -1,3 +1,4 @@
 vendor
+resources/frontend/node_modules
 .composer.lock
 .sass-cache
