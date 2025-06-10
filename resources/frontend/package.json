@@ -2,7 +2,6 @@
     "name": "@smartcomments/frontend",
     "version": "1.0.0",
     "description": "SmartComments Frontend Library - Vue 3 components and utilities for MediaWiki",
-    "main": "dist/index.js",
     "type": "module",
     "scripts": {
         "dev": "vite build --watch",
@@ -39,13 +38,6 @@
     "files": [
         "dist/"
     ],
-    "exports": {
-        ".": {
-            "import": "./dist/index.js",
-            "require": "./dist/index.js"
-        },
-        "./app": "./dist/js/App.js"
-    },
     "keywords": [
         "vue",
         "pinia",

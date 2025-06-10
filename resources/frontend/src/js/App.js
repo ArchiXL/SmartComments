@@ -24,11 +24,9 @@ window.html2canvas = html2canvas;
 
 // Use MediaWiki's resource loader to ensure dependencies are loaded
 mw.loader.using(['mediawiki.util']).then(() => {
-    console.log('SmartComments: Loading dependencies...');
     const appElement = document.getElementById('smartcomments-app');
 
     if (!appElement) {
-        console.error('SmartComments: Mount element #smartcomments-app not found.');
         mw.log.error('SmartComments: Mount element #smartcomments-app not found.');
         return;
     }
@@ -58,11 +56,10 @@ mw.loader.using(['mediawiki.util']).then(() => {
 
             // Mount the app
             app.mount(appElement);
-            console.log('SmartComments: App successfully mounted');
         }).catch(error => {
-            console.error('SmartComments: Failed to load store:', error);
+            mw.log.error('SmartComments: Failed to load store:', error);
         });
     } catch (error) {
-        console.error('SmartComments: Failed to initialize:', error);
+        mw.log.error('SmartComments: Failed to initialize:', error);
     }
 });
