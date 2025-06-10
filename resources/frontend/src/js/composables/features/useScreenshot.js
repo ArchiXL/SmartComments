@@ -99,13 +99,11 @@ function useScreenshot() {
      * Adapts dimensions and scale based on selection.
      * @param {Object} currentSelPos - current selection's end position {x, y}
      * @param {Object} currentStartPos - current selection's start position {x, y}
-     * @param {String} currentSelText - current selection's text content
      * @returns {Promise<string|null>} - Promise resolving to canvas data URL or null.
      */
-    async function screenshotSelectionArea(currentSelPos, currentStartPos, currentSelText) {
+    async function screenshotSelectionArea(currentSelPos, currentStartPos) {
         const minMaxWidth = 500;
         const minMaxHeight = 50;
-        const maxChars = 45;
 
         let width = currentSelPos.x - currentStartPos.x;
         let height = currentSelPos.y - currentStartPos.y;

@@ -82,7 +82,7 @@ class BaseSelectionStrategy {
         if (options.captureScreenshot && !selectionData.image) {
             try {
                 const element = target?.getBoundingClientRect ? target : null;
-                selectionData.image = await this.screenshot.captureSelectionScreenshot(element);
+                selectionData.image = await this.screenshot.captureSelectionScreenshot(element, null, event);
             } catch (error) {
                 this.errorHandler.handleScreenshotError(this.selectionType, error, selectionData);
             }

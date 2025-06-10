@@ -28,25 +28,21 @@ export function useSelection() {
      * @returns {Promise<Object|null>} - Selection result
      */
     async function processSelection(target, event, options = {}) {
-        console.log('processSelection', target, event, options);
         if (isCapturing.value) {
             console.warn('Selection processing already in progress');
             return null;
         }
 
         isCapturing.value = true;
-        console.log('isCapturing', isCapturing.value);
 
         try {
             // Use factory to process selection with appropriate strategy
             const selectionData = await selectionStrategyFactory.processSelection(target, event, options);
-            console.log('selectionData', selectionData);
             if (selectionData) {
                 // Update state
                 currentSelection.value = selectionData;
                 updateSelectionState(selectionData, event);
                 isSelectionActive.value = true;
-                console.log('isSelectionActive', isSelectionActive.value);
                 return selectionData;
             }
 

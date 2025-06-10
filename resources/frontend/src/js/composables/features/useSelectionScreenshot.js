@@ -3,28 +3,24 @@
  * Provides functionality to capture and process screenshots of selected content
  */
 import useScreenshot from './useScreenshot.js';
-import { SCREENSHOT_CONFIG } from '../selection/shared/SelectionConstants.js';
 
 function useSelectionScreenshot() {
-    const { takeScreenshot } = useScreenshot();
+    const { screenshotSelectionArea } = useScreenshot();
 
     /**
      * Capture screenshot of selected content
      * @param {Element} element - Element to capture
      * @param {Object} options - Screenshot options
+     * @param {Event} event - Mouse event
      * @returns {Promise<string>} - Base64 encoded screenshot
      */
-    const captureSelectionScreenshot = async (element, options = {}) => {
-        const defaultOptions = {
-            quality: SCREENSHOT_CONFIG.DEFAULT_QUALITY,
-            format: SCREENSHOT_CONFIG.DEFAULT_FORMAT,
-            delay: SCREENSHOT_CONFIG.CAPTURE_DELAY
-        };
-
-        const mergedOptions = { ...defaultOptions, ...options };
-
+    const captureSelectionScreenshot = async (element, options = {}, event) => {
         try {
-            return await takeScreenshot(element, mergedOptions);
+            const pos = {
+                x: event.clientX,
+                y: event.clientY
+            };
+            return await screenshotSelectionArea(pos, pos);
         } catch (error) {
             console.error('Failed to capture selection screenshot:', error);
             return null;
