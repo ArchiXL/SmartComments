@@ -4,16 +4,16 @@
  */
 
 export const SELECTION_TIMEOUTS = {
-    TEXT_SELECTION_DELAY: 1, // ms delay for text selection processing
-    SCREENSHOT_TIMEOUT: 5000, // ms timeout for screenshot operations
-    VALIDATION_TIMEOUT: 1000 // ms timeout for validation operations
+    TEXT_SELECTION_DELAY: 10,
+    SCREENSHOT_TIMEOUT: 1000,
+    VALIDATION_TIMEOUT: 1000
 };
 
 export const SELECTION_LIMITS = {
-    MAX_TEXT_LENGTH: 10000, // Maximum characters in text selection
-    MAX_HTML_LENGTH: 50000, // Maximum HTML content length
-    MIN_TEXT_LENGTH: 1, // Minimum meaningful text length
-    MAX_SEARCH_ITERATIONS: 1000 // Maximum iterations for text search
+    MAX_TEXT_LENGTH: 10000,
+    MAX_HTML_LENGTH: 50000,
+    MIN_TEXT_LENGTH: 1,
+    MAX_SEARCH_ITERATIONS: 1000
 };
 
 export const SELECTION_PATTERNS = {
@@ -46,9 +46,9 @@ export const SELECTION_ERRORS = {
 export const SCREENSHOT_CONFIG = {
     DEFAULT_QUALITY: 0.8,
     DEFAULT_FORMAT: 'image/png',
-    CAPTURE_DELAY: 100, // ms delay before screenshot capture
+    CAPTURE_DELAY: 10,
     RETRY_ATTEMPTS: 3,
-    RETRY_DELAY: 500 // ms delay between retries
+    RETRY_DELAY: 500
 };
 
 export default {

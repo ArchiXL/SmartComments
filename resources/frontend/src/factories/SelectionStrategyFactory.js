@@ -7,6 +7,7 @@ import { TextSelectionStrategy } from '../strategies/TextSelectionStrategy.js';
 import { ImageSelectionStrategy } from '../strategies/ImageSelectionStrategy.js';
 import { SVGSelectionStrategy } from '../strategies/SVGSelectionStrategy.js';
 import { DynamicBlockSelectionStrategy } from '../strategies/DynamicBlockSelectionStrategy.js';
+import { SMARTCOMMENTS_CLASSES } from '../utils/constants.js';
 
 class SelectionStrategyFactory {
     constructor() {
@@ -148,6 +149,12 @@ class SelectionStrategyFactory {
      */
     async processSelection(target, event, options = {}) {
         this.ensureInitialized();
+
+        // check if the target has a comment already, if so, return null
+        // to prevent multiple comments from being created
+        if (event?.target?.closest(`[class*="${SMARTCOMMENTS_CLASSES.HIGHLIGHT}"]`)) {
+            return null;
+        }
 
         const strategy = this.determineStrategy(target, event);
         if (!strategy) {
