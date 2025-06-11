@@ -60,6 +60,11 @@ function useLinkPrevention() {
                 return;
             }
 
+            // Don't prevent clicks on editsection links
+            if (target.closest('.mw-editsection')) {
+                return;
+            }
+
             // Check if this is a click directly on a comment highlight
             if (target.closest(`[class*="${SMARTCOMMENTS_CLASSES.HIGHLIGHT}"]`) ||
                 link.classList.toString().includes(SMARTCOMMENTS_CLASSES.HIGHLIGHT)) {
