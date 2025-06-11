@@ -31,7 +31,7 @@ export default defineConfig(({ command }) => ({
         sourcemap: true,
         emptyOutDir: true,
         lib: {
-            entry: resolve(__dirname, 'src/js/App.js'),
+            entry: resolve(__dirname, 'src/App.js'),
             formats: ['iife'],
             name: 'SmartComments',
             fileName: () => 'smartcomments.min.js'
