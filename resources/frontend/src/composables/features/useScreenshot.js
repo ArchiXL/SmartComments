@@ -1,5 +1,6 @@
 import { reactive, ref } from 'vue';
 import { SMARTCOMMENTS_CLASSES, getMediaWikiContentRoot } from '../../utils/constants.js';
+import html2canvas from 'html2canvas';
 
 /**
  * Composable for handling screenshot functionality.

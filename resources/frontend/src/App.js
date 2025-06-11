@@ -8,7 +8,7 @@ import 'rangy/lib/rangy-classapplier';
 import 'rangy/lib/rangy-highlighter';
 import 'rangy/lib/rangy-serializer';
 import 'rangy/lib/rangy-textrange';
-import 'rangy/lib/rangy-selectionsaverestore';
+//import 'rangy/lib/rangy-selectionsaverestore';
 
 // Make rangy globally available
 window.rangy = rangy;
@@ -16,11 +16,6 @@ window.rangy = rangy;
 // Initialize rangy
 rangy.init();
 
-// Import html2canvas
-import html2canvas from 'html2canvas';
-
-// Make html2canvas available globally since it might be needed by other modules
-window.html2canvas = html2canvas;
 
 // Use MediaWiki's resource loader to ensure dependencies are loaded
 mw.loader.using(['mediawiki.util']).then(() => {
