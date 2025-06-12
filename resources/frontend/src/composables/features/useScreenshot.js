@@ -1,118 +1,205 @@
-import { reactive, ref } from 'vue';
-import { SMARTCOMMENTS_CLASSES, getMediaWikiContentRoot } from '../../utils/constants.js';
-import html2canvas from 'html2canvas';
+import { reactive, ref } from "vue";
+import {
+	SMARTCOMMENTS_CLASSES,
+	getMediaWikiContentRoot,
+	SCREENSHOT_CONFIG,
+} from "../../utils/constants.js";
+import { findCurrentScreenshotTarget } from "../../utils/screenshotTargetManager.js";
+import html2canvas from "html2canvas";
 
 /**
  * Composable for handling screenshot functionality.
  */
 function useScreenshot() {
-    const selectionPosition = reactive({ x: 0, y: 0 });
-    const startPosition = reactive({ x: 0, y: 0 });
-    const currentSelectionTextLength = ref(0);
+	const selectionPosition = reactive({ x: 0, y: 0 });
+	const startPosition = reactive({ x: 0, y: 0 });
+	const currentSelectionTextLength = ref(0);
 
-    /**
-     * Default onclone function for screenshots that handles SmartComments styling.
-     * @param {Document} clonedDocument - The cloned document being processed for screenshot
-     */
-    function defaultOnClone(clonedDocument) {
-        const svgs = clonedDocument.getElementsByTagName('svg');
-        for (let i = 0; i < svgs.length; i++) {
-            const svg = svgs[i];
-            const image = svg.getElementsByTagName('image');
-            for (let j = 0; j < image.length; j++) {
-                const img = image[j];
-                // Check if the xlink:href or href is an URL that's 
-                // a different domain than the current page, to prevent
-                // CORS issues.
-                const href = img.getAttribute('xlink:href') || img.getAttribute('href');
-                if (href && !href.startsWith(window.location.origin)) {
-                    img.remove();
-                }
-            }
-        }
-    }
+	/**
+	 * Default onclone function for screenshots that handles SmartComments styling.
+	 * @param {Document} clonedDocument - The cloned document being processed for screenshot
+	 */
+	function defaultOnClone(clonedDocument) {
+		const svgs = clonedDocument.getElementsByTagName("svg");
+		for (let i = 0; i < svgs.length; i++) {
+			const svg = svgs[i];
+			const image = svg.getElementsByTagName("image");
+			for (let j = 0; j < image.length; j++) {
+				const img = image[j];
+				// Check if the xlink:href or href is an URL that's
+				// a different domain than the current page, to prevent
+				// CORS issues.
+				const href = img.getAttribute("xlink:href") || img.getAttribute("href");
+				if (href && !href.startsWith(window.location.origin)) {
+					img.remove();
+				}
+			}
+		}
+	}
 
-    /**
-     * Generic screenshot utility function.
-     * @param {string|Element} element - Element to screenshot or "default" (for mw-content-text).
-     * @param {Object} options - html2canvas options.
-     * @returns {Promise<string|null>} - Promise resolving to canvas data URL or null on error.
-     */
-    async function takeScreenshot(element, options = {}) {
-        const targetElement = element === "default" ?
-            getMediaWikiContentRoot() :
-            (typeof element === 'string' ? document.querySelector(element) : element);
+	/**
+	 * Create a fixed-size canvas from the original screenshot
+	 * @param {HTMLCanvasElement} originalCanvas - Original screenshot canvas
+	 * @returns {HTMLCanvasElement} - Resized canvas with fixed dimensions
+	 */
+	function createFixedSizeCanvas(originalCanvas) {
+		const fixedCanvas = document.createElement("canvas");
+		const ctx = fixedCanvas.getContext("2d");
 
-        if (!targetElement) {
-            console.error('Screenshot target element not found:', element);
-            return null;
-        }
+		// Set fixed dimensions
+		const targetWidth = SCREENSHOT_CONFIG.FIXED_WIDTH;
+		let targetHeight = Math.min(
+			(originalCanvas.height * targetWidth) / originalCanvas.width,
+			SCREENSHOT_CONFIG.MAX_HEIGHT,
+		);
 
-        if (typeof html2canvas === 'undefined') {
-            console.error('html2canvas library not available');
-            return null;
-        }
+		// Ensure minimum height
+		targetHeight = Math.max(targetHeight, SCREENSHOT_CONFIG.MIN_HEIGHT);
 
-        try {
-            // Use default onclone if not provided in options
-            const finalOptions = {
-                onclone: defaultOnClone,
-                ...options
-            };
+		fixedCanvas.width = targetWidth;
+		fixedCanvas.height = targetHeight;
 
-            const canvas = await html2canvas(targetElement, finalOptions);
-            canvas.classList.add(SMARTCOMMENTS_CLASSES.CANVAS);
-            const dataURL = canvas.toDataURL("image/jpeg");
-            canvas.remove();
-            return dataURL;
-        } catch (error) {
-            console.error('Screenshot failed:', error);
-            return null;
-        }
-    }
+		// Fill with white background
+		ctx.fillStyle = "#ffffff";
+		ctx.fillRect(0, 0, targetWidth, targetHeight);
 
-    /**
-     * Takes a screenshot of the current selection area.
-     * Adapts dimensions and scale based on selection.
-     * @param {Object} currentSelPos - current selection's end position {x, y}
-     * @param {Object} currentStartPos - current selection's start position {x, y}
-     * @returns {Promise<string|null>} - Promise resolving to canvas data URL or null.
-     */
-    async function screenshotSelectionArea(currentSelPos, currentStartPos) {
-        const minMaxWidth = 500;
-        const minMaxHeight = 50;
+		// Calculate scaling to fit image within fixed dimensions while maintaining aspect ratio
+		const scaleX = targetWidth / originalCanvas.width;
+		const scaleY = targetHeight / originalCanvas.height;
+		const scale = Math.min(scaleX, scaleY);
 
-        let width = currentSelPos.x - currentStartPos.x;
-        let height = currentSelPos.y - currentStartPos.y;
+		const scaledWidth = originalCanvas.width * scale;
+		const scaledHeight = originalCanvas.height * scale;
 
-        // Ensure minimum/maximum dimensions for the screenshot viewport
-        width = Math.max(minMaxWidth, Math.min(width, minMaxWidth));
-        height = Math.max(minMaxHeight, Math.min(height, minMaxHeight));
+		// Center the image in the canvas
+		const x = (targetWidth - scaledWidth) / 2;
+		const y = (targetHeight - scaledHeight) / 2;
 
-        // Calculate center position of the selection
-        const x = currentSelPos.x - (currentSelPos.x - currentStartPos.x) / 2;
-        const y = currentSelPos.y - (currentSelPos.y - currentStartPos.y) / 2;
+		// Draw the scaled image
+		ctx.drawImage(originalCanvas, x, y, scaledWidth, scaledHeight);
 
-        const screenshotOptions = {
-            x: x - width / 2,
-            y: y - height / 2,
-            width: width,
-            height: height,
-            scale: 1,
-            onclone: defaultOnClone
-        };
+		return fixedCanvas;
+	}
 
-        return takeScreenshot(document.body, screenshotOptions);
-    }
+	/**
+	 * Generic screenshot utility function.
+	 * @param {string|Element} element - Element to screenshot or "default" (for mw-content-text).
+	 * @param {Object} options - html2canvas options.
+	 * @returns {Promise<string|null>} - Promise resolving to canvas data URL or null on error.
+	 */
+	async function takeScreenshot(element, options = {}) {
+		const targetElement =
+			element === "default"
+				? getMediaWikiContentRoot()
+				: typeof element === "string"
+					? document.querySelector(element)
+					: element;
 
-    // Expose methods
-    return {
-        takeScreenshot,
-        screenshotSelectionArea,
-        selectionPosition,
-        startPosition,
-        currentSelectionTextLength
-    };
+		if (!targetElement) {
+			console.error("Screenshot target element not found:", element);
+			return null;
+		}
+
+		if (typeof html2canvas === "undefined") {
+			console.error("html2canvas library not available");
+			return null;
+		}
+
+		try {
+			// Use default onclone if not provided in options
+			const finalOptions = {
+				onclone: defaultOnClone,
+				...options,
+			};
+
+			const originalCanvas = await html2canvas(targetElement, finalOptions);
+
+			// Create fixed-size canvas from the original
+			const fixedCanvas = createFixedSizeCanvas(originalCanvas);
+			fixedCanvas.classList.add(SMARTCOMMENTS_CLASSES.CANVAS);
+
+			// Get data URL from fixed-size canvas
+			const dataURL = fixedCanvas.toDataURL(
+				SCREENSHOT_CONFIG.DEFAULT_FORMAT,
+				SCREENSHOT_CONFIG.DEFAULT_QUALITY,
+			);
+
+			// Clean up canvases
+			originalCanvas.remove();
+			fixedCanvas.remove();
+
+			return dataURL;
+		} catch (error) {
+			console.error("Screenshot failed:", error);
+			return null;
+		}
+	}
+
+	/**
+	 * Takes a screenshot of the screenshot target element.
+	 * @returns {Promise<string|null>} - Promise resolving to canvas data URL or null.
+	 */
+	async function screenshotTargetElement() {
+		// Find the element with sc-screenshot-target class
+		const targetElement = findCurrentScreenshotTarget();
+
+		if (!targetElement) {
+			return null;
+		}
+
+		return takeScreenshot(targetElement);
+	}
+
+	/**
+	 * Takes a screenshot of the current selection area.
+	 * Adapts dimensions and scale based on selection.
+	 * @param {Object} currentSelPos - current selection's end position {x, y}
+	 * @param {Object} currentStartPos - current selection's start position {x, y}
+	 * @returns {Promise<string|null>} - Promise resolving to canvas data URL or null.
+	 */
+	async function screenshotSelectionArea(currentSelPos, currentStartPos) {
+		// First try to use the screenshot target element
+		const targetScreenshot = await screenshotTargetElement();
+		if (targetScreenshot) {
+			return targetScreenshot;
+		}
+
+		// Fallback to position-based screenshot if no target element found
+		const minMaxWidth = 500;
+		const minMaxHeight = 50;
+
+		let width = currentSelPos.x - currentStartPos.x;
+		let height = currentSelPos.y - currentStartPos.y;
+
+		// Ensure minimum/maximum dimensions for the screenshot viewport
+		width = Math.max(minMaxWidth, Math.min(width, minMaxWidth));
+		height = Math.max(minMaxHeight, Math.min(height, minMaxHeight));
+
+		// Calculate center position of the selection
+		const x = currentSelPos.x - (currentSelPos.x - currentStartPos.x) / 2;
+		const y = currentSelPos.y - (currentSelPos.y - currentStartPos.y) / 2;
+
+		const screenshotOptions = {
+			x: x - width / 2,
+			y: y - height / 2,
+			width: width,
+			height: height,
+			scale: 1,
+			onclone: defaultOnClone,
+		};
+
+		return takeScreenshot(document.body, screenshotOptions);
+	}
+
+	// Expose methods
+	return {
+		takeScreenshot,
+		screenshotSelectionArea,
+		screenshotTargetElement,
+		selectionPosition,
+		startPosition,
+		currentSelectionTextLength,
+	};
 }
 
-export default useScreenshot; 
+export default useScreenshot;

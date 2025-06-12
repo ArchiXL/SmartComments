@@ -10,21 +10,21 @@
  * @param {string} fallback - Optional fallback text if message is not found
  * @returns {string} The localized message
  */
-function getMessage(key, params = [], fallback = '') {
-    if (typeof mw !== 'undefined' && mw.msg) {
-        try {
-            const message = mw.msg(key, ...params);
-            // Check if the message was found (MediaWiki returns the key if not found)
-            if (message !== key) {
-                return message;
-            }
-        } catch (e) {
-            console.warn(`Error getting message for key "${key}":`, e);
-        }
-    }
+function getMessage( key, params = [], fallback = "" ) {
+	if ( typeof mw !== "undefined" && mw.msg ) {
+		try {
+			const message = mw.msg( key, ...params );
+			// Check if the message was found (MediaWiki returns the key if not found)
+			if ( message !== key ) {
+				return message;
+			}
+		} catch ( e ) {
+			console.warn( `Error getting message for key "${key}":`, e );
+		}
+	}
 
-    // Return fallback or the key itself as last resort
-    return fallback || key;
+	// Return fallback or the key itself as last resort
+	return fallback || key;
 }
 
 /**
@@ -32,105 +32,105 @@ function getMessage(key, params = [], fallback = '') {
  * @returns {Object} Message helper functions
  */
 function useMessages() {
-    /**
-     * Get a message with parameters
-     */
-    const msg = (key, ...params) => {
-        return getMessage(key, params);
-    };
+	/**
+	 * Get a message with parameters
+	 */
+	const msg = ( key, ...params ) => {
+		return getMessage( key, params );
+	};
 
-    /**
-     * Get a message with fallback
-     */
-    const msgWithFallback = (key, fallback, ...params) => {
-        return getMessage(key, params, fallback);
-    };
+	/**
+	 * Get a message with fallback
+	 */
+	const msgWithFallback = ( key, fallback, ...params ) => {
+		return getMessage( key, params, fallback );
+	};
 
-    /**
-     * Check if a message exists
-     */
-    const hasMessage = (key) => {
-        if (typeof mw !== 'undefined' && mw.msg) {
-            try {
-                const message = mw.msg(key);
-                return message !== key;
-            } catch (e) {
-                return false;
-            }
-        }
-        return false;
-    };
+	/**
+	 * Check if a message exists
+	 */
+	const hasMessage = ( key ) => {
+		if ( typeof mw !== "undefined" && mw.msg ) {
+			try {
+				const message = mw.msg( key );
+				return message !== key;
+			} catch ( e ) {
+				return false;
+			}
+		}
+		return false;
+	};
 
-    /**
-     * Common message getters for frequently used strings
-     */
-    const messages = {
-        // Buttons
-        save: () => msg('sic-button-save'),
-        cancel: () => msg('sic-button-cancel'),
-        close: () => msg('sic-button-close'),
-        complete: () => msg('sic-button-complete'),
-        delete: () => msg('sic-button-delete'),
-        edit: () => msg('sic-button-edit'),
-        reopen: () => msg('sic-button-reopen'),
-        overview: () => msg('sic-button-overview'),
-        newComment: () => msg('sic-button-new-comment'),
-        newReply: () => msg('sic-button-new-reply'),
+	/**
+	 * Common message getters for frequently used strings
+	 */
+	const messages = {
+		// Buttons
+		save: () => msg( "sic-button-save" ),
+		cancel: () => msg( "sic-button-cancel" ),
+		close: () => msg( "sic-button-close" ),
+		complete: () => msg( "sic-button-complete" ),
+		delete: () => msg( "sic-button-delete" ),
+		edit: () => msg( "sic-button-edit" ),
+		reopen: () => msg( "sic-button-reopen" ),
+		overview: () => msg( "sic-button-overview" ),
+		newComment: () => msg( "sic-button-new-comment" ),
+		newReply: () => msg( "sic-button-new-reply" ),
 
-        // Input labels
-        commentInput: () => msg('sic-input-newcomment'),
-        replyInput: () => msg('sic-input-commenttext'),
+		// Input labels
+		commentInput: () => msg( "sic-input-newcomment" ),
+		replyInput: () => msg( "sic-input-commenttext" ),
 
-        // Titles
-        newCommentTitle: () => msg('sic-title-new'),
+		// Titles
+		newCommentTitle: () => msg( "sic-title-new" ),
 
-        // Errors
-        errorTitle: () => msg('sic-error-title'),
-        errorEmpty: () => msg('sic-error-empty'),
-        apiError: () => msg('api-error'),
+		// Errors
+		errorTitle: () => msg( "sic-error-title" ),
+		errorEmpty: () => msg( "sic-error-empty" ),
+		apiError: () => msg( "api-error" ),
 
-        // Status messages
-        justNow: () => msg('sic-date-justnow'),
-        commentAdded: () => msg('sic-added-comment'),
-        commentAddedRefreshing: () => msg('sic-added-comment-refreshing'),
+		// Status messages
+		justNow: () => msg( "sic-date-justnow" ),
+		commentAdded: () => msg( "sic-added-comment" ),
+		commentAddedRefreshing: () => msg( "sic-added-comment-refreshing" ),
 
-        // Special messages
-        unlocalizedComment: () => msg('sic-unlocalized-comment'),
+		// Special messages
+		unlocalizedComment: () => msg( "sic-unlocalized-comment" ),
 
-        // Selection errors
-        selectionError1: () => msg('sic-selection-error-1'),
-        selectionError2: () => msg('sic-selection-error-2'),
-        selectionError3: () => msg('sic-selection-error-3'),
-        selectionError4: () => msg('sic-selection-error-4'),
-        selectionError5: () => msg('sic-selection-error-5'),
+		// Selection errors
+		selectionError1: () => msg( "sic-selection-error-1" ),
+		selectionError2: () => msg( "sic-selection-error-2" ),
+		selectionError3: () => msg( "sic-selection-error-3" ),
+		selectionError4: () => msg( "sic-selection-error-4" ),
+		selectionError5: () => msg( "sic-selection-error-5" ),
 
-        // Reply form messages
-        replyHeader: () => msg('sic-reply-header'),
-        replyPlaceholder: () => msg('sic-reply-placeholder'),
-        replySubmit: () => msg('sic-reply-submit'),
+		// Reply form messages
+		replyHeader: () => msg( "sic-reply-header" ),
+		replyPlaceholder: () => msg( "sic-reply-placeholder" ),
+		replySubmit: () => msg( "sic-reply-submit" ),
 
-        // Comment actions
-        previousComment: () => msg('sic-previous-comment'),
-        nextComment: () => msg('sic-next-comment'),
-        actions: () => msg('sic-actions'),
-        markComplete: () => msg('sic-mark-complete'),
-        markDelete: () => msg('sic-mark-delete'),
-        viewOverview: () => msg('sic-view-overview'),
+		// Comment actions
+		previousComment: () => msg( "sic-previous-comment" ),
+		nextComment: () => msg( "sic-next-comment" ),
+		actions: () => msg( "sic-actions" ),
+		markComplete: () => msg( "sic-mark-complete" ),
+		markDelete: () => msg( "sic-mark-delete" ),
+		viewOverview: () => msg( "sic-view-overview" ),
 
-        // Link prevention messages
-        linkDisabledWarn: () => msg('sic-link-disabled-warn'),
-        linkCommentHighlightWarn: () => msg('sic-link-comment-highlight-warn'),
+		// Link prevention messages
+		linkDisabledWarn: () => msg( "sic-link-disabled-warn" ),
+		linkCommentHighlightWarn: () => msg( "sic-link-comment-highlight-warn" ),
 
-        // Generic error messages
-        selectionGenericError: () => msg('sic-selection-generic-error'),
-    };
+		// Generic error messages
+		selectionGenericError: () => msg( "sic-selection-generic-error" ),
+	};
 
-    return {
-        msg,
-        msgWithFallback,
-        hasMessage,
-        messages
-    };
+	return {
+		msg,
+		msgWithFallback,
+		hasMessage,
+		messages,
+	};
 }
 
-export default useMessages; 
+export default useMessages;

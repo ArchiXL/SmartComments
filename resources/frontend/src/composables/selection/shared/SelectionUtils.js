@@ -3,9 +3,18 @@
  * Maintains compatibility with PHP backend expectations
  * Enhanced with security fixes and performance improvements
  */
-import { useAppStateStore } from '../../../store/appStateStore.js';
-import { CONTENT_ROOT_SELECTORS, SELECTION_VALIDATION, SMARTCOMMENTS_CLASSES, getMediaWikiContentRoot } from '../../../utils/constants.js';
-import { SELECTION_PATTERNS, SELECTION_LIMITS, SELECTION_CLASSES } from './SelectionConstants.js';
+import {useAppStateStore} from "../../../store/appStateStore.js";
+import {
+	CONTENT_ROOT_SELECTORS,
+	SELECTION_VALIDATION,
+	SMARTCOMMENTS_CLASSES,
+	getMediaWikiContentRoot,
+} from "../../../utils/constants.js";
+import {
+	SELECTION_PATTERNS,
+	SELECTION_LIMITS,
+	SELECTION_CLASSES,
+} from "./SelectionConstants.js";
 
 // Cache for frequently accessed elements
 const elementCache = new Map();
@@ -16,27 +25,29 @@ const CACHE_TTL = 30000; // 30 seconds
  * @returns {boolean} - Whether rangy was successfully initialized
  */
 export function initializeRangy() {
-    // Check if rangy is already initialized
-    if (window.rangy && window.rangy.initialized) {
-        return true;
-    }
+	// Check if rangy is already initialized
+	if ( window.rangy && window.rangy.initialized ) {
+		return true;
+	}
 
-    // Check if rangy is available
-    if (typeof window.rangy === 'undefined') {
-        console.error('Rangy library not found. Text selection may not work properly.');
-        return false;
-    }
+	// Check if rangy is available
+	if ( typeof window.rangy === "undefined" ) {
+		console.error(
+			"Rangy library not found. Text selection may not work properly.",
+		);
+		return false;
+	}
 
-    try {
-        // Initialize rangy if not already initialized
-        if (!window.rangy.initialized && window.rangy.init) {
-            window.rangy.init();
-        }
-        return true;
-    } catch (error) {
-        console.error('Failed to initialize Rangy:', error);
-        return false;
-    }
+	try {
+		// Initialize rangy if not already initialized
+		if ( !window.rangy.initialized && window.rangy.init ) {
+			window.rangy.init();
+		}
+		return true;
+	} catch ( error ) {
+		console.error( "Failed to initialize Rangy:", error );
+		return false;
+	}
 }
 
 /**
@@ -45,63 +56,66 @@ export function initializeRangy() {
  * @param {*} selection - Rangy selection, HTML string, or DOM element
  * @returns {number} - Validation result code from SELECTION_VALIDATION
  */
-export function validateSelectionContent(selection) {
-    let selectionHTML;
+export function validateSelectionContent( selection ) {
+	let selectionHTML;
 
-    if (typeof selection === 'string') {
-        selectionHTML = sanitizeHTMLForValidation(selection);
-    } else if (selection && typeof selection.toHtml === 'function') {
-        selectionHTML = sanitizeHTMLForValidation(selection.toHtml());
-    } else if (selection && typeof selection.toString === 'function') {
-        // For rangy range objects, toString() gives the plain text
-        selectionHTML = selection.toString();
+	if ( typeof selection === "string" ) {
+		selectionHTML = sanitizeHTMLForValidation( selection );
+	} else if ( selection && typeof selection.toHtml === "function" ) {
+		selectionHTML = sanitizeHTMLForValidation( selection.toHtml() );
+	} else if ( selection && typeof selection.toString === "function" ) {
+		// For rangy range objects, toString() gives the plain text
+		selectionHTML = selection.toString();
 
-        // For empty strings, check if it's a range around an element (like image)
-        if (!selectionHTML && selection.commonAncestorContainer &&
-            selection.commonAncestorContainer.nodeType === Node.ELEMENT_NODE) {
-            const container = selection.commonAncestorContainer;
-            if (container.querySelector('img')) {
-                selectionHTML = sanitizeHTMLForValidation(container.outerHTML);
-            }
-        }
-    } else {
-        return SELECTION_VALIDATION.EMPTY;
-    }
+		// For empty strings, check if it's a range around an element (like image)
+		if (
+			!selectionHTML &&
+			selection.commonAncestorContainer &&
+			selection.commonAncestorContainer.nodeType === Node.ELEMENT_NODE
+		) {
+			const container = selection.commonAncestorContainer;
+			if ( container.querySelector( "img" ) ) {
+				selectionHTML = sanitizeHTMLForValidation( container.outerHTML );
+			}
+		}
+	} else {
+		return SELECTION_VALIDATION.EMPTY;
+	}
 
-    // Check if empty (after sanitization)
-    if (!selectionHTML || selectionHTML.trim() === '') {
-        return SELECTION_VALIDATION.EMPTY;
-    }
+	// Check if empty (after sanitization)
+	if ( !selectionHTML || selectionHTML.trim() === "" ) {
+		return SELECTION_VALIDATION.EMPTY;
+	}
 
-    // Check length limits
-    if (selectionHTML.length > SELECTION_LIMITS.MAX_HTML_LENGTH) {
-        console.warn(`Selection too long: ${selectionHTML.length} characters`);
-        return SELECTION_VALIDATION.HTML_CONTENT; // Treat as invalid HTML
-    }
+	// Check length limits
+	if ( selectionHTML.length > SELECTION_LIMITS.MAX_HTML_LENGTH ) {
+		console.warn( `Selection too long: ${selectionHTML.length} characters` );
+		return SELECTION_VALIDATION.HTML_CONTENT; // Treat as invalid HTML
+	}
 
-    // Check for existing comments
-    if (selectionHTML.includes(SELECTION_CLASSES.PERMANENT_HIGHLIGHT)) {
-        return SELECTION_VALIDATION.ALREADY_COMMENTED;
-    }
+	// Check for existing comments
+	if ( selectionHTML.includes( SELECTION_CLASSES.PERMANENT_HIGHLIGHT ) ) {
+		return SELECTION_VALIDATION.ALREADY_COMMENTED;
+	}
 
-    // Check for dynamic content with enhanced logic
-    if (containsDynamicContent(selectionHTML)) {
-        return SELECTION_VALIDATION.DYNAMIC_CONTENT;
-    }
+	// Check for dynamic content with enhanced logic
+	if ( containsDynamicContent( selectionHTML ) ) {
+		return SELECTION_VALIDATION.DYNAMIC_CONTENT;
+	}
 
-    // Check for line breaks (relevant for text selections)
-    if (selection.constructor && selection.constructor.name === 'Range') {
-        if (SELECTION_PATTERNS.LINEBREAK_REGEX.test(selection.toString())) {
-            return SELECTION_VALIDATION.LINEBREAKS;
-        }
-    }
+	// Check for line breaks (relevant for text selections)
+	if ( selection.constructor && selection.constructor.name === "Range" ) {
+		if ( SELECTION_PATTERNS.LINEBREAK_REGEX.test( selection.toString() ) ) {
+			return SELECTION_VALIDATION.LINEBREAKS;
+		}
+	}
 
-    // Check for HTML content in text selections
-    if (selectionHTML && SELECTION_PATTERNS.HTML_TAG_REGEX.test(selectionHTML)) {
-        return SELECTION_VALIDATION.HTML_CONTENT;
-    }
+	// Check for HTML content in text selections
+	if ( selectionHTML && SELECTION_PATTERNS.HTML_TAG_REGEX.test( selectionHTML ) ) {
+		return SELECTION_VALIDATION.HTML_CONTENT;
+	}
 
-    return SELECTION_VALIDATION.VALID;
+	return SELECTION_VALIDATION.VALID;
 }
 
 /**
@@ -109,27 +123,28 @@ export function validateSelectionContent(selection) {
  * @param {string} html - Raw HTML content
  * @returns {string} - Sanitized HTML
  */
-export function sanitizeHTMLForValidation(html) {
-    if (typeof html !== 'string') {
-        return '';
-    }
+export function sanitizeHTMLForValidation( html ) {
+	if ( typeof html !== "string" ) {
+		return "";
+	}
 
-    // Remove script tags and dangerous attributes
-    let sanitized = html
-        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-        .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-        .replace(/javascript:/gi, '')
-        .replace(/on\w+\s*=/gi, '')
-        .replace(/vbscript:/gi, '')
-        .replace(/data:/gi, '')
-        .trim();
+	// Remove script tags and dangerous attributes
+	let sanitized = html
+		.replace( /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "" )
+		.replace( /<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "" )
+		.replace( /javascript:/gi, "" )
+		.replace( /on\w+\s*=/gi, "" )
+		.replace( /vbscript:/gi, "" )
+		.replace( /data:/gi, "" )
+		.trim();
 
-    // Limit length for performance
-    if (sanitized.length > SELECTION_LIMITS.MAX_HTML_LENGTH) {
-        sanitized = sanitized.substring(0, SELECTION_LIMITS.MAX_HTML_LENGTH) + '...';
-    }
+	// Limit length for performance
+	if ( sanitized.length > SELECTION_LIMITS.MAX_HTML_LENGTH ) {
+		sanitized =
+			sanitized.substring( 0, SELECTION_LIMITS.MAX_HTML_LENGTH ) + "...";
+	}
 
-    return sanitized;
+	return sanitized;
 }
 
 /**
@@ -137,32 +152,38 @@ export function sanitizeHTMLForValidation(html) {
  * @param {string} html - HTML content to check
  * @returns {boolean} - Whether HTML contains problematic dynamic content
  */
-export function containsDynamicContent(html) {
-    if (!html) return false;
+export function containsDynamicContent( html ) {
+	if ( !html ) return false;
 
-    // Create a safe DOM parser for checking structure
-    const parser = new DOMParser();
-    let doc;
+	// Create a safe DOM parser for checking structure
+	const parser = new DOMParser();
+	let doc;
 
-    try {
-        doc = parser.parseFromString(`<div>${html}</div>`, 'text/html');
-    } catch (error) {
-        console.warn('Failed to parse HTML for dynamic content check:', error);
-        return false;
-    }
+	try {
+		doc = parser.parseFromString( `<div>${html}</div>`, "text/html" );
+	} catch ( error ) {
+		console.warn( "Failed to parse HTML for dynamic content check:", error );
+		return false;
+	}
 
-    const container = doc.body.firstChild;
-    if (!container) return false;
+	const container = doc.body.firstChild;
+	if ( !container ) return false;
 
-    // Check if the entire selection is a single dynamic block (allowed)
-    if (container.children.length === 1 &&
-        container.firstElementChild.classList.contains(SELECTION_CLASSES.DYNAMIC_BLOCK)) {
-        return false;
-    }
+	// Check if the entire selection is a single dynamic block (allowed)
+	if (
+		container.children.length === 1 &&
+		container.firstElementChild.classList.contains(
+			SELECTION_CLASSES.DYNAMIC_BLOCK,
+		)
+	) {
+		return false;
+	}
 
-    // Check for embedded dynamic blocks (not allowed)
-    const dynamicBlocks = container.querySelectorAll(`.${SELECTION_CLASSES.DYNAMIC_BLOCK}`);
-    return dynamicBlocks.length > 0;
+	// Check for embedded dynamic blocks (not allowed)
+	const dynamicBlocks = container.querySelectorAll(
+		`.${SELECTION_CLASSES.DYNAMIC_BLOCK}`,
+	);
+	return dynamicBlocks.length > 0;
 }
 
 /**
@@ -170,27 +191,27 @@ export function containsDynamicContent(html) {
  * @param {Object} selectionData - Raw selection data
  * @returns {Object} - Formatted selection data
  */
-export function formatSelectionForBackend(selectionData) {
-    if (!selectionData) {
-        return null;
-    }
+export function formatSelectionForBackend( selectionData ) {
+	if ( !selectionData ) {
+		return null;
+	}
 
-    const formatted = {
-        text: String(selectionData.text || ''),
-        index: Number(selectionData.index) || 0,
-        type: String(selectionData.type || 'text')
-    };
+	const formatted = {
+		text: String( selectionData.text || "" ),
+		index: Number( selectionData.index ) || 0,
+		type: String( selectionData.type || "text" ),
+	};
 
-    // For text selections, include additional data that PHP expects
-    if (selectionData.type === 'text') {
-        // Format as "text|index" for compatibility with existing PHP code
-        formatted.position = `${formatted.text}${SELECTION_PATTERNS.POSITION_SEPARATOR}${formatted.index}`;
-    } else {
-        // For non-text selections (images, dynamic blocks), just use the text
-        formatted.position = formatted.text;
-    }
+	// For text selections, include additional data that PHP expects
+	if ( selectionData.type === "text" ) {
+		// Format as "text|index" for compatibility with existing PHP code
+		formatted.position = `${formatted.text}${SELECTION_PATTERNS.POSITION_SEPARATOR}${formatted.index}`;
+	} else {
+		// For non-text selections (images, dynamic blocks), just use the text
+		formatted.position = formatted.text;
+	}
 
-    return formatted;
+	return formatted;
 }
 
 /**
@@ -198,51 +219,53 @@ export function formatSelectionForBackend(selectionData) {
  * @param {string} position - Backend position string
  * @returns {Object} - Parsed selection data
  */
-export function parseSelectionFromBackend(position) {
-    if (!position || typeof position !== 'string') {
-        return null;
-    }
+export function parseSelectionFromBackend( position ) {
+	if ( !position || typeof position !== "string" ) {
+		return null;
+	}
 
-    // Check if it's in "text|index" format
-    const separatorIndex = position.indexOf(SELECTION_PATTERNS.POSITION_SEPARATOR);
-    if (separatorIndex !== -1) {
-        const parts = [
-            position.substring(0, separatorIndex),
-            position.substring(separatorIndex + 1)
-        ];
+	// Check if it's in "text|index" format
+	const separatorIndex = position.indexOf(
+		SELECTION_PATTERNS.POSITION_SEPARATOR,
+	);
+	if ( separatorIndex !== -1 ) {
+		const parts = [
+			position.substring( 0, separatorIndex ),
+			position.substring( separatorIndex + 1 ),
+		];
 
-        return {
-            text: parts[0],
-            index: parseInt(parts[1], 10) || 0,
-            type: 'text',
-            position: position
-        };
-    }
+		return {
+			text: parts[ 0 ],
+			index: parseInt( parts[ 1 ], 10 ) || 0,
+			type: "text",
+			position: position,
+		};
+	}
 
-    // Check if it's an image selector
-    if (position.startsWith(SELECTION_PATTERNS.IMAGE_POSITION_PREFIX)) {
-        return {
-            text: position,
-            type: 'image',
-            position: position
-        };
-    }
+	// Check if it's an image selector
+	if ( position.startsWith( SELECTION_PATTERNS.IMAGE_POSITION_PREFIX ) ) {
+		return {
+			text: position,
+			type: "image",
+			position: position,
+		};
+	}
 
-    // Check if it's an SVG selector
-    if (position.startsWith(SELECTION_PATTERNS.SVG_POSITION_PREFIX)) {
-        return {
-            text: position,
-            type: 'svg',
-            position: position
-        };
-    }
+	// Check if it's an SVG selector
+	if ( position.startsWith( SELECTION_PATTERNS.SVG_POSITION_PREFIX ) ) {
+		return {
+			text: position,
+			type: "svg",
+			position: position,
+		};
+	}
 
-    // For dynamic blocks or other selectors, return as-is
-    return {
-        text: position,
-        type: 'dynamic-block',
-        position: position
-    };
+	// For dynamic blocks or other selectors, return as-is
+	return {
+		text: position,
+		type: "dynamic-block",
+		position: position,
+	};
 }
 
 /**
@@ -250,12 +273,10 @@ export function parseSelectionFromBackend(position) {
  * @param {string} html - Raw HTML content
  * @returns {string} - Cleaned HTML
  */
-export function cleanSelectionHTML(html) {
-    if (!html) return '';
+export function cleanSelectionHTML( html ) {
+	if ( !html ) return "";
 
-    return sanitizeHTMLForValidation(html)
-        .replace(/\s+/g, ' ')
-        .trim();
+	return sanitizeHTMLForValidation( html ).replace( /\s+/g, " " ).trim();
 }
 
 /**
@@ -263,8 +284,8 @@ export function cleanSelectionHTML(html) {
  * @returns {boolean} - Whether selection is enabled
  */
 export function isSelectionEnabled() {
-    const store = useAppStateStore();
-    return store.isEnabled;
+	const store = useAppStateStore();
+	return store.isEnabled;
 }
 
 /**
@@ -272,18 +293,18 @@ export function isSelectionEnabled() {
  * @param {string} content - Content to hash
  * @returns {string} - Hash string
  */
-export function simpleHash(content) {
-    if (!content) return '';
+export function simpleHash( content ) {
+	if ( !content ) return "";
 
-    let hash = 0;
-    for (let i = 0; i < content.length; i++) {
-        const char = content.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32-bit integer
-    }
+	let hash = 0;
+	for ( let i = 0; i < content.length; i++ ) {
+		const char = content.charCodeAt( i );
+		hash = ( hash << 5 ) - hash + char;
+		hash = hash & hash; // Convert to 32-bit integer
+	}
 
-    // Convert to positive hex string
-    return Math.abs(hash).toString(16);
+	// Convert to positive hex string
+	return Math.abs( hash ).toString( 16 );
 }
 
 /**
@@ -293,12 +314,12 @@ export function simpleHash(content) {
  * @param {number} height - Image height
  * @returns {string} - Image hash
  */
-export function createImageHash(src, width, height) {
-    if (!src) return '';
+export function createImageHash( src, width, height ) {
+	if ( !src ) return "";
 
-    const normalized = src.replace(/^https?:\/\//, '');
-    const dimensions = `${width || 0}x${height || 0}`;
-    return simpleHash(`${normalized}|${dimensions}`);
+	const normalized = src.replace( /^https?:\/\//, "" );
+	const dimensions = `${width || 0}x${height || 0}`;
+	return simpleHash( `${normalized}|${dimensions}` );
 }
 
 /**
@@ -308,14 +329,12 @@ export function createImageHash(src, width, height) {
  * @param {string} textContent - SVG text content
  * @returns {string} - SVG hash
  */
-export function createSVGHash(uniqueId, href, textContent) {
-    const parts = [
-        uniqueId || '',
-        href || '',
-        (textContent || '').trim()
-    ].filter(Boolean);
+export function createSVGHash( uniqueId, href, textContent ) {
+	const parts = [uniqueId || "", href || "", ( textContent || "" ).trim()].filter(
+		Boolean,
+	);
 
-    return simpleHash(parts.join('|'));
+	return simpleHash( parts.join( "|" ) );
 }
 
 /**
@@ -323,20 +342,20 @@ export function createSVGHash(uniqueId, href, textContent) {
  * @returns {Element} - Content root element
  */
 export function getContentRoot() {
-    // Try cache first
-    const cached = getCachedElement('contentRoot');
-    if (cached) return cached;
+	// Try cache first
+	const cached = getCachedElement( "contentRoot" );
+	if ( cached ) return cached;
 
-    // Find the root element
-    const root = getMediaWikiContentRoot();
-    if (!root) {
-        console.error('Could not find MediaWiki content root element');
-        return document.body;
-    }
+	// Find the root element
+	const root = getMediaWikiContentRoot();
+	if ( !root ) {
+		console.error( "Could not find MediaWiki content root element" );
+		return document.body;
+	}
 
-    // Cache the result
-    setCachedElement('contentRoot', root);
-    return root;
+	// Cache the result
+	setCachedElement( "contentRoot", root );
+	return root;
 }
 
 /**
@@ -344,13 +363,13 @@ export function getContentRoot() {
  * @param {string} key - Cache key
  * @param {Element} element - Element to cache
  */
-export function setCachedElement(key, element) {
-    if (!key || !element) return;
+export function setCachedElement( key, element ) {
+	if ( !key || !element ) return;
 
-    elementCache.set(key, {
-        element,
-        timestamp: Date.now()
-    });
+	elementCache.set( key, {
+		element,
+		timestamp: Date.now(),
+	} );
 }
 
 /**
@@ -358,26 +377,26 @@ export function setCachedElement(key, element) {
  * @param {string} key - Cache key
  * @returns {Element|null} - Cached element or null
  */
-export function getCachedElement(key) {
-    if (!key) return null;
+export function getCachedElement( key ) {
+	if ( !key ) return null;
 
-    const cached = elementCache.get(key);
-    if (!cached) return null;
+	const cached = elementCache.get( key );
+	if ( !cached ) return null;
 
-    // Check if expired
-    if (Date.now() - cached.timestamp > CACHE_TTL) {
-        elementCache.delete(key);
-        return null;
-    }
+	// Check if expired
+	if ( Date.now() - cached.timestamp > CACHE_TTL ) {
+		elementCache.delete( key );
+		return null;
+	}
 
-    return cached.element;
+	return cached.element;
 }
 
 /**
  * Clear the element cache
  */
 export function clearElementCache() {
-    elementCache.clear();
+	elementCache.clear();
 }
 
 /**
@@ -385,12 +404,10 @@ export function clearElementCache() {
  * @param {string} text - Raw text content
  * @returns {string} - Cleaned text
  */
-export function getCleanText(text) {
-    if (!text) return '';
+export function getCleanText( text ) {
+	if ( !text ) return "";
 
-    return text
-        .replace(SELECTION_PATTERNS.WHITESPACE_CLEANUP, ' ')
-        .trim();
+	return text.replace( SELECTION_PATTERNS.WHITESPACE_CLEANUP, " " ).trim();
 }
 
 /**
@@ -398,7 +415,7 @@ export function getCleanText(text) {
  * @returns {boolean} - Whether SmartComments is enabled
  */
 export function isSmartCommentsEnabled() {
-    return isSelectionEnabled();
+	return isSelectionEnabled();
 }
 
 /**
@@ -406,15 +423,15 @@ export function isSmartCommentsEnabled() {
  * @param {string} url - URL to validate
  * @returns {boolean} - Whether URL is valid
  */
-export function isValidURL(url) {
-    if (!url) return false;
+export function isValidURL( url ) {
+	if ( !url ) return false;
 
-    try {
-        const parsed = new URL(url);
-        return ['http:', 'https:'].includes(parsed.protocol);
-    } catch (e) {
-        return false;
-    }
+	try {
+		const parsed = new URL( url );
+		return ["http:", "https:"].includes( parsed.protocol );
+	} catch ( e ) {
+		return false;
+	}
 }
 
 /**
@@ -422,13 +439,13 @@ export function isValidURL(url) {
  * @param {string} str - Input string
  * @returns {string} - Sanitized string
  */
-export function sanitizeIdString(str) {
-    if (!str) return '';
+export function sanitizeIdString( str ) {
+	if ( !str ) return "";
 
-    return str
-        .replace(/[^a-z0-9-]/gi, '-')
-        .replace(/-+/g, '-')
-        .toLowerCase();
+	return str
+		.replace( /[^a-z0-9-]/gi, "-" )
+		.replace( /-+/g, "-" )
+		.toLowerCase();
 }
 
 /**
@@ -436,32 +453,32 @@ export function sanitizeIdString(str) {
  * @returns {Object} - Performance metrics
  */
 export function getPerformanceMetrics() {
-    return {
-        cacheSize: elementCache.size,
-        cacheKeys: Array.from(elementCache.keys()),
-        timestamp: Date.now()
-    };
+	return {
+		cacheSize: elementCache.size,
+		cacheKeys: Array.from( elementCache.keys() ),
+		timestamp: Date.now(),
+	};
 }
 
 export default {
-    initializeRangy,
-    validateSelectionContent,
-    sanitizeHTMLForValidation,
-    containsDynamicContent,
-    formatSelectionForBackend,
-    parseSelectionFromBackend,
-    cleanSelectionHTML,
-    isSelectionEnabled,
-    simpleHash,
-    createImageHash,
-    createSVGHash,
-    getContentRoot,
-    setCachedElement,
-    getCachedElement,
-    clearElementCache,
-    getCleanText,
-    isSmartCommentsEnabled,
-    isValidURL,
-    sanitizeIdString,
-    getPerformanceMetrics
-}; 
+	initializeRangy,
+	validateSelectionContent,
+	sanitizeHTMLForValidation,
+	containsDynamicContent,
+	formatSelectionForBackend,
+	parseSelectionFromBackend,
+	cleanSelectionHTML,
+	isSelectionEnabled,
+	simpleHash,
+	createImageHash,
+	createSVGHash,
+	getContentRoot,
+	setCachedElement,
+	getCachedElement,
+	clearElementCache,
+	getCleanText,
+	isSmartCommentsEnabled,
+	isValidURL,
+	sanitizeIdString,
+	getPerformanceMetrics,
+};

@@ -29,8 +29,8 @@
         "jsdom": "^24.0.0",
         "less": "^4.2.0",
         "prettier": "^3.2.0",
-        "vite": "^6.3.5",
-        "vitest": "^3.2.3"
+        "vite": "^5.1.0",
+        "vitest": "^1.3.0"
     },
     "peerDependencies": {
         "vue": "^3.4.0"
