@@ -20,6 +20,7 @@ function useScreenshot() {
 	 * @param {Document} clonedDocument - The cloned document being processed for screenshot
 	 */
 	function defaultOnClone(clonedDocument) {
+		// SVG specific handling
 		const svgs = clonedDocument.getElementsByTagName("svg");
 		for (let i = 0; i < svgs.length; i++) {
 			const svg = svgs[i];
@@ -33,6 +34,40 @@ function useScreenshot() {
 				if (href && !href.startsWith(window.location.origin)) {
 					img.remove();
 				}
+			}
+		}
+
+		const targetElement = clonedDocument.querySelector(
+			".sc-screenshot-target",
+		);
+
+		// Make sure the screenshot target always has a fixed width and padding
+		if (targetElement) {
+
+			// Check if there's a selection highlight that needs to be visible
+			const highlightElement = targetElement.querySelector('.sc-selection-highlight-temp');
+			const hasHighlight = highlightElement !== null;
+
+			targetElement.style["width"] = SCREENSHOT_CONFIG.FIXED_WIDTH + "px";
+			targetElement.style["max-height"] = SCREENSHOT_CONFIG.MAX_HEIGHT + "px";
+			targetElement.style["padding"] = "5px";
+			targetElement.style["overflow"] = "hidden";
+			targetElement.style["display"] = "inline-block";
+			targetElement.style["vertical-align"] = "middle";
+			targetElement.style["line-height"] = "normal";
+			targetElement.style["font-size"] = "inherit";
+			targetElement.style["font-weight"] = "inherit";
+			targetElement.style["font-style"] = "inherit";
+			targetElement.style["text-decoration"] = "inherit";
+
+			// Adjust text wrapping behavior based on whether there's a highlight
+			if (hasHighlight) {
+				targetElement.style["white-space"] = "normal";
+				targetElement.style["text-overflow"] = "clip";
+				targetElement.style["max-height"] = (SCREENSHOT_CONFIG.MAX_HEIGHT + 50) + "px";
+			} else {
+				targetElement.style["white-space"] = "nowrap";
+				targetElement.style["text-overflow"] = "ellipsis";
 			}
 		}
 	}

@@ -2,7 +2,7 @@
  * Centralized error handling for selection operations
  * Provides consistent error reporting and user feedback
  */
-import {SELECTION_ENUMS} from "../../../utils/constants.js";
+import { SELECTION_ENUMS } from "../../../utils/constants.js";
 
 export class SelectionErrorHandler {
 	constructor() {
@@ -16,29 +16,29 @@ export class SelectionErrorHandler {
 	 * @param {Error} error - The error that occurred
 	 * @param {Object} context - Additional context for debugging
 	 */
-	handleSelectionError( selectionType, error, context = {} ) {
+	handleSelectionError(selectionType, error, context = {}) {
 		const errorKey = `${selectionType}_${error.message}`;
 
 		// Track error frequency
-		this.errorCounts.set( errorKey, ( this.errorCounts.get( errorKey ) || 0 ) + 1 );
-		this.lastErrors.set( selectionType, {
+		this.errorCounts.set(errorKey, (this.errorCounts.get(errorKey) || 0) + 1);
+		this.lastErrors.set(selectionType, {
 			error,
 			timestamp: Date.now(),
 			context,
-		} );
+		});
 
 		// Log structured error information
-		console.error( "Selection Error Details:", {
+		console.error("Selection Error Details:", {
 			type: selectionType,
 			message: error.message,
 			stack: error.stack,
 			context,
-			count: this.errorCounts.get( errorKey ),
+			count: this.errorCounts.get(errorKey),
 			timestamp: new Date().toISOString(),
-		} );
+		});
 
 		// Show appropriate user message
-		this.showUserErrorMessage( selectionType, error );
+		this.showUserErrorMessage(selectionType, error);
 	}
 
 	/**
@@ -47,15 +47,15 @@ export class SelectionErrorHandler {
 	 * @param {string} selectionType - Type of selection
 	 * @returns {boolean} - Whether to continue processing
 	 */
-	handleValidationError( validationResult, selectionType = "unknown" ) {
-		if ( validationResult === SELECTION_ENUMS.SELECTION_VALID ) {
+	handleValidationError(validationResult, selectionType = "unknown") {
+		if (validationResult === SELECTION_ENUMS.SELECTION_VALID) {
 			return true;
 		}
 
 		let errorMessage = "Invalid selection";
 		let messageKey = null;
 
-		switch ( validationResult ) {
+		switch (validationResult) {
 			case SELECTION_ENUMS.INVALID_SELECTION_ALREADY_COMMENTED:
 				messageKey = "sic-selection-error-1";
 				errorMessage = "Selection contains already commented block";
@@ -82,18 +82,23 @@ export class SelectionErrorHandler {
 		}
 
 		// Log validation error
-		console.warn( "Selection Validation Failed:", {
+		console.warn("Selection Validation Failed:", {
 			type: selectionType,
 			validationResult,
 			errorMessage,
 			timestamp: new Date().toISOString(),
-		} );
+		});
+
+		// Don't show error message for image selection
+		if (selectionType === "image") {
+			return false;
+		}
 
 		// Show localized message if available
-		if ( messageKey && typeof mw !== "undefined" && mw.msg ) {
-			mw.notify( mw.msg( messageKey ), {type: "error"} );
+		if (messageKey && typeof mw !== "undefined" && mw.msg) {
+			mw.notify(mw.msg(messageKey), { type: "error" });
 		} else {
-			console.error( errorMessage );
+			console.error(errorMessage);
 		}
 
 		return false;
@@ -104,24 +109,24 @@ export class SelectionErrorHandler {
 	 * @param {string} selectionType - Type of selection
 	 * @param {Error} error - The error object
 	 */
-	showUserErrorMessage( selectionType, error ) {
+	showUserErrorMessage(selectionType, error) {
 		let userMessage = "";
 		let notificationType = "error";
 
 		// Categorize errors by type and message
-		if ( error.message.includes( "Screenshot" ) ) {
+		if (error.message.includes("Screenshot")) {
 			userMessage = "Screenshot capture failed. Selection saved without image.";
 			notificationType = "warn";
-		} else if ( error.message.includes( "Rangy" ) ) {
+		} else if (error.message.includes("Rangy")) {
 			userMessage =
 				"Text selection library not available. Please refresh the page.";
-		} else if ( error.message.includes( "content root" ) ) {
+		} else if (error.message.includes("content root")) {
 			userMessage = "Page content not found. Please refresh the page.";
-		} else if ( error.message.includes( "timeout" ) ) {
+		} else if (error.message.includes("timeout")) {
 			userMessage = "Selection operation timed out. Please try again.";
 		} else {
 			// Generic error based on selection type
-			switch ( selectionType ) {
+			switch (selectionType) {
 				case "text":
 					userMessage =
 						"Failed to process text selection. Please try selecting different text.";
@@ -144,10 +149,10 @@ export class SelectionErrorHandler {
 		}
 
 		// Show notification if MediaWiki is available
-		if ( typeof mw !== "undefined" && mw.notify ) {
-			mw.notify( userMessage, {type: notificationType} );
+		if (typeof mw !== "undefined" && mw.notify) {
+			mw.notify(userMessage, { type: notificationType });
 		} else {
-			console.error( userMessage );
+			console.error(userMessage);
 		}
 	}
 
@@ -157,16 +162,16 @@ export class SelectionErrorHandler {
 	 * @param {Error} error - Screenshot error
 	 * @param {Object} selectionData - Selection data to update
 	 */
-	handleScreenshotError( selectionType, error, selectionData ) {
-		console.error( `Screenshot error for ${selectionType}:`, error );
+	handleScreenshotError(selectionType, error, selectionData) {
+		console.error(`Screenshot error for ${selectionType}:`, error);
 
 		// Ensure image is null if screenshot fails
-		if ( selectionData ) {
+		if (selectionData) {
 			selectionData.image = null;
 		}
 
 		// Show non-blocking warning to user
-		if ( typeof mw !== "undefined" && mw.notify ) {
+		if (typeof mw !== "undefined" && mw.notify) {
 			mw.notify(
 				"Screenshot capture failed. Comment will be saved without image.",
 				{
@@ -184,8 +189,8 @@ export class SelectionErrorHandler {
 	 * @param {Object} context - Additional context
 	 * @returns {Error} - Enhanced error object
 	 */
-	createContextualError( message, selectionType, context = {} ) {
-		const error = new Error( message );
+	createContextualError(message, selectionType, context = {}) {
+		const error = new Error(message);
 		error.selectionType = selectionType;
 		error.context = context;
 		error.timestamp = Date.now();
@@ -198,10 +203,10 @@ export class SelectionErrorHandler {
 	 */
 	getErrorStats() {
 		return {
-			errorCounts: Object.fromEntries( this.errorCounts ),
-			lastErrors: Object.fromEntries( this.lastErrors ),
-			totalErrors: Array.from( this.errorCounts.values() ).reduce(
-				( sum, count ) => sum + count,
+			errorCounts: Object.fromEntries(this.errorCounts),
+			lastErrors: Object.fromEntries(this.lastErrors),
+			totalErrors: Array.from(this.errorCounts.values()).reduce(
+				(sum, count) => sum + count,
 				0,
 			),
 		};
