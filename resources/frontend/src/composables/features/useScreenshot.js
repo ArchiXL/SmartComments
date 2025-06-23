@@ -141,9 +141,19 @@ function useScreenshot() {
 		}
 
 		try {
+			// Calculate element bounds to handle viewport overflow
+			const rect = targetElement.getBoundingClientRect();
+			const elementWidth = Math.max(rect.width, targetElement.scrollWidth);
+			const elementHeight = Math.max(rect.height, targetElement.scrollHeight);
+			
 			// Use default onclone if not provided in options
 			const finalOptions = {
 				onclone: defaultOnClone,
+				// Force html2canvas to capture elements beyond viewport boundaries
+				scrollX: 0,
+				scrollY: 0,
+				windowWidth: Math.max(window.innerWidth, elementWidth),
+				windowHeight: Math.max(window.innerHeight, elementHeight),
 				...options,
 			};
 
@@ -199,27 +209,11 @@ function useScreenshot() {
 			return targetScreenshot;
 		}
 
-		// Fallback to position-based screenshot if no target element found
-		const minMaxWidth = 500;
-		const minMaxHeight = 50;
-
-		let width = currentSelPos.x - currentStartPos.x;
-		let height = currentSelPos.y - currentStartPos.y;
-
-		// Ensure minimum/maximum dimensions for the screenshot viewport
-		width = Math.max(minMaxWidth, Math.min(width, minMaxWidth));
-		height = Math.max(minMaxHeight, Math.min(height, minMaxHeight));
-
-		// Calculate center position of the selection
-		const x = currentSelPos.x - (currentSelPos.x - currentStartPos.x) / 2;
-		const y = currentSelPos.y - (currentSelPos.y - currentStartPos.y) / 2;
-
 		const screenshotOptions = {
-			x: x - width / 2,
-			y: y - height / 2,
-			width: width,
-			height: height,
-			scale: 1,
+			x: ( currentStartPos.x - 250 ) + window.scrollX,
+			y: ( currentStartPos.y - 75 ) + window.scrollY,
+			width: 500,
+			height: 150,
 			onclone: defaultOnClone,
 		};
 
