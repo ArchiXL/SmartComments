@@ -167,6 +167,15 @@ class SmartCommentsEvents {
 					$( window ).trigger( eventName, event.detail );
 				} );
 			} );
+
+			// Setup jQuery click handlers
+			$( document ).on( 'click', '.sic-enable-commenting', () => {
+				this.triggerCommentsEnabled();
+			} );
+
+			$( document ).on( 'click', '.sic-disable-commenting', () => {
+				this.triggerCommentsDisabled();
+			} );
 		}
 	}
 
