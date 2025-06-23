@@ -363,6 +363,7 @@ export default defineComponent( {
 
   .smartcomments-selected-content {
     background: #f8f9fa;
+    text-align: center;
 
     .smartcomments-selected-text {
       padding: 16px;
@@ -384,6 +385,7 @@ export default defineComponent( {
         color: #555;
         max-height: 60px;
         overflow-y: auto;
+        margin: 0 auto;
       }
     }
 
@@ -391,6 +393,7 @@ export default defineComponent( {
       max-width: 100%;
       max-height: 150px;
       border-bottom: 1px solid #eaecf0;
+      margin:0 auto
     }
   }
 
