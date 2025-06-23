@@ -48,6 +48,12 @@
 		"remoteExtPath": "SmartComments"
 	},
 	"ResourceModules": {
+		"ext.smartcomments": {
+			"group": "ext.smartcomments",
+			"dependencies": [
+				"ext.smartcomments.frontend"
+			]
+		},
 		"ext.smartcomments.special": {
 			"group": "ext.smartcomments",
 			"scripts": [
