@@ -32,11 +32,24 @@ export default defineStore("commentsStore", {
       );
     },
 
-    getCurrentCommentIndex: (state) => {
+    /**
+     * Get comments sorted by their position in the document
+     */
+    getCommentsSortedByPosition: (state) => {
       const openComments = state.comments.filter(
         (comment) => comment.status !== "completed",
       );
-      return openComments.findIndex(
+
+      return openComments.slice().sort((a, b) => {
+        const posA = state.getCommentDocumentPosition(a);
+        const posB = state.getCommentDocumentPosition(b);
+        return posA - posB;
+      });
+    },
+
+    getCurrentCommentIndex: (state) => {
+      const sortedComments = state.getCommentsSortedByPosition;
+      return sortedComments.findIndex(
         (comment) =>
           (comment.id && comment.id === state.currentCommentId) ||
           (comment.data_id && comment.data_id === state.currentCommentId),
@@ -44,22 +57,18 @@ export default defineStore("commentsStore", {
     },
 
     hasNextComment: (state) => {
-      const openComments = state.comments.filter(
-        (comment) => comment.status !== "completed",
-      );
-      const currentIndex = openComments.findIndex(
+      const sortedComments = state.getCommentsSortedByPosition;
+      const currentIndex = sortedComments.findIndex(
         (comment) =>
           (comment.id && comment.id === state.currentCommentId) ||
           (comment.data_id && comment.data_id === state.currentCommentId),
       );
-      return currentIndex !== -1 && currentIndex < openComments.length - 1;
+      return currentIndex !== -1 && currentIndex < sortedComments.length - 1;
     },
 
     hasPreviousComment: (state) => {
-      const openComments = state.comments.filter(
-        (comment) => comment.status !== "completed",
-      );
-      const currentIndex = openComments.findIndex(
+      const sortedComments = state.getCommentsSortedByPosition;
+      const currentIndex = sortedComments.findIndex(
         (comment) =>
           (comment.id && comment.id === state.currentCommentId) ||
           (comment.data_id && comment.data_id === state.currentCommentId),
@@ -68,33 +77,78 @@ export default defineStore("commentsStore", {
     },
 
     getNextComment: (state) => {
-      const openComments = state.comments.filter(
-        (comment) => comment.status !== "completed",
-      );
-      const currentIndex = openComments.findIndex(
+      const sortedComments = state.getCommentsSortedByPosition;
+      const currentIndex = sortedComments.findIndex(
         (comment) =>
           (comment.id && comment.id === state.currentCommentId) ||
           (comment.data_id && comment.data_id === state.currentCommentId),
       );
-      if (currentIndex !== -1 && currentIndex < openComments.length - 1) {
-        return openComments[currentIndex + 1];
+      if (currentIndex !== -1 && currentIndex < sortedComments.length - 1) {
+        return sortedComments[currentIndex + 1];
       }
       return null;
     },
 
     getPreviousComment: (state) => {
-      const openComments = state.comments.filter(
-        (comment) => comment.status !== "completed",
-      );
-      const currentIndex = openComments.findIndex(
+      const sortedComments = state.getCommentsSortedByPosition;
+      const currentIndex = sortedComments.findIndex(
         (comment) =>
           (comment.id && comment.id === state.currentCommentId) ||
           (comment.data_id && comment.data_id === state.currentCommentId),
       );
       if (currentIndex > 0) {
-        return openComments[currentIndex - 1];
+        return sortedComments[currentIndex - 1];
       }
       return null;
+    },
+
+    /**
+     * Calculate the document position of a comment based on its location
+     */
+    getCommentDocumentPosition: () => (comment) => {
+      try {
+        const commentId = comment.id || comment.data_id;
+
+        // Try to find the highlight element first
+        const highlightElement = document.querySelector(
+          `.smartcomment-hl-${commentId}, [data-comment-id="${commentId}"]`,
+        );
+
+        if (highlightElement) {
+          return getElementDocumentPosition(highlightElement);
+        }
+
+        // If no highlight element found, try to calculate from position data
+        if (comment.parsedSelection) {
+          const selection = comment.parsedSelection;
+
+          if (
+            selection.type === "text" &&
+            selection.text &&
+            typeof selection.index === "number"
+          ) {
+            // For text selections, find the text node and calculate position
+            return findTextPositionInDocument(selection.text, selection.index);
+          } else if (
+            selection.type === "image" ||
+            selection.type === "dynamic-block" ||
+            selection.type === "svg"
+          ) {
+            // For element-based selections, try to find by selector
+            const element = findElementBySelector(selection.text);
+            if (element) {
+              return getElementDocumentPosition(element);
+            }
+          }
+        }
+
+        // Fallback: return a very high number so broken comments appear last
+        console.warn("Could not determine position for comment:", commentId);
+        return Number.MAX_SAFE_INTEGER;
+      } catch (error) {
+        console.warn("Error calculating comment position:", error);
+        return Number.MAX_SAFE_INTEGER;
+      }
     },
   },
 
@@ -593,3 +647,93 @@ export default defineStore("commentsStore", {
     },
   },
 });
+
+/**
+ * Helper function to get the document position of an element
+ * @param {Element} element - The element to get position for
+ * @returns {number} - The position in the document (distance from top in pixels)
+ */
+function getElementDocumentPosition(element) {
+  if (!element) return Number.MAX_SAFE_INTEGER;
+
+  const rect = element.getBoundingClientRect();
+  const scrollY = window.scrollY || window.pageYOffset;
+  return rect.top + scrollY;
+}
+
+/**
+ * Helper function to find an element by selector
+ * @param {string} selector - The CSS selector
+ * @returns {Element|null} - The found element or null
+ */
+function findElementBySelector(selector) {
+  if (!selector) return null;
+
+  try {
+    // Clean the selector if it's a complex selector from the backend
+    let cleanSelector = selector;
+
+    // Handle image selectors that start with "img:"
+    if (selector.startsWith("img:")) {
+      cleanSelector = selector.substring(4);
+    }
+
+    // Handle SVG selectors
+    if (selector.startsWith("svg:")) {
+      cleanSelector = selector.substring(4);
+    }
+
+    return document.querySelector(cleanSelector);
+  } catch (error) {
+    console.warn("Invalid selector:", selector, error);
+    return null;
+  }
+}
+
+/**
+ * Helper function to find text position in document
+ * @param {string} text - The text to find
+ * @param {number} index - The index of the text occurrence
+ * @returns {number} - The position in the document
+ */
+function findTextPositionInDocument(text, index = 0) {
+  if (!text) return Number.MAX_SAFE_INTEGER;
+
+  try {
+    // Create a tree walker to find all text nodes
+    const walker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT,
+      null,
+      false,
+    );
+
+    let currentIndex = 0;
+    let node;
+
+    while ((node = walker.nextNode())) {
+      const nodeText = node.textContent || "";
+      const textIndex = nodeText.indexOf(text);
+
+      if (textIndex !== -1) {
+        if (currentIndex === index) {
+          // Found the correct occurrence, get its position
+          const range = document.createRange();
+          range.setStart(node, textIndex);
+          range.setEnd(node, textIndex + text.length);
+
+          const rect = range.getBoundingClientRect();
+          const scrollY = window.scrollY || window.pageYOffset;
+          return rect.top + scrollY;
+        }
+        currentIndex++;
+      }
+    }
+
+    // If text not found, return a high value
+    return Number.MAX_SAFE_INTEGER;
+  } catch (error) {
+    console.warn("Error finding text position:", error);
+    return Number.MAX_SAFE_INTEGER;
+  }
+}

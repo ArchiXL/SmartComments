@@ -99,7 +99,7 @@ function useScreenshot() {
         ),
         backgroundColor: "#ffffff",
         ignoreElements: (el) => {
-          return el.tagName === 'image';
+          return el.tagName === "image";
         },
         ...options,
       };
