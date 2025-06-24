@@ -3,13 +3,13 @@
     <div class="smartcomments-commentgroup">
       <!-- Actions -->
       <comment-actions
-          @close="$emit('close')"
-          @delete="$emit('delete', $event)"
-          @complete="$emit('complete', $event)"
-          @view="$emit('view', $event)"
-          @next="handleNext"
-          @previous="handlePrevious"
-          :comment="comment"
+        @close="$emit('close')"
+        @delete="$emit('delete', $event)"
+        @complete="$emit('complete', $event)"
+        @view="$emit('view', $event)"
+        @next="handleNext"
+        @previous="handlePrevious"
+        :comment="comment"
       ></comment-actions>
 
       <!-- Body -->
@@ -20,15 +20,15 @@
 
       <!-- Reply form -->
       <reply-form
-          :comment="enhancedComment"
-          @reply-submitted="handleReplySubmitted"
+        :comment="enhancedComment"
+        @reply-submitted="handleReplySubmitted"
       ></reply-form>
     </div>
   </div>
 </template>
 
 <script>
-import {defineComponent, computed} from "vue";
+import { defineComponent, computed } from "vue";
 import ReplyForm from "./ReplyForm.vue";
 import ReplyList from "./ReplyList.vue";
 import CommentActions from "./CommentActions.vue";
@@ -36,7 +36,7 @@ import CommentBody from "./CommentBody.vue";
 import useComments from "../composables/features/useComments.js";
 import useMessages from "../composables/core/useMessages.js";
 
-export default defineComponent( {
+export default defineComponent({
   name: "Comment",
   components: {
     ReplyForm,
@@ -55,13 +55,13 @@ export default defineComponent( {
     },
   },
   emits: ["close", "delete", "complete", "view", "navigate", "reply-added"],
-  setup( props, {emit} ) {
-    const {messages} = useMessages();
+  setup(props, { emit }) {
+    const { messages } = useMessages();
 
-    const panelStyle = computed( () => {
-      if ( !props.position ) {
+    const panelStyle = computed(() => {
+      if (!props.position) {
         console.warn(
-            "Comment panel: No position data, using default positioning",
+          "Comment panel: No position data, using default positioning",
         );
         return {
           top: "0",
@@ -79,32 +79,32 @@ export default defineComponent( {
       // But ensure it doesn't go off the bottom of the viewport
       top = props.position.top;
       const maxTop =
-          window.scrollY + viewportHeight - panelEstimatedHeight - 20;
-      if ( top > maxTop ) {
-        top = Math.max( window.scrollY + 10, maxTop );
+        window.scrollY + viewportHeight - panelEstimatedHeight - 20;
+      if (top > maxTop) {
+        top = Math.max(window.scrollY + 10, maxTop);
       }
 
       return {
         top: `${top}px`,
       };
-    } );
+    });
 
     // Enhanced comment object with reply method
-    const enhancedComment = computed( () => {
+    const enhancedComment = computed(() => {
       return {
         ...props.comment,
         reply: submitReply,
       };
-    } );
+    });
 
-    const submitReply = async ( replyText ) => {
-      if ( !replyText || replyText.trim() === "" ) {
-        console.warn( "Cannot submit empty reply" );
+    const submitReply = async (replyText) => {
+      if (!replyText || replyText.trim() === "") {
+        console.warn("Cannot submit empty reply");
         return false;
       }
 
       try {
-        const {saveComment} = useComments();
+        const { saveComment } = useComments();
 
         // For replies, we need to create a fake selection with the parent comment ID
         // The API expects the parent comment ID in the 'comment' parameter
@@ -114,63 +114,63 @@ export default defineComponent( {
           type: "reply",
         };
 
-        const result = await saveComment( replyText, selectionData );
+        const result = await saveComment(replyText, selectionData);
 
-        if ( result.success === "1" || result.success === true ) {
+        if (result.success === "1" || result.success === true) {
           // Create a new reply object for immediate UI update
           const newReply = {
             id: result.comment || Date.now(),
             text: `<div class="sic-text"><p>${replyText}</p></div>`,
-            author: `<a href="${mw.util.getUrl( "User:" + mw.config.get( "wgUserName" ) )}">${mw.config.get( "wgUserName" )}</a>`,
+            author: `<a href="${mw.util.getUrl("User:" + mw.config.get("wgUserName"))}">${mw.config.get("wgUserName")}</a>`,
             datetime: messages.justNow(),
-            modifiedBy: mw.config.get( "wgUserName" ),
+            modifiedBy: mw.config.get("wgUserName"),
             modifiedDateTime: messages.justNow(),
           };
 
           // Add reply to the comment's replies array
-          if ( !props.comment.replies ) {
+          if (!props.comment.replies) {
             props.comment.replies = [];
           }
-          props.comment.replies.push( newReply );
+          props.comment.replies.push(newReply);
 
           // Emit event for parent component to handle
-          emit( "reply-added", {
+          emit("reply-added", {
             comment: props.comment,
             reply: newReply,
-          } );
+          });
 
           return true;
         } else {
-          console.error( "Failed to submit reply:", result.message );
+          console.error("Failed to submit reply:", result.message);
           return false;
         }
-      } catch ( error ) {
-        console.error( "Error submitting reply:", error );
+      } catch (error) {
+        console.error("Error submitting reply:", error);
         return false;
       }
     };
 
-    const handleReplySubmitted = ( replyData ) => {
+    const handleReplySubmitted = (replyData) => {
       // Trigger refresh of highlights to show updated reply count
-      if ( typeof window !== "undefined" ) {
+      if (typeof window !== "undefined") {
         window.dispatchEvent(
-            new CustomEvent( "smartcomments:refresh-highlights", {
-              detail: {
-                replyAdded: true,
-                comment: props.comment,
-                reply: replyData,
-              },
-            } ),
+          new CustomEvent("smartcomments:refresh-highlights", {
+            detail: {
+              replyAdded: true,
+              comment: props.comment,
+              reply: replyData,
+            },
+          }),
         );
       }
     };
 
     const handleNext = () => {
-      emit( "navigate", {direction: "next"} );
+      emit("navigate", { direction: "next" });
     };
 
     const handlePrevious = () => {
-      emit( "navigate", {direction: "previous"} );
+      emit("navigate", { direction: "previous" });
     };
 
     return {
@@ -182,7 +182,7 @@ export default defineComponent( {
       messages,
     };
   },
-} );
+});
 </script>
 
 <style lang="less">

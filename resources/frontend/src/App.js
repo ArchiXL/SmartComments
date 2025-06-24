@@ -1,7 +1,7 @@
-import {createApp} from "vue";
-import {createPinia} from "pinia";
+import { createApp } from "vue";
+import { createPinia } from "pinia";
 import SmartCommentsComponent from "./SmartComments.vue";
-import {initializeScreenshotTargetManager} from "./utils/screenshotTargetManager.js";
+import { initializeScreenshotTargetManager } from "./utils/screenshotTargetManager.js";
 
 // Import Rangy modules and make it globally available
 import rangy from "rangy/lib/rangy-core";
@@ -21,45 +21,45 @@ rangy.init();
 initializeScreenshotTargetManager();
 
 // Use MediaWiki's resource loader to ensure dependencies are loaded
-mw.loader.using( ["mediawiki.util"] ).then( () => {
-	const appElement = document.getElementById( "smartcomments-app" );
+mw.loader.using(["mediawiki.util"]).then(() => {
+  const appElement = document.getElementById("smartcomments-app");
 
-	if ( !appElement ) {
-		mw.log.error( "SmartComments: Mount element #smartcomments-app not found." );
-		return;
-	}
+  if (!appElement) {
+    mw.log.error("SmartComments: Mount element #smartcomments-app not found.");
+    return;
+  }
 
-	try {
-		// Create Pinia instance
-		const pinia = createPinia();
+  try {
+    // Create Pinia instance
+    const pinia = createPinia();
 
-		// Create and configure Vue app
-		const app = createApp( SmartCommentsComponent );
+    // Create and configure Vue app
+    const app = createApp(SmartCommentsComponent);
 
-		// Use Pinia
-		app.use( pinia );
+    // Use Pinia
+    app.use(pinia);
 
-		// Initialize store state before mounting
-		import("./store/appStateStore.js")
-			.then( ( {useAppStateStore} ) => {
-				const store = useAppStateStore();
-				store.initializeState();
+    // Initialize store state before mounting
+    import("./store/appStateStore.js")
+      .then(({ useAppStateStore }) => {
+        const store = useAppStateStore();
+        store.initializeState();
 
-				// Set initial state based on URL parameter
-				const initialIsEnabled = mw.util.getParamValue( "scenabled" ) === "1";
-				if ( initialIsEnabled ) {
-					store.enableAppState();
-				} else {
-					store.disableAppState();
-				}
+        // Set initial state based on URL parameter
+        const initialIsEnabled = mw.util.getParamValue("scenabled") === "1";
+        if (initialIsEnabled) {
+          store.enableAppState();
+        } else {
+          store.disableAppState();
+        }
 
-				// Mount the app
-				app.mount( appElement );
-			} )
-			.catch( ( error ) => {
-				mw.log.error( "SmartComments: Failed to load store:", error );
-			} );
-	} catch ( error ) {
-		mw.log.error( "SmartComments: Failed to initialize:", error );
-	}
-} );
+        // Mount the app
+        app.mount(appElement);
+      })
+      .catch((error) => {
+        mw.log.error("SmartComments: Failed to load store:", error);
+      });
+  } catch (error) {
+    mw.log.error("SmartComments: Failed to initialize:", error);
+  }
+});

@@ -1,54 +1,54 @@
 <template>
   <div class="smartcomments-comment-actions">
     <div
-        class="smartcomments-comment-actions-item"
-        v-for="action in filteredActions"
-        :key="action.icon"
-        :class="`align-${action.align}`"
-        :style="action.style"
+      class="smartcomments-comment-actions-item"
+      v-for="action in filteredActions"
+      :key="action.icon"
+      :class="`align-${action.align}`"
+      :style="action.style"
     >
       <!-- Simple action button without sub-items -->
       <button
-          v-if="!action.items"
-          class="smartcomments-comment-actions-item-button"
-          @click="action.action"
-          :data-tooltip="action.label"
+        v-if="!action.items"
+        class="smartcomments-comment-actions-item-button"
+        @click="action.action"
+        :data-tooltip="action.label"
       >
         <span class="oo-ui-iconElement-icon" :class="action.icon"></span>
         <span
-            class="smartcomments-visually-hidden"
-            v-html="action.label"
+          class="smartcomments-visually-hidden"
+          v-html="action.label"
         ></span>
       </button>
 
       <!-- Dropdown action button with sub-items -->
       <div
-          v-else
-          class="smartcomments-dropdown"
-          :class="{ 'is-open': dropdownStates[action.icon] }"
+        v-else
+        class="smartcomments-dropdown"
+        :class="{ 'is-open': dropdownStates[action.icon] }"
       >
         <button
-            class="smartcomments-comment-actions-item-button smartcomments-dropdown-toggle"
-            @click="toggleDropdown(action.icon)"
-            :data-tooltip="action.label"
+          class="smartcomments-comment-actions-item-button smartcomments-dropdown-toggle"
+          @click="toggleDropdown(action.icon)"
+          :data-tooltip="action.label"
         >
           <span class="oo-ui-iconElement-icon" :class="action.icon"></span>
           <span
-              class="smartcomments-visually-hidden"
-              v-html="action.label"
+            class="smartcomments-visually-hidden"
+            v-html="action.label"
           ></span>
         </button>
 
         <div
-            class="smartcomments-dropdown-menu"
-            v-if="dropdownStates[action.icon]"
+          class="smartcomments-dropdown-menu"
+          v-if="dropdownStates[action.icon]"
         >
           <button
-              v-for="subItem in action.items"
-              :key="subItem.icon"
-              class="smartcomments-dropdown-item"
-              @click="handleSubItemClick(subItem, action.icon)"
-              :style="subItem.style"
+            v-for="subItem in action.items"
+            :key="subItem.icon"
+            class="smartcomments-dropdown-item"
+            @click="handleSubItemClick(subItem, action.icon)"
+            :style="subItem.style"
           >
             <span class="oo-ui-iconElement-icon" :class="subItem.icon"></span>
             <span v-html="subItem.label"></span>
@@ -60,12 +60,12 @@
 </template>
 
 <script>
-import {defineComponent, computed, ref} from "vue";
+import { defineComponent, computed, ref } from "vue";
 import useUserStore from "../store/userStore.js";
 import useCommentsStore from "../store/commentsStore.js";
 import useMessages from "../composables/core/useMessages.js";
 
-export default defineComponent( {
+export default defineComponent({
   name: "CommentActions",
   props: {
     comment: {
@@ -73,18 +73,18 @@ export default defineComponent( {
       required: true,
     },
   },
-  setup( props, {emit} ) {
+  setup(props, { emit }) {
     const userStore = useUserStore();
     const commentsStore = useCommentsStore();
-    const {messages} = useMessages();
+    const { messages } = useMessages();
 
-    const actions = computed( () => [
+    const actions = computed(() => [
       {
         icon: "oo-ui-icon-arrowPrevious",
         label: messages.previousComment(),
         align: "left",
         action: () => {
-          emit( "previous" );
+          emit("previous");
         },
         when: () => {
           return commentsStore.hasPreviousComment;
@@ -95,7 +95,7 @@ export default defineComponent( {
         label: messages.nextComment(),
         align: "left",
         action: () => {
-          emit( "next" );
+          emit("next");
         },
         when: () => {
           return commentsStore.hasNextComment;
@@ -111,7 +111,7 @@ export default defineComponent( {
             label: messages.markComplete(),
             style: "",
             action: () => {
-              emit( "complete", props.comment );
+              emit("complete", props.comment);
             },
           },
           {
@@ -119,7 +119,7 @@ export default defineComponent( {
             label: messages.markDelete(),
             style: "",
             action: () => {
-              emit( "delete", props.comment );
+              emit("delete", props.comment);
             },
           },
           {
@@ -127,7 +127,7 @@ export default defineComponent( {
             label: messages.viewOverview(),
             style: "",
             action: () => {
-              emit( "view", props.comment );
+              emit("view", props.comment);
             },
           },
         ],
@@ -140,27 +140,27 @@ export default defineComponent( {
         label: messages.close(),
         align: "right",
         action: () => {
-          emit( "close" );
+          emit("close");
         },
         when: () => {
           return true;
         },
       },
-    ] );
+    ]);
 
-    const filteredActions = computed( () => {
-      return actions.value.filter( ( action ) => action.when() );
-    } );
+    const filteredActions = computed(() => {
+      return actions.value.filter((action) => action.when());
+    });
 
-    const dropdownStates = ref( {} );
+    const dropdownStates = ref({});
 
-    const toggleDropdown = ( icon ) => {
-      dropdownStates.value[ icon ] = !dropdownStates.value[ icon ];
+    const toggleDropdown = (icon) => {
+      dropdownStates.value[icon] = !dropdownStates.value[icon];
     };
 
-    const handleSubItemClick = ( subItem, icon ) => {
+    const handleSubItemClick = (subItem, icon) => {
       subItem.action();
-      dropdownStates.value[ icon ] = false;
+      dropdownStates.value[icon] = false;
     };
 
     return {
@@ -170,7 +170,7 @@ export default defineComponent( {
       handleSubItemClick,
     };
   },
-} );
+});
 </script>
 
 <style lang="less">

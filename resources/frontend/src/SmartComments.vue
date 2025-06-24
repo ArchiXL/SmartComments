@@ -2,24 +2,24 @@
   <div class="smartcomments" v-if="isEnabled">
     <!-- Comment Dialog - now controlled by store -->
     <comment
-        v-if="commentsStore.isCommentDialogVisible"
-        :comment="commentsStore.activeComment"
-        :position="commentsStore.commentPosition"
-        @close="commentsStore.closeCommentDialog"
-        @delete="commentsStore.deleteComment"
-        @complete="commentsStore.completeComment"
-        @view="commentsStore.viewPage"
-        @navigate="handleCommentNavigation"
-        @reply-added="commentsStore.handleReplyAdded"
+      v-if="commentsStore.isCommentDialogVisible"
+      :comment="commentsStore.activeComment"
+      :position="commentsStore.commentPosition"
+      @close="commentsStore.closeCommentDialog"
+      @delete="commentsStore.deleteComment"
+      @complete="commentsStore.completeComment"
+      @view="commentsStore.viewPage"
+      @navigate="handleCommentNavigation"
+      @reply-added="commentsStore.handleReplyAdded"
     ></comment>
 
     <!-- New Comment Dialog - now controlled by store -->
     <new-comment-dialog
-        :is-visible="commentsStore.isNewCommentDialogVisible"
-        :selection-data="commentsStore.newCommentSelection"
-        @close="commentsStore.closeNewCommentDialog"
-        @save="commentsStore.handleCommentSaved"
-        @cancel="commentsStore.closeNewCommentDialog"
+      :is-visible="commentsStore.isNewCommentDialogVisible"
+      :selection-data="commentsStore.newCommentSelection"
+      @close="commentsStore.closeNewCommentDialog"
+      @save="commentsStore.handleCommentSaved"
+      @cancel="commentsStore.closeNewCommentDialog"
     ></new-comment-dialog>
 
     <!-- Comment Timeline -->
@@ -28,11 +28,11 @@
 </template>
 
 <script>
-import {defineComponent} from "vue";
+import { defineComponent } from "vue";
 import useSmartCommentsSetup from "./composables/setup/useSmartCommentsSetup.js";
-import {useSelectionEvents} from "./composables/selection/useSelectionEvents.js";
-import {useLinkPrevention} from "./composables/features/useLinkPrevention.js";
-import {useAppStateStore} from "./store/appStateStore.js";
+import { useSelectionEvents } from "./composables/selection/useSelectionEvents.js";
+import { useLinkPrevention } from "./composables/features/useLinkPrevention.js";
+import { useAppStateStore } from "./store/appStateStore.js";
 import useCommentsStore from "./store/commentsStore.js";
 import useMessages from "./composables/core/useMessages.js";
 import useHighlightOrchestrator from "./composables/highlights/useHighlightOrchestrator.js";
@@ -43,9 +43,9 @@ import useUrlNavigation from "./composables/features/useUrlNavigation.js";
 import Comment from "./components/Comment.vue";
 import NewCommentDialog from "./components/NewCommentDialog.vue";
 import CommentTimeline from "./components/CommentTimeline.vue";
-import {smartCommentsEvents, EVENTS} from "./utils/smartCommentsEvents.js";
+import { smartCommentsEvents, EVENTS } from "./utils/smartCommentsEvents.js";
 
-export default defineComponent( {
+export default defineComponent({
   name: "SmartComments",
   components: {
     Comment,
@@ -61,20 +61,20 @@ export default defineComponent( {
 
     // Initialize specialized composables
     const highlightsManager = useHighlightOrchestrator(
-        smartCommentsSetup,
-        commentsStore,
-        smartCommentsEvents,
+      smartCommentsSetup,
+      commentsStore,
+      smartCommentsEvents,
     );
-    const keyboardShortcuts = useKeyboardShortcuts( commentsStore );
-    const customProperties = useCustomProperties( messages );
+    const keyboardShortcuts = useKeyboardShortcuts(commentsStore);
+    const customProperties = useCustomProperties(messages);
     const eventHandlers = useSmartCommentsEventHandlers(
-        smartCommentsEvents,
-        EVENTS,
-        store,
-        commentsStore,
-        highlightsManager,
+      smartCommentsEvents,
+      EVENTS,
+      store,
+      commentsStore,
+      highlightsManager,
     );
-    const urlNavigation = useUrlNavigation( commentsStore );
+    const urlNavigation = useUrlNavigation(commentsStore);
 
     return {
       smartCommentsSetup,
@@ -109,29 +109,29 @@ export default defineComponent( {
     this.setupSystems();
 
     this.$watch(
-        () => this.isEnabled,
-        async ( stateNowEnabled ) => {
-          if ( stateNowEnabled ) {
-            await this.enableSmartComments();
-          } else {
-            await this.disableSmartComments();
-          }
-        },
-        {immediate: true},
+      () => this.isEnabled,
+      async (stateNowEnabled) => {
+        if (stateNowEnabled) {
+          await this.enableSmartComments();
+        } else {
+          await this.disableSmartComments();
+        }
+      },
+      { immediate: true },
     );
 
     // Handle selection events - delegate to store
     this.cleanupFunctions.push(
-        this.selectionEvents.onSelectionCreate( this.handleNewSelection ),
+      this.selectionEvents.onSelectionCreate(this.handleNewSelection),
     );
   },
   beforeUnmount() {
     this.highlightsManager.clearHighlights();
-    if ( this.selectionEvents ) this.selectionEvents.unbindEvents();
-    if ( this.linkPrevention ) this.linkPrevention.unbindEvents();
+    if (this.selectionEvents) this.selectionEvents.unbindEvents();
+    if (this.linkPrevention) this.linkPrevention.unbindEvents();
 
     // Clean up all registered functions
-    this.cleanupFunctions.forEach( ( cleanup ) => cleanup() );
+    this.cleanupFunctions.forEach((cleanup) => cleanup());
   },
   methods: {
     /**
@@ -140,25 +140,25 @@ export default defineComponent( {
     setupSystems() {
       // Setup highlight refresh listener
       this.cleanupFunctions.push(
-          this.highlightsManager.setupHighlightRefreshListener(),
+        this.highlightsManager.setupHighlightRefreshListener(),
       );
 
       // Setup SmartComments events
-      this.cleanupFunctions.push( this.eventHandlers.setupSmartCommentsEvents() );
+      this.cleanupFunctions.push(this.eventHandlers.setupSmartCommentsEvents());
 
       // Setup keyboard shortcuts
       this.cleanupFunctions.push(
-          this.keyboardShortcuts.setupKeyboardShortcuts(),
+        this.keyboardShortcuts.setupKeyboardShortcuts(),
       );
 
       // Setup CSS custom properties watchers
       this.cleanupFunctions.push(
-          this.customProperties.setupCustomPropertiesWatchers(),
+        this.customProperties.setupCustomPropertiesWatchers(),
       );
 
       // Setup URL navigation
       this.cleanupFunctions.push(
-          this.urlNavigation.setupUrlNavigation( () => this.isEnabled ),
+        this.urlNavigation.setupUrlNavigation(() => this.isEnabled),
       );
     },
 
@@ -170,21 +170,21 @@ export default defineComponent( {
         // Trigger comments enabled event
         this.smartCommentsEvents.triggerCommentsEnabled();
 
-        if ( this.selectionEvents ) this.selectionEvents.bindEvents();
+        if (this.selectionEvents) this.selectionEvents.bindEvents();
 
         // Setup image selection to create dynamic block wrappers
         try {
-          const {useSelection} = await import(
-              "./composables/selection/useSelection.js"
-              );
+          const { useSelection } = await import(
+            "./composables/selection/useSelection.js"
+          );
           const selection = useSelection();
           selection.setupSelection();
-        } catch ( error ) {
-          console.error( "Failed to setup selection strategies:", error );
+        } catch (error) {
+          console.error("Failed to setup selection strategies:", error);
         }
 
         // Bind link prevention events when comment mode is enabled
-        if ( this.linkPrevention ) this.linkPrevention.bindEvents();
+        if (this.linkPrevention) this.linkPrevention.bindEvents();
 
         this.highlightsManager.clearHighlights();
 
@@ -192,8 +192,8 @@ export default defineComponent( {
 
         // Check URL parameters and open comment if specified
         await this.commentsStore.checkAndOpenCommentFromUrl();
-      } catch ( e ) {
-        console.error( "SmartComments.vue enableSmartComments: Error:", e );
+      } catch (e) {
+        console.error("SmartComments.vue enableSmartComments: Error:", e);
       }
     },
 
@@ -204,8 +204,8 @@ export default defineComponent( {
       // Trigger comments disabled event
       this.smartCommentsEvents.triggerCommentsDisabled();
 
-      if ( this.selectionEvents ) this.selectionEvents.unbindEvents();
-      if ( this.linkPrevention ) this.linkPrevention.unbindEvents();
+      if (this.selectionEvents) this.selectionEvents.unbindEvents();
+      if (this.linkPrevention) this.linkPrevention.unbindEvents();
 
       this.highlightsManager.clearHighlights();
 
@@ -216,34 +216,34 @@ export default defineComponent( {
     /**
      * Handle new selection - delegate to store
      */
-    handleNewSelection( selectionData ) {
-      this.smartCommentsEvents.triggerSelectionActive( selectionData );
-      this.commentsStore.openNewCommentDialog( selectionData );
+    handleNewSelection(selectionData) {
+      this.smartCommentsEvents.triggerSelectionActive(selectionData);
+      this.commentsStore.openNewCommentDialog(selectionData);
     },
 
     /**
      * Handle comment navigation from Comment component
      */
-    handleCommentNavigation( navigationData ) {
-      const {direction} = navigationData;
-      this.commentsStore.navigateComment( direction );
+    handleCommentNavigation(navigationData) {
+      const { direction } = navigationData;
+      this.commentsStore.navigateComment(direction);
     },
 
     /**
      * Manual highlight reload (for debugging)
      */
     async reloadHighlights() {
-      await this.highlightsManager.reloadHighlights( this.isEnabled );
+      await this.highlightsManager.reloadHighlights(this.isEnabled);
     },
 
     /**
      * Check URL parameters and open comment (for debugging)
      */
     async checkUrlParameters() {
-      await this.urlNavigation.checkUrlParameters( () => this.isEnabled );
+      await this.urlNavigation.checkUrlParameters(() => this.isEnabled);
     },
   },
-} );
+});
 </script>
 
 <style lang="less">

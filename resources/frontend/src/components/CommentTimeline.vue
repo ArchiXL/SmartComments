@@ -1,41 +1,41 @@
 <template>
   <div
-      v-if="isEnabled && positionedComments.length > 0"
-      class="sic-timeline-container"
-      :style="containerStyle"
+    v-if="isEnabled && positionedComments.length > 0"
+    class="sic-timeline-container"
+    :style="containerStyle"
   >
     <div
-        v-for="comment in positionedComments"
-        :key="comment.id || comment.data_id"
-        class="sic-timeline-item"
-        :class="{
+      v-for="comment in positionedComments"
+      :key="comment.id || comment.data_id"
+      class="sic-timeline-item"
+      :class="{
         broken: comment.isBroken,
         'sic-timeline-item-hasreplies':
           comment.hasReplies === 'true' ||
           comment.hasReplies === true ||
           (comment.replies && comment.replies.length > 0),
       }"
-        :style="comment.itemStyle"
-        :data-selection="comment.posimg"
-        @click="handleCommentClick(comment)"
-        @mouseover="handleMouseOver(comment, $event)"
-        @mouseout="handleMouseOut(comment)"
+      :style="comment.itemStyle"
+      :data-selection="comment.posimg"
+      @click="handleCommentClick(comment)"
+      @mouseover="handleMouseOver(comment, $event)"
+      @mouseout="handleMouseOut(comment)"
     >
       <span class="oo-ui-iconElement-icon oo-ui-icon-speechBubbles"></span>
     </div>
 
     <!-- Hover preview for broken comments -->
     <div
-        v-if="brokenCommentHover.visible"
-        class="sic-timeline-item-hover"
-        :style="brokenCommentHover.style"
+      v-if="brokenCommentHover.visible"
+      class="sic-timeline-item-hover"
+      :style="brokenCommentHover.style"
     >
       <h2>{{ brokenCommentMessage }}</h2>
       <img
-          v-if="brokenCommentHover.selection"
-          :src="brokenCommentHover.selection"
-          width="500"
-          alt="Comment selection preview"
+        v-if="brokenCommentHover.selection"
+        :src="brokenCommentHover.selection"
+        width="500"
+        alt="Comment selection preview"
       />
     </div>
   </div>
@@ -51,35 +51,35 @@ import {
   nextTick,
 } from "vue";
 import useCommentsStore from "../store/commentsStore.js";
-import {useAppStateStore} from "../store/appStateStore.js";
+import { useAppStateStore } from "../store/appStateStore.js";
 import useMessages from "../composables/core/useMessages.js";
 
-export default defineComponent( {
+export default defineComponent({
   name: "CommentTimeline",
   setup() {
     const commentsStore = useCommentsStore();
     const appStateStore = useAppStateStore();
-    const {messages} = useMessages();
+    const { messages } = useMessages();
 
     // Reactive data
-    const positions = ref( [] );
-    const brokenCommentHover = ref( {
+    const positions = ref([]);
+    const brokenCommentHover = ref({
       visible: false,
       style: {},
       selection: null,
-    } );
+    });
 
     // Initialize component
-    onMounted( () => {
+    onMounted(() => {
       // Add window resize listener to recalculate positions
-      window.addEventListener( "resize", handleResize );
-      window.addEventListener( "scroll", handleScroll );
-    } );
+      window.addEventListener("resize", handleResize);
+      window.addEventListener("scroll", handleScroll);
+    });
 
-    onBeforeUnmount( () => {
-      window.removeEventListener( "resize", handleResize );
-      window.removeEventListener( "scroll", handleScroll );
-    } );
+    onBeforeUnmount(() => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("scroll", handleScroll);
+    });
 
     // Handle window resize and scroll events
     const handleResize = () => {
@@ -89,7 +89,7 @@ export default defineComponent( {
 
     const handleScroll = () => {
       // Hide broken comment hover on scroll
-      if ( brokenCommentHover.value.visible ) {
+      if (brokenCommentHover.value.visible) {
         brokenCommentHover.value.visible = false;
       }
 
@@ -98,32 +98,32 @@ export default defineComponent( {
     };
 
     // Computed properties
-    const isEnabled = computed( () => appStateStore.isEnabled );
+    const isEnabled = computed(() => appStateStore.isEnabled);
 
-    const comments = computed( () => {
+    const comments = computed(() => {
       // Ensure we have a valid comments array before filtering
-      if ( !Array.isArray( commentsStore.comments ) ) {
+      if (!Array.isArray(commentsStore.comments)) {
         console.warn(
-            "CommentTimeline: commentsStore.comments is not an array:",
-            commentsStore.comments,
+          "CommentTimeline: commentsStore.comments is not an array:",
+          commentsStore.comments,
         );
         return [];
       }
       return commentsStore.comments.filter(
-          ( comment ) => comment && comment.status !== "completed",
+        (comment) => comment && comment.status !== "completed",
       );
-    } );
+    });
 
-    const brokenCommentMessage = computed( () => {
+    const brokenCommentMessage = computed(() => {
       return messages.unlocalizedComment();
-    } );
+    });
 
-    const containerStyle = computed( () => {
+    const containerStyle = computed(() => {
       const bodyElement =
-          document.querySelector( ".mw-body" ) || document.querySelector( "body" );
-      if ( !bodyElement ) {
-        console.warn( "CommentTimeline: Could not find body element" );
-        return {top: "0px"};
+        document.querySelector(".mw-body") || document.querySelector("body");
+      if (!bodyElement) {
+        console.warn("CommentTimeline: Could not find body element");
+        return { top: "0px" };
       }
 
       const rect = bodyElement.getBoundingClientRect();
@@ -132,95 +132,95 @@ export default defineComponent( {
       return {
         top: `${topOffset}px`,
       };
-    } );
+    });
 
-    const positionedComments = computed( () => {
+    const positionedComments = computed(() => {
       const processedComments = [];
       const usedPositions = [];
       const brokenComments = [];
       const normalComments = [];
 
       // Early return if no comments to avoid unnecessary processing
-      if ( !comments.value || comments.value.length === 0 ) {
+      if (!comments.value || comments.value.length === 0) {
         return [];
       }
 
       // First pass: separate broken and normal comments
-      comments.value.forEach( ( comment ) => {
+      comments.value.forEach((comment) => {
         const commentId = comment.data_id || comment.id;
         const highlightElement = document.querySelector(
-            `.smartcomment-hl-${commentId}`,
+          `.smartcomment-hl-${commentId}`,
         );
 
-        if ( highlightElement ) {
+        if (highlightElement) {
           // Normal comment with valid highlight
           const rect = highlightElement.getBoundingClientRect();
           const positionTop = rect.top + window.scrollY;
-          normalComments.push( {
+          normalComments.push({
             ...comment,
             isBroken: false,
             positionTop,
-          } );
+          });
         } else {
           // Broken comment
-          brokenComments.push( {
+          brokenComments.push({
             ...comment,
             isBroken: true,
-          } );
+          });
         }
-      } );
+      });
 
       // Process normal comments with layered positioning
-      normalComments.forEach( ( comment ) => {
+      normalComments.forEach((comment) => {
         let adjustedPosition = comment.positionTop;
-        while ( usedPositions.includes( adjustedPosition ) ) {
+        while (usedPositions.includes(adjustedPosition)) {
           adjustedPosition += 10;
         }
-        usedPositions.push( adjustedPosition );
+        usedPositions.push(adjustedPosition);
 
-        processedComments.push( {
+        processedComments.push({
           ...comment,
           itemStyle: {
             top: `${adjustedPosition}px`,
             right: "0px",
             position: "absolute",
           },
-        } );
-      } );
+        });
+      });
 
       // Process broken comments - position them at the bottom of the screen
       const viewportHeight = window.innerHeight;
       const scrollTop = window.scrollY;
       const bottomBasePosition = scrollTop + viewportHeight - 150;
 
-      brokenComments.forEach( ( comment, index ) => {
+      brokenComments.forEach((comment, index) => {
         const bottomPosition = bottomBasePosition - index * 10;
 
-        processedComments.push( {
+        processedComments.push({
           ...comment,
           itemStyle: {
             top: `${bottomPosition}px`,
             right: "0px",
             position: "absolute",
           },
-        } );
-      } );
+        });
+      });
       return processedComments;
-    } );
+    });
 
     // Methods
-    const handleCommentClick = ( comment ) => {
+    const handleCommentClick = (comment) => {
       const commentId = comment.data_id || comment.id;
       const highlightElement = document.querySelector(
-          `.smartcomment-hl-${commentId}`,
+        `.smartcomment-hl-${commentId}`,
       );
 
-      if ( comment.isBroken ) {
+      if (comment.isBroken) {
         // For broken comments, use the timeline item as reference
         const timelineItem = document.querySelector(
-            `.sic-timeline-item[data-selection="${comment.posimg}"]`,
+          `.sic-timeline-item[data-selection="${comment.posimg}"]`,
         );
-        if ( timelineItem ) {
+        if (timelineItem) {
           const rect = timelineItem.getBoundingClientRect();
           const position = {
             top: rect.top + window.scrollY,
@@ -230,31 +230,31 @@ export default defineComponent( {
             width: rect.width,
             height: rect.height,
           };
-          commentsStore.openCommentDialog( comment, position );
+          commentsStore.openCommentDialog(comment, position);
         }
-      } else if ( highlightElement ) {
+      } else if (highlightElement) {
         highlightElement.dispatchEvent(
-            new MouseEvent( "click", {
-              bubbles: true,
-              cancelable: true,
-              view: window,
-            } ),
+          new MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+          }),
         );
       }
     };
 
-    const handleMouseOver = ( comment, event ) => {
+    const handleMouseOver = (comment, event) => {
       const commentId = comment.data_id || comment.id;
       const highlightElement = document.querySelector(
-          `.smartcomment-hl-${commentId}`,
+        `.smartcomment-hl-${commentId}`,
       );
 
-      if ( highlightElement ) {
-        highlightElement.classList.add( "active" );
+      if (highlightElement) {
+        highlightElement.classList.add("active");
       }
 
       // Handle broken comment hover preview
-      if ( comment.isBroken && comment.posimg ) {
+      if (comment.isBroken && comment.posimg) {
         brokenCommentHover.value = {
           visible: true,
           selection: comment.posimg,
@@ -273,18 +273,18 @@ export default defineComponent( {
       }
     };
 
-    const handleMouseOut = ( comment ) => {
+    const handleMouseOut = (comment) => {
       const commentId = comment.data_id || comment.id;
       const highlightElement = document.querySelector(
-          `.smartcomment-hl-${commentId}`,
+        `.smartcomment-hl-${commentId}`,
       );
 
-      if ( highlightElement ) {
-        highlightElement.classList.remove( "active" );
+      if (highlightElement) {
+        highlightElement.classList.remove("active");
       }
 
       // Hide broken comment hover
-      if ( comment.isBroken ) {
+      if (comment.isBroken) {
         brokenCommentHover.value.visible = false;
       }
     };
@@ -301,7 +301,7 @@ export default defineComponent( {
       handleMouseOut,
     };
   },
-} );
+});
 </script>
 
 <style lang="less">

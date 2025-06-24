@@ -13,17 +13,17 @@ const managedParents = new WeakMap();
  * @returns {boolean} - Whether to skip this element
  */
 function shouldSkipElement(element) {
-	if (!element || element.nodeType !== Node.ELEMENT_NODE) {
-		return true;
-	}
+  if (!element || element.nodeType !== Node.ELEMENT_NODE) {
+    return true;
+  }
 
-	const tagName = element.tagName.toLowerCase();
+  const tagName = element.tagName.toLowerCase();
 
-	return (
-		SCREENSHOT_TARGETING.SKIP_ELEMENTS.includes(tagName) ||
-		element.closest("svg") !== null ||
-		element.closest("img") !== null
-	);
+  return (
+    SCREENSHOT_TARGETING.SKIP_ELEMENTS.includes(tagName) ||
+    element.closest("svg") !== null ||
+    element.closest("img") !== null
+  );
 }
 
 /**
@@ -31,15 +31,15 @@ function shouldSkipElement(element) {
  * @param {Element} parent - Parent element
  */
 function storeOriginalState(parent) {
-	if (!managedParents.has(parent)) {
-		managedParents.set(parent, {
-			originalClasses: parent.className,
-			hasScreenshotTarget: parent.classList.contains(
-				SMARTCOMMENTS_CLASSES.SCREENSHOT_TARGET,
-			),
-			count: 0,
-		});
-	}
+  if (!managedParents.has(parent)) {
+    managedParents.set(parent, {
+      originalClasses: parent.className,
+      hasScreenshotTarget: parent.classList.contains(
+        SMARTCOMMENTS_CLASSES.SCREENSHOT_TARGET,
+      ),
+      count: 0,
+    });
+  }
 }
 
 /**
@@ -48,40 +48,40 @@ function storeOriginalState(parent) {
  * @returns {Element|null} - Best parent element for screenshot targeting
  */
 function findScreenshotParent(element) {
-	if (!element || shouldSkipElement(element)) {
-		return null;
-	}
+  if (!element || shouldSkipElement(element)) {
+    return null;
+  }
 
-	let current = element.parentElement;
+  let current = element.parentElement;
 
-	// Walk up the DOM tree to find a good parent
-	while (
-		current &&
-		current !== document.body &&
-		current !== document.documentElement
-	) {
-		const tagName = current.tagName.toLowerCase();
+  // Walk up the DOM tree to find a good parent
+  while (
+    current &&
+    current !== document.body &&
+    current !== document.documentElement
+  ) {
+    const tagName = current.tagName.toLowerCase();
 
-		// If we find a semantic parent, use it
-		if (SCREENSHOT_TARGETING.SEMANTIC_PARENTS.includes(tagName)) {
-			return current;
-		}
+    // If we find a semantic parent, use it
+    if (SCREENSHOT_TARGETING.SEMANTIC_PARENTS.includes(tagName)) {
+      return current;
+    }
 
-		// If we find an element with substantial content (not just a wrapper), use it
-		if (
-			current.children.length > 1 ||
-			(current.textContent &&
-				current.textContent.trim().length >
-				SCREENSHOT_TARGETING.MIN_CONTENT_LENGTH)
-		) {
-			return current;
-		}
+    // If we find an element with substantial content (not just a wrapper), use it
+    if (
+      current.children.length > 1 ||
+      (current.textContent &&
+        current.textContent.trim().length >
+          SCREENSHOT_TARGETING.MIN_CONTENT_LENGTH)
+    ) {
+      return current;
+    }
 
-		current = current.parentElement;
-	}
+    current = current.parentElement;
+  }
 
-	// Fallback to immediate parent if no semantic parent found
-	return element.parentElement;
+  // Fallback to immediate parent if no semantic parent found
+  return element.parentElement;
 }
 
 /**
@@ -89,30 +89,30 @@ function findScreenshotParent(element) {
  * @param {Element} element - Element with temp highlight class
  */
 function addParentScreenshotTarget(element) {
-	if (shouldSkipElement(element)) {
-		return;
-	}
+  if (shouldSkipElement(element)) {
+    return;
+  }
 
-	const parent = findScreenshotParent(element);
-	if (
-		!parent ||
-		parent === document.body ||
-		parent === document.documentElement
-	) {
-		return;
-	}
+  const parent = findScreenshotParent(element);
+  if (
+    !parent ||
+    parent === document.body ||
+    parent === document.documentElement
+  ) {
+    return;
+  }
 
-	// Store original state
-	storeOriginalState(parent);
+  // Store original state
+  storeOriginalState(parent);
 
-	// Increment count of temp highlights in this parent
-	const state = managedParents.get(parent);
-	state.count++;
+  // Increment count of temp highlights in this parent
+  const state = managedParents.get(parent);
+  state.count++;
 
-	// Add screenshot target class if not already present
-	if (!state.hasScreenshotTarget) {
-		parent.classList.add(SMARTCOMMENTS_CLASSES.SCREENSHOT_TARGET);
-	}
+  // Add screenshot target class if not already present
+  if (!state.hasScreenshotTarget) {
+    parent.classList.add(SMARTCOMMENTS_CLASSES.SCREENSHOT_TARGET);
+  }
 }
 
 /**
@@ -120,23 +120,23 @@ function addParentScreenshotTarget(element) {
  * @param {Element} element - Element that had temp highlight class
  */
 function removeParentScreenshotTarget(element) {
-	if (shouldSkipElement(element)) {
-		return;
-	}
+  if (shouldSkipElement(element)) {
+    return;
+  }
 
-	const parent = findScreenshotParent(element);
-	if (!parent || !managedParents.has(parent)) {
-		return;
-	}
+  const parent = findScreenshotParent(element);
+  if (!parent || !managedParents.has(parent)) {
+    return;
+  }
 
-	const state = managedParents.get(parent);
-	state.count = Math.max(0, state.count - 1);
+  const state = managedParents.get(parent);
+  state.count = Math.max(0, state.count - 1);
 
-	// Only remove if count reaches 0 and we added it originally
-	if (state.count === 0 && !state.hasScreenshotTarget) {
-		parent.classList.remove(SMARTCOMMENTS_CLASSES.SCREENSHOT_TARGET);
-		managedParents.delete(parent);
-	}
+  // Only remove if count reaches 0 and we added it originally
+  if (state.count === 0 && !state.hasScreenshotTarget) {
+    parent.classList.remove(SMARTCOMMENTS_CLASSES.SCREENSHOT_TARGET);
+    managedParents.delete(parent);
+  }
 }
 
 /**
@@ -144,32 +144,32 @@ function removeParentScreenshotTarget(element) {
  * @param {Element} svgElement - SVG element with hover class
  */
 function addSVGScreenshotTarget(svgElement) {
-	if (!svgElement || shouldSkipElement(svgElement)) {
-		return;
-	}
+  if (!svgElement || shouldSkipElement(svgElement)) {
+    return;
+  }
 
-	// For SVG elements, we want to target the SVG element itself, not its parent
-	const svgRoot = svgElement.closest("svg") || svgElement;
+  // For SVG elements, we want to target the SVG element itself, not its parent
+  const svgRoot = svgElement.closest("svg") || svgElement;
 
-	if (
-		!svgRoot ||
-		svgRoot === document.body ||
-		svgRoot === document.documentElement
-	) {
-		return;
-	}
+  if (
+    !svgRoot ||
+    svgRoot === document.body ||
+    svgRoot === document.documentElement
+  ) {
+    return;
+  }
 
-	// Store original state
-	storeOriginalState(svgRoot);
+  // Store original state
+  storeOriginalState(svgRoot);
 
-	// Increment count of temp highlights in this SVG
-	const state = managedParents.get(svgRoot);
-	state.count++;
+  // Increment count of temp highlights in this SVG
+  const state = managedParents.get(svgRoot);
+  state.count++;
 
-	// Add screenshot target class if not already present
-	if (!state.hasScreenshotTarget) {
-		svgRoot.classList.add(SMARTCOMMENTS_CLASSES.SCREENSHOT_TARGET);
-	}
+  // Add screenshot target class if not already present
+  if (!state.hasScreenshotTarget) {
+    svgRoot.classList.add(SMARTCOMMENTS_CLASSES.SCREENSHOT_TARGET);
+  }
 }
 
 /**
@@ -177,23 +177,23 @@ function addSVGScreenshotTarget(svgElement) {
  * @param {Element} svgElement - SVG element that had hover class
  */
 function removeSVGScreenshotTarget(svgElement) {
-	if (!svgElement || shouldSkipElement(svgElement)) {
-		return;
-	}
+  if (!svgElement || shouldSkipElement(svgElement)) {
+    return;
+  }
 
-	const svgRoot = svgElement.closest("svg") || svgElement;
-	if (!svgRoot || !managedParents.has(svgRoot)) {
-		return;
-	}
+  const svgRoot = svgElement.closest("svg") || svgElement;
+  if (!svgRoot || !managedParents.has(svgRoot)) {
+    return;
+  }
 
-	const state = managedParents.get(svgRoot);
-	state.count = Math.max(0, state.count - 1);
+  const state = managedParents.get(svgRoot);
+  state.count = Math.max(0, state.count - 1);
 
-	// Only remove if count reaches 0 and we added it originally
-	if (state.count === 0 && !state.hasScreenshotTarget) {
-		svgRoot.classList.remove(SMARTCOMMENTS_CLASSES.SCREENSHOT_TARGET);
-		managedParents.delete(svgRoot);
-	}
+  // Only remove if count reaches 0 and we added it originally
+  if (state.count === 0 && !state.hasScreenshotTarget) {
+    svgRoot.classList.remove(SMARTCOMMENTS_CLASSES.SCREENSHOT_TARGET);
+    managedParents.delete(svgRoot);
+  }
 }
 
 /**
@@ -203,19 +203,19 @@ function removeSVGScreenshotTarget(svgElement) {
  * @param {boolean} isAdding - Whether the class is being added (true) or removed (false)
  */
 function handleTempHighlightChange(element, className, isAdding) {
-	if (SCREENSHOT_TARGETING.TEMP_HIGHLIGHT_CLASSES.includes(className)) {
-		if (isAdding) {
-			addParentScreenshotTarget(element);
-		} else {
-			removeParentScreenshotTarget(element);
-		}
-	} else if (className === SMARTCOMMENTS_CLASSES.SVG_HOVER) {
-		if (isAdding) {
-			addSVGScreenshotTarget(element);
-		} else {
-			removeSVGScreenshotTarget(element);
-		}
-	}
+  if (SCREENSHOT_TARGETING.TEMP_HIGHLIGHT_CLASSES.includes(className)) {
+    if (isAdding) {
+      addParentScreenshotTarget(element);
+    } else {
+      removeParentScreenshotTarget(element);
+    }
+  } else if (className === SMARTCOMMENTS_CLASSES.SVG_HOVER) {
+    if (isAdding) {
+      addSVGScreenshotTarget(element);
+    } else {
+      removeSVGScreenshotTarget(element);
+    }
+  }
 }
 
 /**
@@ -224,24 +224,24 @@ function handleTempHighlightChange(element, className, isAdding) {
  * @returns {string[]} - Array of class names
  */
 function getElementClasses(element) {
-	if (!element) return [];
+  if (!element) return [];
 
-	// Handle SVG elements where className is an SVGAnimatedString
-	if (
-		element.className &&
-		typeof element.className === "object" &&
-		element.className.baseVal
-	) {
-		return element.className.baseVal.split(" ").filter((cls) => cls.length > 0);
-	}
+  // Handle SVG elements where className is an SVGAnimatedString
+  if (
+    element.className &&
+    typeof element.className === "object" &&
+    element.className.baseVal
+  ) {
+    return element.className.baseVal.split(" ").filter((cls) => cls.length > 0);
+  }
 
-	// Handle regular DOM elements
-	if (typeof element.className === "string") {
-		return element.className.split(" ").filter((cls) => cls.length > 0);
-	}
+  // Handle regular DOM elements
+  if (typeof element.className === "string") {
+    return element.className.split(" ").filter((cls) => cls.length > 0);
+  }
 
-	// Fallback using classList
-	return Array.from(element.classList || []);
+  // Fallback using classList
+  return Array.from(element.classList || []);
 }
 
 /**
@@ -249,58 +249,58 @@ function getElementClasses(element) {
  * @returns {MutationObserver} - Configured observer
  */
 function createScreenshotTargetObserver() {
-	return new MutationObserver((mutations) => {
-		mutations.forEach((mutation) => {
-			if (
-				mutation.type === "attributes" &&
-				mutation.attributeName === "class"
-			) {
-				const element = mutation.target;
-				const oldClasses = mutation.oldValue
-					? mutation.oldValue.split(" ").filter((cls) => cls.length > 0)
-					: [];
-				const newClasses = getElementClasses(element);
+  return new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (
+        mutation.type === "attributes" &&
+        mutation.attributeName === "class"
+      ) {
+        const element = mutation.target;
+        const oldClasses = mutation.oldValue
+          ? mutation.oldValue.split(" ").filter((cls) => cls.length > 0)
+          : [];
+        const newClasses = getElementClasses(element);
 
-				// Check temp highlight classes
-				SCREENSHOT_TARGETING.TEMP_HIGHLIGHT_CLASSES.forEach((tempClass) => {
-					const hadClass = oldClasses.includes(tempClass);
-					const hasClass = newClasses.includes(tempClass);
+        // Check temp highlight classes
+        SCREENSHOT_TARGETING.TEMP_HIGHLIGHT_CLASSES.forEach((tempClass) => {
+          const hadClass = oldClasses.includes(tempClass);
+          const hasClass = newClasses.includes(tempClass);
 
-					if (!hadClass && hasClass) {
-						// Class was added
-						handleTempHighlightChange(element, tempClass, true);
-					} else if (hadClass && !hasClass) {
-						// Class was removed
-						handleTempHighlightChange(element, tempClass, false);
-					}
-				});
+          if (!hadClass && hasClass) {
+            // Class was added
+            handleTempHighlightChange(element, tempClass, true);
+          } else if (hadClass && !hasClass) {
+            // Class was removed
+            handleTempHighlightChange(element, tempClass, false);
+          }
+        });
 
-				// Check SVG hover class
-				const hadSVGHover = oldClasses.includes(
-					SMARTCOMMENTS_CLASSES.SVG_HOVER,
-				);
-				const hasSVGHover = newClasses.includes(
-					SMARTCOMMENTS_CLASSES.SVG_HOVER,
-				);
+        // Check SVG hover class
+        const hadSVGHover = oldClasses.includes(
+          SMARTCOMMENTS_CLASSES.SVG_HOVER,
+        );
+        const hasSVGHover = newClasses.includes(
+          SMARTCOMMENTS_CLASSES.SVG_HOVER,
+        );
 
-				if (!hadSVGHover && hasSVGHover) {
-					// SVG hover class was added
-					handleTempHighlightChange(
-						element,
-						SMARTCOMMENTS_CLASSES.SVG_HOVER,
-						true,
-					);
-				} else if (hadSVGHover && !hasSVGHover) {
-					// SVG hover class was removed
-					handleTempHighlightChange(
-						element,
-						SMARTCOMMENTS_CLASSES.SVG_HOVER,
-						false,
-					);
-				}
-			}
-		});
-	});
+        if (!hadSVGHover && hasSVGHover) {
+          // SVG hover class was added
+          handleTempHighlightChange(
+            element,
+            SMARTCOMMENTS_CLASSES.SVG_HOVER,
+            true,
+          );
+        } else if (hadSVGHover && !hasSVGHover) {
+          // SVG hover class was removed
+          handleTempHighlightChange(
+            element,
+            SMARTCOMMENTS_CLASSES.SVG_HOVER,
+            false,
+          );
+        }
+      }
+    });
+  });
 }
 
 /**
@@ -308,16 +308,16 @@ function createScreenshotTargetObserver() {
  * @param {Element} rootElement - Root element to observe (defaults to document body)
  */
 function initializeScreenshotTargetManager(rootElement = document.body) {
-	const observer = createScreenshotTargetObserver();
+  const observer = createScreenshotTargetObserver();
 
-	observer.observe(rootElement, {
-		attributes: true,
-		attributeOldValue: true,
-		attributeFilter: ["class"],
-		subtree: true,
-	});
+  observer.observe(rootElement, {
+    attributes: true,
+    attributeOldValue: true,
+    attributeFilter: ["class"],
+    subtree: true,
+  });
 
-	return observer;
+  return observer;
 }
 
 /**
@@ -325,11 +325,11 @@ function initializeScreenshotTargetManager(rootElement = document.body) {
  * @param {Element} element - Element with temp highlight
  */
 function manuallyAddParentTarget(element) {
-	handleTempHighlightChange(
-		element,
-		SCREENSHOT_TARGETING.TEMP_HIGHLIGHT_CLASSES[1],
-		true,
-	);
+  handleTempHighlightChange(
+    element,
+    SCREENSHOT_TARGETING.TEMP_HIGHLIGHT_CLASSES[1],
+    true,
+  );
 }
 
 /**
@@ -337,11 +337,11 @@ function manuallyAddParentTarget(element) {
  * @param {Element} element - Element that had temp highlight
  */
 function manuallyRemoveParentTarget(element) {
-	handleTempHighlightChange(
-		element,
-		SCREENSHOT_TARGETING.TEMP_HIGHLIGHT_CLASSES[1],
-		false,
-	);
+  handleTempHighlightChange(
+    element,
+    SCREENSHOT_TARGETING.TEMP_HIGHLIGHT_CLASSES[1],
+    false,
+  );
 }
 
 /**
@@ -349,7 +349,7 @@ function manuallyRemoveParentTarget(element) {
  * @param {Element} svgElement - SVG element with hover
  */
 function manuallySVGAddTarget(svgElement) {
-	handleTempHighlightChange(svgElement, SMARTCOMMENTS_CLASSES.SVG_HOVER, true);
+  handleTempHighlightChange(svgElement, SMARTCOMMENTS_CLASSES.SVG_HOVER, true);
 }
 
 /**
@@ -357,20 +357,20 @@ function manuallySVGAddTarget(svgElement) {
  * @param {Element} svgElement - SVG element that had hover
  */
 function manuallySVGRemoveTarget(svgElement) {
-	handleTempHighlightChange(svgElement, SMARTCOMMENTS_CLASSES.SVG_HOVER, false);
+  handleTempHighlightChange(svgElement, SMARTCOMMENTS_CLASSES.SVG_HOVER, false);
 }
 
 /**
  * Cleanup all managed parents (useful for reset)
  */
 function cleanupAllManagedParents() {
-	// Get all parents from WeakMap by iterating through elements with temp highlight classes
-	SCREENSHOT_TARGETING.TEMP_HIGHLIGHT_CLASSES.forEach((className) => {
-		const elements = document.querySelectorAll(`.${className}`);
-		elements.forEach((element) => {
-			removeParentScreenshotTarget(element);
-		});
-	});
+  // Get all parents from WeakMap by iterating through elements with temp highlight classes
+  SCREENSHOT_TARGETING.TEMP_HIGHLIGHT_CLASSES.forEach((className) => {
+    const elements = document.querySelectorAll(`.${className}`);
+    elements.forEach((element) => {
+      removeParentScreenshotTarget(element);
+    });
+  });
 }
 
 /**
@@ -378,7 +378,7 @@ function cleanupAllManagedParents() {
  * @returns {Element|null} - The current screenshot target element or null
  */
 function findCurrentScreenshotTarget() {
-	return document.querySelector(`.${SMARTCOMMENTS_CLASSES.SCREENSHOT_TARGET}`);
+  return document.querySelector(`.${SMARTCOMMENTS_CLASSES.SCREENSHOT_TARGET}`);
 }
 
 /**
@@ -386,20 +386,20 @@ function findCurrentScreenshotTarget() {
  * @returns {NodeList} - All elements with screenshot target class
  */
 function findAllScreenshotTargets() {
-	return document.querySelectorAll(
-		`.${SMARTCOMMENTS_CLASSES.SCREENSHOT_TARGET}`,
-	);
+  return document.querySelectorAll(
+    `.${SMARTCOMMENTS_CLASSES.SCREENSHOT_TARGET}`,
+  );
 }
 
 export {
-	initializeScreenshotTargetManager,
-	manuallyAddParentTarget,
-	manuallyRemoveParentTarget,
-	manuallySVGAddTarget,
-	manuallySVGRemoveTarget,
-	addSVGScreenshotTarget,
-	removeSVGScreenshotTarget,
-	cleanupAllManagedParents,
-	findCurrentScreenshotTarget,
-	findAllScreenshotTargets,
+  initializeScreenshotTargetManager,
+  manuallyAddParentTarget,
+  manuallyRemoveParentTarget,
+  manuallySVGAddTarget,
+  manuallySVGRemoveTarget,
+  addSVGScreenshotTarget,
+  removeSVGScreenshotTarget,
+  cleanupAllManagedParents,
+  findCurrentScreenshotTarget,
+  findAllScreenshotTargets,
 };

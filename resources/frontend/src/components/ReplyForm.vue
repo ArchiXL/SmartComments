@@ -5,31 +5,31 @@
     </div>
     <div class="smartcomments-reply-form-body">
       <textarea
-          class="smartcomments-reply-form-body-textarea"
-          :class="{ 'has-content': hasContent }"
-          v-model="reply"
-          :placeholder="messages.replyPlaceholder()"
-          @focus="onFocus"
-          @blur="onBlur"
-          @input="onInput"
-          :aria-label="replyAriaLabel"
-          ref="textarea"
+        class="smartcomments-reply-form-body-textarea"
+        :class="{ 'has-content': hasContent }"
+        v-model="reply"
+        :placeholder="messages.replyPlaceholder()"
+        @focus="onFocus"
+        @blur="onBlur"
+        @input="onInput"
+        :aria-label="replyAriaLabel"
+        ref="textarea"
       ></textarea>
     </div>
     <div class="smartcomments-reply-form-footer" v-show="showActions">
       <div class="smartcomments-reply-form-actions">
         <button
-            class="smartcomments-reply-form-cancel"
-            @click="cancelReply"
-            type="button"
+          class="smartcomments-reply-form-cancel"
+          @click="cancelReply"
+          type="button"
         >
           {{ messages.cancel() }}
         </button>
         <button
-            class="smartcomments-reply-form-submit"
-            @click="submitReply"
-            :disabled="!canSubmit"
-            type="submit"
+          class="smartcomments-reply-form-submit"
+          @click="submitReply"
+          :disabled="!canSubmit"
+          type="submit"
         >
           {{ messages.replySubmit() }}
         </button>
@@ -39,10 +39,10 @@
 </template>
 
 <script>
-import {defineComponent, computed} from "vue";
+import { defineComponent, computed } from "vue";
 import useMessages from "../composables/core/useMessages.js";
 
-export default defineComponent( {
+export default defineComponent({
   name: "ReplyForm",
   data() {
     return {
@@ -59,16 +59,16 @@ export default defineComponent( {
     },
   },
   emits: ["reply-submitted"],
-  setup( props ) {
-    const {messages, msg} = useMessages();
+  setup(props) {
+    const { messages, msg } = useMessages();
 
-    const replyAriaLabel = computed( () => {
+    const replyAriaLabel = computed(() => {
       // Create a label for screen readers
       const authorName = props.comment.author
-          ? props.comment.author.replace( /<[^>]*>/g, "" ) // Strip HTML tags
-          : "comment";
-      return msg( "sic-reply-aria-label", `Reply to ${authorName}`, authorName );
-    } );
+        ? props.comment.author.replace(/<[^>]*>/g, "") // Strip HTML tags
+        : "comment";
+      return msg("sic-reply-aria-label", `Reply to ${authorName}`, authorName);
+    });
 
     return {
       messages,
@@ -94,7 +94,7 @@ export default defineComponent( {
       this.hasContent = this.reply.trim().length > 0;
     },
     async submitReply() {
-      if ( !this.canSubmit ) {
+      if (!this.canSubmit) {
         return;
       }
 
@@ -102,32 +102,32 @@ export default defineComponent( {
 
       try {
         // Use the reply method from the enhanced comment object
-        if ( this.comment.reply && typeof this.comment.reply === "function" ) {
-          const success = await this.comment.reply( this.reply );
+        if (this.comment.reply && typeof this.comment.reply === "function") {
+          const success = await this.comment.reply(this.reply);
 
-          if ( success ) {
+          if (success) {
             // Create reply data for the event
             const replyData = {
               text: this.reply,
-              author: mw.config.get( "wgUserName" ),
+              author: mw.config.get("wgUserName"),
               datetime: new Date().toISOString(),
             };
 
             // Emit the reply-submitted event
-            this.$emit( "reply-submitted", replyData );
+            this.$emit("reply-submitted", replyData);
 
             // Reset form
             this.reply = "";
             this.hasContent = false;
             this.isFocused = false;
           } else {
-            console.error( "Failed to submit reply" );
+            console.error("Failed to submit reply");
           }
         } else {
-          console.error( "Comment object does not have a reply method" );
+          console.error("Comment object does not have a reply method");
         }
-      } catch ( error ) {
-        console.error( "Error submitting reply:", error );
+      } catch (error) {
+        console.error("Error submitting reply:", error);
       } finally {
         this.isSubmitting = false;
       }
@@ -139,7 +139,7 @@ export default defineComponent( {
       this.$refs.textarea.blur();
     },
   },
-} );
+});
 </script>
 
 <style lang="less">

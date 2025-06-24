@@ -1,15 +1,15 @@
 <template>
   <div class="smartcomments-comment-body">
-    <comment-message :comment="comment"/>
+    <comment-message :comment="comment" />
   </div>
 </template>
 
 <script>
-import {defineComponent} from "vue";
+import { defineComponent } from "vue";
 
 import CommentMessage from "./CommentMessage.vue";
 
-export default defineComponent( {
+export default defineComponent({
   name: "CommentBody",
   components: {
     CommentMessage,
@@ -20,5 +20,5 @@ export default defineComponent( {
       required: true,
     },
   },
-} );
+});
 </script>

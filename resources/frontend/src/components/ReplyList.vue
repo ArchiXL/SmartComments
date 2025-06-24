@@ -1,21 +1,21 @@
 <template>
   <div class="smartcomments-reply-list">
     <div
-        class="smartcomments-reply-list-item"
-        v-for="reply in replies"
-        :key="reply.id"
+      class="smartcomments-reply-list-item"
+      v-for="reply in replies"
+      :key="reply.id"
     >
-      <comment-message :comment="reply"/>
+      <comment-message :comment="reply" />
     </div>
   </div>
 </template>
 
 <script>
-import {defineComponent} from "vue";
+import { defineComponent } from "vue";
 
 import CommentMessage from "./CommentMessage.vue";
 
-export default defineComponent( {
+export default defineComponent({
   name: "ReplyList",
   components: {
     CommentMessage,
@@ -26,7 +26,7 @@ export default defineComponent( {
       required: true,
     },
   },
-} );
+});
 </script>
 
 <style lang="less">

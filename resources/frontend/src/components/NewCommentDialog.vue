@@ -1,23 +1,23 @@
 <template>
   <!-- Backdrop overlay -->
   <div
-      class="smartcomments-dialog-overlay"
-      v-if="isVisible"
-      @click="handleBackdropClick"
+    class="smartcomments-dialog-overlay"
+    v-if="isVisible"
+    @click="handleBackdropClick"
   >
     <div
-        class="smartcomments-new-comment-dialog"
-        :style="dialogStyle"
-        @click.stop
+      class="smartcomments-new-comment-dialog"
+      :style="dialogStyle"
+      @click.stop
     >
       <div class="smartcomments-new-comment-content">
         <!-- Header -->
         <div class="smartcomments-dialog-header">
           <span class="smartcomments-dialog-title">{{ title }}</span>
           <button
-              class="smartcomments-dialog-close"
-              @click="handleCancel"
-              :data-tooltip="messages.close()"
+            class="smartcomments-dialog-close"
+            @click="handleCancel"
+            :data-tooltip="messages.close()"
           >
             <span class="oo-ui-iconElement-icon oo-ui-icon-close"></span>
           </button>
@@ -26,35 +26,35 @@
         <!-- Selected content preview -->
         <div class="smartcomments-selected-content" v-if="selectionData">
           <div class="smartcomments-selected-text">
-            <strong>{{ t( "selectedText" ) }}:</strong>
+            <strong>{{ t("selectedText") }}:</strong>
             <div class="smartcomments-selection-preview">
               {{ selectionData.text }}
             </div>
           </div>
           <img
-              v-if="selectionData.image"
-              class="smartcomments-selected-image"
-              :src="selectionData.image"
-              :alt="t('selectedImage')"
+            v-if="selectionData.image"
+            class="smartcomments-selected-image"
+            :src="selectionData.image"
+            :alt="t('selectedImage')"
           />
         </div>
 
         <!-- Comment input -->
         <div class="smartcomments-comment-input-wrapper">
           <label
-              for="smartcomments-comment-input"
-              class="smartcomments-input-label"
+            for="smartcomments-comment-input"
+            class="smartcomments-input-label"
           >
             {{ messages.commentInput() }}
           </label>
           <textarea
-              id="smartcomments-comment-input"
-              v-model="commentText"
-              class="smartcomments-comment-input"
-              :placeholder="t('commentPlaceholder')"
-              rows="4"
-              ref="commentInput"
-              @keydown="handleKeydown"
+            id="smartcomments-comment-input"
+            v-model="commentText"
+            class="smartcomments-comment-input"
+            :placeholder="t('commentPlaceholder')"
+            rows="4"
+            ref="commentInput"
+            @keydown="handleKeydown"
           ></textarea>
           <div v-if="error" class="smartcomments-error-message">
             {{ error }}
@@ -64,18 +64,18 @@
         <!-- Actions -->
         <div class="smartcomments-dialog-actions">
           <button
-              class="smartcomments-button smartcomments-button-cancel"
-              @click="handleCancel"
-              :disabled="isSaving"
+            class="smartcomments-button smartcomments-button-cancel"
+            @click="handleCancel"
+            :disabled="isSaving"
           >
             {{ messages.cancel() }}
           </button>
           <button
-              class="smartcomments-button smartcomments-button-save"
-              @click="handleSave"
-              :disabled="!canSave || isSaving"
+            class="smartcomments-button smartcomments-button-save"
+            @click="handleSave"
+            :disabled="!canSave || isSaving"
           >
-            <span v-if="isSaving">{{ t( "saving" ) }}</span>
+            <span v-if="isSaving">{{ t("saving") }}</span>
             <span v-else>{{ messages.save() }}</span>
           </button>
         </div>
@@ -96,7 +96,7 @@ import {
 import useComments from "../composables/features/useComments.js";
 import useMessages from "../composables/core/useMessages.js";
 
-export default defineComponent( {
+export default defineComponent({
   name: "NewCommentDialog",
   props: {
     isVisible: {
@@ -113,39 +113,39 @@ export default defineComponent( {
     },
   },
   emits: ["close", "save", "cancel"],
-  setup( props, {emit} ) {
-    const commentText = ref( "" );
-    const error = ref( "" );
-    const isSaving = ref( false );
-    const commentInput = ref( null );
+  setup(props, { emit }) {
+    const commentText = ref("");
+    const error = ref("");
+    const isSaving = ref(false);
+    const commentInput = ref(null);
 
-    const {saveComment} = useComments();
-    const {messages, msg} = useMessages();
+    const { saveComment } = useComments();
+    const { messages, msg } = useMessages();
 
     // Computed title with fallback
-    const computedTitle = computed( () => {
+    const computedTitle = computed(() => {
       return props.title || messages.newCommentTitle();
-    } );
+    });
 
     // Translation helper function for inline use
-    const t = ( key ) => {
+    const t = (key) => {
       const translations = {
-        selectedText: msg( "sic-selected-text", "Selected text" ),
-        selectedImage: msg( "sic-selected-image", "Selected image" ),
+        selectedText: msg("sic-selected-text", "Selected text"),
+        selectedImage: msg("sic-selected-image", "Selected image"),
         commentPlaceholder: msg(
-            "sic-comment-placeholder",
-            "Enter your comment...",
+          "sic-comment-placeholder",
+          "Enter your comment...",
         ),
-        saving: msg( "sic-saving", "Saving..." ),
+        saving: msg("sic-saving", "Saving..."),
       };
-      return translations[ key ] || key;
+      return translations[key] || key;
     };
 
-    const canSave = computed( () => {
+    const canSave = computed(() => {
       return commentText.value.trim().length > 0;
-    } );
+    });
 
-    const dialogStyle = computed( () => {
+    const dialogStyle = computed(() => {
       return {
         // Always center the dialog
         position: "fixed",
@@ -153,17 +153,17 @@ export default defineComponent( {
         left: "50%",
         transform: "translate(-50%, -50%)",
       };
-    } );
+    });
 
     const handleCancel = () => {
       commentText.value = "";
       error.value = "";
-      emit( "cancel" );
-      emit( "close" );
+      emit("cancel");
+      emit("close");
     };
 
     const handleSave = async () => {
-      if ( !canSave.value ) {
+      if (!canSave.value) {
         error.value = messages.errorEmpty();
         return;
       }
@@ -173,79 +173,79 @@ export default defineComponent( {
 
       try {
         const result = await saveComment(
-            commentText.value,
-            props.selectionData,
+          commentText.value,
+          props.selectionData,
         );
 
-        if ( result.success === "1" || result.success === true ) {
+        if (result.success === "1" || result.success === true) {
           // Success
-          emit( "save", {
+          emit("save", {
             text: commentText.value,
             result: result,
-          } );
+          });
 
           // Reset form
           commentText.value = "";
 
           // Show success message
-          if ( window.mw && window.mw.notify ) {
-            window.mw.notify( messages.commentAdded(), {type: "success"} );
+          if (window.mw && window.mw.notify) {
+            window.mw.notify(messages.commentAdded(), { type: "success" });
           }
 
-          emit( "close" );
+          emit("close");
         } else {
           // Error
           error.value = result.message || messages.apiError();
         }
-      } catch ( err ) {
+      } catch (err) {
         error.value = messages.apiError();
-        console.error( "Error saving comment:", err );
+        console.error("Error saving comment:", err);
       } finally {
         isSaving.value = false;
       }
     };
 
-    const handleKeydown = ( event ) => {
-      if ( event.key === "Escape" ) {
+    const handleKeydown = (event) => {
+      if (event.key === "Escape") {
         handleCancel();
-      } else if ( event.key === "Enter" && ( event.ctrlKey || event.metaKey ) ) {
+      } else if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
         event.preventDefault();
         handleSave();
       }
     };
 
     // Global escape key handler
-    const handleGlobalKeydown = ( event ) => {
-      if ( event.key === "Escape" && props.isVisible ) {
+    const handleGlobalKeydown = (event) => {
+      if (event.key === "Escape" && props.isVisible) {
         handleCancel();
       }
     };
 
     // Body class management for preventing scroll
     const manageBodyClass = () => {
-      if ( props.isVisible ) {
-        document.body.classList.add( "smartcomments-dialog-open" );
+      if (props.isVisible) {
+        document.body.classList.add("smartcomments-dialog-open");
       } else {
-        document.body.classList.remove( "smartcomments-dialog-open" );
+        document.body.classList.remove("smartcomments-dialog-open");
       }
     };
 
     // Focus the input when dialog becomes visible
     const focusInput = async () => {
-      if ( props.isVisible && commentInput.value ) {
+      if (props.isVisible && commentInput.value) {
         await nextTick();
         commentInput.value.focus();
       }
     };
 
-    onMounted( () => {
-      document.addEventListener( "keydown", handleGlobalKeydown );
-    } );
+    onMounted(() => {
+      document.addEventListener("keydown", handleGlobalKeydown);
+    });
 
-    onUnmounted( () => {
-      document.removeEventListener( "keydown", handleGlobalKeydown );
-      document.body.classList.remove( "smartcomments-dialog-open" );
-    } );
+    onUnmounted(() => {
+      document.removeEventListener("keydown", handleGlobalKeydown);
+      document.body.classList.remove("smartcomments-dialog-open");
+    });
 
     const handleBackdropClick = () => {
       handleCancel();
@@ -271,16 +271,16 @@ export default defineComponent( {
   },
   watch: {
     isVisible: {
-      handler( newValue ) {
+      handler(newValue) {
         this.manageBodyClass();
-        if ( newValue ) {
+        if (newValue) {
           this.focusInput();
         }
       },
       immediate: true,
     },
   },
-} );
+});
 </script>
 
 <style lang="less">
@@ -309,8 +309,9 @@ export default defineComponent( {
   max-width: 500px;
   max-height: 80vh;
   overflow-y: auto;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Lato",
-  "Helvetica", "Arial", sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Lato",
+    "Helvetica", "Arial", sans-serif;
   font-size: 14px;
   animation: fadeInScale 0.2s ease-out;
 
@@ -393,7 +394,7 @@ export default defineComponent( {
       max-width: 100%;
       max-height: 150px;
       border-bottom: 1px solid #eaecf0;
-      margin:0 auto
+      margin: 0 auto;
     }
   }
 
