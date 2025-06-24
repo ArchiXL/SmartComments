@@ -101,7 +101,6 @@ function useScreenshot() {
         ignoreElements: (el) => {
           return el.tagName === 'image';
         },
-        allowTaint: true,
         ...options,
       };
 
