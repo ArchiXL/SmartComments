@@ -1,6 +1,0 @@
----
-description: 
-globs: 
-alwaysApply: false
----
-I'm moving stuff to Vue, so the old codebase (sic-base) should NOT be refactored. You may ONLY use it as a reference. 
