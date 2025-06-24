@@ -6,6 +6,7 @@ import { selectionErrorHandler } from "../composables/selection/shared/Selection
 import useSelectionScreenshot from "../composables/features/useSelectionScreenshot.js";
 import { isSelectionEnabled } from "../composables/selection/shared/SelectionUtils.js";
 import { SELECTION_LIMITS } from "../composables/selection/shared/SelectionConstants.js";
+import { sanitizeText as sanitizeTextUtil } from "../utils/sanitize.js";
 
 class BaseSelectionStrategy {
   constructor(selectionType) {
@@ -164,16 +165,16 @@ class BaseSelectionStrategy {
    * @returns {string} - Sanitized text
    */
   sanitizeText(text) {
-    if (typeof text !== "string") {
-      return "";
-    }
+    return sanitizeTextUtil(text);
+  }
 
-    // Basic HTML sanitization - remove script tags and dangerous attributes
-    return text
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-      .replace(/javascript:/gi, "")
-      .replace(/on\w+\s*=/gi, "")
-      .trim();
+  /**
+   * Alias for sanitizeText for backward compatibility
+   * @param {string} html - Raw HTML/text
+   * @returns {string} - Sanitized text
+   */
+  sanitizeHTML(html) {
+    return sanitizeTextUtil(html);
   }
 
   /**

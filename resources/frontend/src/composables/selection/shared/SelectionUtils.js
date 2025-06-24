@@ -15,6 +15,7 @@ import {
   SELECTION_LIMITS,
   SELECTION_CLASSES,
 } from "./SelectionConstants.js";
+import { sanitizeHTML, sanitizeIdString } from "../../../utils/sanitize.js";
 
 // Cache for frequently accessed elements
 const elementCache = new Map();
@@ -118,34 +119,8 @@ export function validateSelectionContent(selection) {
   return SELECTION_VALIDATION.VALID;
 }
 
-/**
- * Sanitize HTML content for validation (removes dangerous content)
- * @param {string} html - Raw HTML content
- * @returns {string} - Sanitized HTML
- */
-export function sanitizeHTMLForValidation(html) {
-  if (typeof html !== "string") {
-    return "";
-  }
-
-  // Remove script tags and dangerous attributes
-  let sanitized = html
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
-    .replace(/javascript:/gi, "")
-    .replace(/on\w+\s*=/gi, "")
-    .replace(/vbscript:/gi, "")
-    .replace(/data:/gi, "")
-    .trim();
-
-  // Limit length for performance
-  if (sanitized.length > SELECTION_LIMITS.MAX_HTML_LENGTH) {
-    sanitized =
-      sanitized.substring(0, SELECTION_LIMITS.MAX_HTML_LENGTH) + "...";
-  }
-
-  return sanitized;
-}
+// Legacy alias for backward compatibility
+export const sanitizeHTMLForValidation = sanitizeHTML;
 
 /**
  * Check if HTML contains dynamic content that should not be selected
@@ -434,19 +409,8 @@ export function isValidURL(url) {
   }
 }
 
-/**
- * Sanitize a string for use as an ID
- * @param {string} str - Input string
- * @returns {string} - Sanitized string
- */
-export function sanitizeIdString(str) {
-  if (!str) return "";
-
-  return str
-    .replace(/[^a-z0-9-]/gi, "-")
-    .replace(/-+/g, "-")
-    .toLowerCase();
-}
+// Use sanitizeIdString from centralized utility
+export { sanitizeIdString };
 
 /**
  * Get performance metrics for debugging
