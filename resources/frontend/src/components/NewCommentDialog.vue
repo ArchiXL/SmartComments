@@ -306,7 +306,7 @@ export default defineComponent({
   border-radius: 4px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   min-width: 400px;
-  max-width: 500px;
+  max-width: 70%;
   max-height: 80vh;
   overflow-y: auto;
   font-family:
