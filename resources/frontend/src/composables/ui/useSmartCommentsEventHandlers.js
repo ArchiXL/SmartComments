@@ -38,7 +38,7 @@ function useSmartCommentsEventHandlers(
       smartCommentsEvents.on(EVENTS.OPEN_COMMENT_ID, (event) => {
         if (event.detail.commentId) {
           // Handle opening specific comment
-          commentsStore.openCommentById(event.detail.commentId);
+          commentsStore.openCommentDialogById(event.detail.commentId);
         }
       }),
     );

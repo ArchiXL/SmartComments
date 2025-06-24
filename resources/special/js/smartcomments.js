@@ -29,6 +29,22 @@ $(document).ready(function () {
         $('#' + tab.attr('tab-reference')).removeClass('sc-hide');
     });
 
+    // Handle open comment button clicks
+    $(document).on('click', '.specialOpenCommentButton', function(e) {
+        e.preventDefault();
+        const commentId = $(this).data('comment-id');
+        console.log('Open comment button clicked, commentId:', commentId);
+        console.log('SmartCommentsEventManager available:', !!window.SmartCommentsEventManager);
+        
+        if (commentId && window.SmartCommentsEventManager) {
+            // Trigger the SmartComments system to open the comment
+            console.log('Triggering open comment event for ID:', commentId);
+            window.SmartCommentsEventManager.triggerOpenComment(commentId);
+        } else {
+            console.error('Cannot open comment - missing commentId or EventManager');
+        }
+    });
+
 });
 
 function buttonConfirm(e) {

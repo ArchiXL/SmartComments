@@ -5,6 +5,7 @@
       v-if="commentsStore.isCommentDialogVisible"
       :comment="commentsStore.activeComment"
       :position="commentsStore.commentPosition"
+      :allow-replies="!store.isSpecialPageMode"
       @close="commentsStore.closeCommentDialog"
       @delete="commentsStore.deleteComment"
       @complete="commentsStore.completeComment"
@@ -13,8 +14,9 @@
       @reply-added="commentsStore.handleReplyAdded"
     ></comment>
 
-    <!-- New Comment Dialog - now controlled by store -->
+    <!-- New Comment Dialog - only show in regular page mode -->
     <new-comment-dialog
+      v-if="!store.isSpecialPageMode"
       :is-visible="commentsStore.isNewCommentDialogVisible"
       :selection-data="commentsStore.newCommentSelection"
       @close="commentsStore.closeNewCommentDialog"
@@ -22,8 +24,8 @@
       @cancel="commentsStore.closeNewCommentDialog"
     ></new-comment-dialog>
 
-    <!-- Comment Timeline -->
-    <comment-timeline></comment-timeline>
+    <!-- Comment Timeline - only show in regular page mode -->
+    <comment-timeline v-if="!store.isSpecialPageMode"></comment-timeline>
   </div>
 </template>
 
@@ -57,7 +59,7 @@ export default defineComponent({
     const store = useAppStateStore();
     const commentsStore = useCommentsStore();
     const messages = useMessages();
-    const linkPrevention = useLinkPrevention();
+    const linkPrevention = store.isSpecialPageMode ? null : useLinkPrevention();
 
     // Initialize specialized composables
     const highlightsManager = useHighlightOrchestrator(
@@ -103,7 +105,15 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.selectionEvents = useSelectionEvents();
+    // Only initialize selection events in regular page mode
+    if (!this.store.isSpecialPageMode) {
+      this.selectionEvents = useSelectionEvents();
+      
+      // Handle selection events - delegate to store
+      this.cleanupFunctions.push(
+        this.selectionEvents.onSelectionCreate(this.handleNewSelection),
+      );
+    }
 
     // Setup all systems
     this.setupSystems();
@@ -118,11 +128,6 @@ export default defineComponent({
         }
       },
       { immediate: true },
-    );
-
-    // Handle selection events - delegate to store
-    this.cleanupFunctions.push(
-      this.selectionEvents.onSelectionCreate(this.handleNewSelection),
     );
   },
   beforeUnmount() {
@@ -170,27 +175,29 @@ export default defineComponent({
         // Trigger comments enabled event
         this.smartCommentsEvents.triggerCommentsEnabled();
 
-        if (this.selectionEvents) this.selectionEvents.bindEvents();
+        if (!this.store.isSpecialPageMode) {
+          // Only enable selection and interaction features in regular page mode
+          if (this.selectionEvents) this.selectionEvents.bindEvents();
 
-        // Setup image selection to create dynamic block wrappers
-        try {
-          const { useSelection } = await import(
-            "./composables/selection/useSelection.js"
-          );
-          const selection = useSelection();
-          selection.setupSelection();
-        } catch (error) {
-          console.error("Failed to setup selection strategies:", error);
+          // Setup image selection to create dynamic block wrappers
+          try {
+            const { useSelection } = await import(
+              "./composables/selection/useSelection.js"
+            );
+            const selection = useSelection();
+            selection.setupSelection();
+          } catch (error) {
+            console.error("Failed to setup selection strategies:", error);
+          }
+
+          // Bind link prevention events when comment mode is enabled
+          if (this.linkPrevention) this.linkPrevention.bindEvents();
+
+          this.highlightsManager.clearHighlights();
+          await this.highlightsManager.reloadHighlightsAndComments();
         }
 
-        // Bind link prevention events when comment mode is enabled
-        if (this.linkPrevention) this.linkPrevention.bindEvents();
-
-        this.highlightsManager.clearHighlights();
-
-        await this.highlightsManager.reloadHighlightsAndComments();
-
-        // Check URL parameters and open comment if specified
+        // Always check URL parameters for comment opening (works in both modes)
         await this.commentsStore.checkAndOpenCommentFromUrl();
       } catch (e) {
         console.error("SmartComments.vue enableSmartComments: Error:", e);
@@ -204,10 +211,12 @@ export default defineComponent({
       // Trigger comments disabled event
       this.smartCommentsEvents.triggerCommentsDisabled();
 
-      if (this.selectionEvents) this.selectionEvents.unbindEvents();
-      if (this.linkPrevention) this.linkPrevention.unbindEvents();
-
-      this.highlightsManager.clearHighlights();
+      if (!this.store.isSpecialPageMode) {
+        // Only unbind interactive features in regular page mode
+        if (this.selectionEvents) this.selectionEvents.unbindEvents();
+        if (this.linkPrevention) this.linkPrevention.unbindEvents();
+        this.highlightsManager.clearHighlights();
+      }
 
       // Close all dialogs when disabling
       this.commentsStore.closeAllDialogs();

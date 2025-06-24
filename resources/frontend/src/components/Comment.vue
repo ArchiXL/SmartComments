@@ -18,8 +18,9 @@
       <!-- Replies -->
       <reply-list :replies="comment.replies || []"></reply-list>
 
-      <!-- Reply form -->
+      <!-- Reply form - conditionally show based on allowReplies prop -->
       <reply-form
+        v-if="allowReplies"
         :comment="enhancedComment"
         @reply-submitted="handleReplySubmitted"
       ></reply-form>
@@ -52,6 +53,10 @@ export default defineComponent({
     position: {
       type: Object,
       default: null,
+    },
+    allowReplies: {
+      type: Boolean,
+      default: true,
     },
   },
   emits: ["close", "delete", "complete", "view", "navigate", "reply-added"],

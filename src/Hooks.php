@@ -56,7 +56,10 @@ class Hooks {
 	 */
 	public static function onSkinAfterBottomScripts( \Skin $skin, &$text ) {
 		$out = $skin->getOutput();
-		if ( $out->getUser()->isRegistered() && $out->isArticle() && !Handler::isCommentModeBlocked() ) {
+		if (
+			( $out->getUser()->isRegistered() && $out->isArticle() && !Handler::isCommentModeBlocked() ) ||
+			( $out->getTitle()->equals( \SpecialPage::getTitleFor( 'SmartComments' ) ) )
+		) {
 			$text .= '<div id="smartcomments-app"></div>';
 		}
 		return true;

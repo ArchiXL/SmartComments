@@ -66,7 +66,7 @@ class Special extends SpecialPage {
 		$out->setPageTitle( wfMessage( 'sic-sp-title' )->text() );
 		$out->enableOOUI();
 		$out->addModuleStyles( [ 'oojs-ui-core', 'oojs-ui.styles.icons-moderation', 'oojs-ui.styles.icons-alerts', 'oojs-ui.styles.icons-interactions' ] );
-		$out->addModules( 'ext.smartcomments.special' );
+		$out->addModules( [ 'ext.smartcomments.special', 'ext.smartcomments.frontend' ] );
 
 		$mwPermissionManager = MediaWikiServices::getInstance()->getPermissionManager();
 		$canView = $mwPermissionManager->userHasRight( $user, self::PERMISSION_VIEW_SIC );
@@ -299,9 +299,9 @@ class Special extends SpecialPage {
 				'infusable' => true,
 				'id' => 'openComment-' . $this->getValidCssName( $sic->getId() ),
 				'icon' => 'ongoingConversation',
-				'title' => wfMessage( 'sic-button-open' )->parse(),
-				'href' => Title::newFromText( $sic->getPage() )->getLinkUrl( [ 'scenabled' => 1, 'commentId' => $sic->getId() ] )
+				'title' => wfMessage( 'sic-button-open' )->parse()
 			] );
+			$openButton->setAttributes( [ 'data-comment-id' => $sic->getId() ] );
 			$openButton->addClasses( [ 'specialOpenCommentButton' ] );
 			$tableHtml .= Xml::openElement( 'td' );
 			$tableHtml .= $openButton->toString();
