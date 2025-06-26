@@ -43,6 +43,16 @@ function useSmartCommentsEventHandlers(
       }),
     );
 
+    // Listen for open comment with position events
+    cleanupFunctions.push(
+      smartCommentsEvents.on(EVENTS.OPEN_COMMENT_WITH_POSITION, (event) => {
+        if (event.detail.commentId && event.detail.position) {
+          // Handle opening specific comment with custom position
+          commentsStore.openCommentDialogByIdWithPosition(event.detail.commentId, event.detail.position);
+        }
+      }),
+    );
+
     // Listen for comment created events
     cleanupFunctions.push(
       smartCommentsEvents.on(EVENTS.COMMENT_CREATED, (event) => {

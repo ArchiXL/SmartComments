@@ -127,7 +127,8 @@
 				"sic-button-open",
 				"sic-link-disabled-warn",
 				"sic-link-comment-highlight-warn",
-				"sic-selection-generic-error"
+				"sic-selection-generic-error",
+				"sic-show-screenshot-full-size"
 			]
 		}
 	},

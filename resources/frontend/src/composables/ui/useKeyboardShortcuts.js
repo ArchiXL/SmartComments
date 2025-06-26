@@ -7,7 +7,13 @@ function useKeyboardShortcuts(commentsStore) {
    */
   const handleKeydown = (event) => {
     if (event.key === "Escape" && commentsStore.isCommentDialogVisible) {
-      commentsStore.closeCommentDialog();
+      // If image modal is open, close it first
+      if (commentsStore.isImageModalVisible) {
+        commentsStore.closeImageModal();
+      } else {
+        // Otherwise close the comment dialog
+        commentsStore.closeCommentDialog();
+      }
     } else if (event.key === "Delete" && commentsStore.activeComment) {
       commentsStore.deleteComment(commentsStore.activeComment);
     } else if (event.key === "ArrowDown" && commentsStore.hasNextComment) {

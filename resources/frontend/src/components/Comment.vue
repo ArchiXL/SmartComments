@@ -12,6 +12,25 @@
         :comment="comment"
       ></comment-actions>
 
+      <!-- Screenshot - only show on special pages when positioning failed -->
+      <div v-if="shouldShowScreenshot" class="smartcomments-screenshot tt-center" :data-tooltip="messages.sicShowScreenshotFullSize()">
+        <img 
+          :src="comment.positionImage" 
+          alt="Comment screenshot" 
+          class="smartcomments-screenshot-image"
+          @error="handleImageError"
+          @click="openImageModal"
+        />
+      </div>
+
+      <!-- Image Modal -->
+      <image-modal
+        :show="commentsStore.isImageModalVisible"
+        :image-src="comment.positionImage"
+        image-alt="Comment screenshot - full size"
+        @close="commentsStore.closeImageModal"
+      />
+
       <!-- Body -->
       <comment-body :comment="comment"></comment-body>
 
@@ -29,13 +48,16 @@
 </template>
 
 <script>
-import { defineComponent, computed } from "vue";
+import { defineComponent, computed, ref } from "vue";
 import ReplyForm from "./ReplyForm.vue";
 import ReplyList from "./ReplyList.vue";
 import CommentActions from "./CommentActions.vue";
 import CommentBody from "./CommentBody.vue";
+import ImageModal from "./ImageModal.vue";
 import useComments from "../composables/features/useComments.js";
 import useMessages from "../composables/core/useMessages.js";
+import useCommentsStore from "../store/commentsStore.js";
+import { useAppStateStore } from "../store/appStateStore.js";
 
 export default defineComponent({
   name: "Comment",
@@ -44,6 +66,7 @@ export default defineComponent({
     ReplyList,
     CommentActions,
     CommentBody,
+    ImageModal,
   },
   props: {
     comment: {
@@ -62,6 +85,19 @@ export default defineComponent({
   emits: ["close", "delete", "complete", "view", "navigate", "reply-added"],
   setup(props, { emit }) {
     const { messages } = useMessages();
+    const commentsStore = useCommentsStore();
+    const appStore = useAppStateStore();
+
+    const openImageModal = () => {
+      commentsStore.openImageModal();
+    };
+
+    // Only show screenshot on special pages when positioning failed (fallback position used)
+    const shouldShowScreenshot = computed(() => {
+      // Only show on special pages
+      if (!appStore.isSpecialPageMode) return false;
+      return true;
+    });
 
     const panelStyle = computed(() => {
       if (!props.position) {
@@ -178,12 +214,21 @@ export default defineComponent({
       emit("navigate", { direction: "previous" });
     };
 
+    const handleImageError = (event) => {
+      console.warn("Failed to load comment screenshot:", event.target.src);
+      event.target.style.display = "none";
+    };
+
     return {
       panelStyle,
       enhancedComment,
       handleNext,
       handlePrevious,
       handleReplySubmitted,
+      handleImageError,
+      openImageModal,
+      shouldShowScreenshot,
+      commentsStore,
       messages,
     };
   },
@@ -206,6 +251,28 @@ export default defineComponent({
     border-left: 3px solid #f6c343;
     border-bottom: 1px solid #ccc;
     border-top: 1px solid #ccc;
+  }
+
+  .smartcomments-screenshot {
+    padding: 8px 12px;
+    border-bottom: 1px solid #e0e0e0;
+    
+    .smartcomments-screenshot-image {
+      max-width: 100%;
+      height: auto;
+      max-height: 200px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      display: block;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      
+      &:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+    }
   }
 }
 </style>

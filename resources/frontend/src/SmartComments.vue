@@ -280,6 +280,15 @@ export default defineComponent({
       word-wrap: break-word;
       box-sizing: border-box;
     }
+
+    &.tt-center {
+        &:hover::after {
+          left: 50%;
+          transform: translateX(-50%);
+          width: max-content;
+          min-width: 0;
+        }
+      }
   }
 
   .smartcomments-visually-hidden {

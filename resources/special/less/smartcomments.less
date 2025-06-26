@@ -1,32 +1,96 @@
 .sc-tabs {
-	display: flex;
+  display: flex;
 
-	.sc-tab {
-		display: inline-block;
-		margin: 0 0 -1px;
-		padding: 5px 25px;
-		font-weight: normal;
-		text-align: center;
-		color: #bbb;
-		border: 1px solid transparent;
+  .sc-tab {
+    display: inline-block;
+    margin: 0 0 -1px;
+    padding: 5px 25px;
+    font-weight: normal;
+    text-align: center;
+    color: #bbb;
+    border: 1px solid transparent;
 
-		&:hover {
-			color: black;
-		}
+    &:hover {
+      color: black;
+    }
 
-		&.active {
-			color: #24292e;
-			border: 1px solid #ddd;
-			border-top: 2px solid #337ab7;
-			border-bottom: 1px solid #fff;
-		}
-	}
+    &.active {
+      color: #24292e;
+      border: 1px solid #ddd;
+      border-top: 2px solid #337ab7;
+      border-bottom: 1px solid #fff;
+    }
+  }
 }
 
 .sc-tab-body {
-	border-top: 1px solid #ddd;
+  border-top: 1px solid #ddd;
 
-	&.sc-hide {
-		display: none;
-	}
+  &.sc-hide {
+    display: none;
+  }
+}
+
+.sic-sp-admin-buttons > div > div.oo-ui-fieldLayout {
+  margin-top: 4px !important;
+}
+
+form.sic-sp-admin-buttons {
+  display: block !important;
+}
+
+span.sic-sp-admin-buttons {
+  button {
+    span.oo-ui-labelElement-label {
+      font-size: 0.9em !important;
+    }
+  }
+}
+
+fieldset.sic-sp-admin-buttons {
+  background-color: transparent !important;
+  margin-top: 15px;
+}
+
+fieldset.sic-sp-admin-buttons > legend {
+  display: none !important;
+}
+
+fieldset.sic-sp-admin-buttons > div.oo-ui-fieldsetLayout-group {
+  display: flex !important;
+}
+
+fieldset.sic-sp-admin-buttons > div.oo-ui-fieldsetLayout-group > div {
+  margin-bottom: 20px !important;
+  margin-right: 10px !important;
+}
+
+span#sic-sp-display-count {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+td.sic-sp-filter {
+  padding-right: 25px;
+
+  select {
+    display: inline-block;
+    width: auto;
+  }
+}
+
+#sic-sp-button-delete-completed {
+  margin-right: 6px;
+}
+
+table.sic-tb-allcomments {
+  display: table !important;
+
+  th {
+    display: revert !important;
+  }
+}
+
+.sic-sp-rw > td {
+  vertical-align: top;
 }

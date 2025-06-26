@@ -11,6 +11,7 @@ export const EVENTS = {
   COMMENT_GROUP_CLOSE: "sc-comment-group-close",
   DEBUG_MODE: "sc-debug-mode",
   OPEN_COMMENT_ID: "sc-open-comment",
+  OPEN_COMMENT_WITH_POSITION: "sc-open-comment-with-position",
 
   // New Vue frontend events
   COMMENT_CREATED: "sc-comment-created",
@@ -223,6 +224,19 @@ class SmartCommentsEvents {
   triggerOpenComment(commentId) {
     return this.trigger(EVENTS.OPEN_COMMENT_ID, {
       commentId,
+      timestamp: Date.now(),
+    });
+  }
+
+  /**
+   * Trigger open comment with position event
+   * @param {string|number} commentId - Comment ID
+   * @param {Object} position - Position data
+   */
+  triggerOpenCommentWithPosition(commentId, position) {
+    return this.trigger(EVENTS.OPEN_COMMENT_WITH_POSITION, {
+      commentId,
+      position,
       timestamp: Date.now(),
     });
   }

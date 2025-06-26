@@ -76,6 +76,7 @@ function useMessages() {
     overview: () => msg("sic-button-overview"),
     newComment: () => msg("sic-button-new-comment"),
     newReply: () => msg("sic-button-new-reply"),
+    sicShowScreenshotFullSize: () => msg("sic-show-screenshot-full-size"),
 
     // Input labels
     commentInput: () => msg("sic-input-newcomment"),

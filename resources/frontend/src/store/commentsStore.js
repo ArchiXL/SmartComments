@@ -19,6 +19,9 @@ export default defineStore("commentsStore", {
     // New comment dialog state
     isNewCommentDialogVisible: false,
     newCommentSelection: null,
+
+    // Image modal state
+    isImageModalVisible: false,
   }),
 
   getters: {
@@ -350,6 +353,20 @@ export default defineStore("commentsStore", {
     },
 
     /**
+     * Open image modal
+     */
+    openImageModal() {
+      this.isImageModalVisible = true;
+    },
+
+    /**
+     * Close image modal
+     */
+    closeImageModal() {
+      this.isImageModalVisible = false;
+    },
+
+    /**
      * Handle comment save completion
      */
     async handleCommentSaved(savedComment) {
@@ -635,6 +652,54 @@ export default defineStore("commentsStore", {
 
       if (commentId) {
         await this.openCommentDialogById(commentId);
+      }
+    },
+
+    /**
+     * Open a comment dialog by ID with a custom position
+     * @param {string|number} commentId - The comment ID to open
+     * @param {Object} position - Position data for the comment dialog
+     */
+    async openCommentDialogByIdWithPosition(commentId, position) {
+      if (!commentId || !position) return;
+
+      this.setLoading(true);
+      this.clearError();
+
+      try {
+        const { getComment } = useComments();
+        const fetchedComment = await getComment(commentId);
+
+        if (fetchedComment) {
+          this.activeComment = fetchedComment;
+          this.commentPosition = position;
+          this.isCommentDialogVisible = true;
+          this.setCurrentComment(fetchedComment.id || fetchedComment.data_id);
+
+          // Set active highlight
+          this.setActiveHighlight(
+            fetchedComment.data_id || fetchedComment.id,
+            false, // Don't scroll to view since we're using custom positioning
+          );
+
+          // Update the comments array if this comment isn't already in it
+          const existingIndex = this.comments.findIndex(
+            (comment) =>
+              (comment.id && comment.id === commentId) ||
+              (comment.data_id && comment.data_id === commentId),
+          );
+          if (existingIndex === -1) {
+            this.comments.push(fetchedComment);
+          }
+        } else {
+          this.setError("Comment not found");
+          console.error("CommentsStore: Comment not found for ID:", commentId);
+        }
+      } catch (error) {
+        this.setError("Error fetching comment");
+        console.error("CommentsStore: Error fetching comment by ID:", error);
+      } finally {
+        this.setLoading(false);
       }
     },
 

@@ -37,9 +37,21 @@ $(document).ready(function () {
         console.log('SmartCommentsEventManager available:', !!window.SmartCommentsEventManager);
         
         if (commentId && window.SmartCommentsEventManager) {
-            // Trigger the SmartComments system to open the comment
-            console.log('Triggering open comment event for ID:', commentId);
-            window.SmartCommentsEventManager.triggerOpenComment(commentId);
+            // Calculate button position for comment positioning
+            const buttonElement = this;
+            const rect = buttonElement.getBoundingClientRect();
+            const buttonPosition = {
+                top: rect.top + window.scrollY,
+                left: rect.left + window.scrollX,
+                bottom: rect.bottom + window.scrollY,
+                right: rect.right + window.scrollX,
+                width: rect.width,
+                height: rect.height,
+            };
+
+            // Trigger the SmartComments system to open the comment with button position
+            console.log( 'Triggering open comment event for ID:', commentId, 'at position:', buttonPosition );
+            window.SmartCommentsEventManager.triggerOpenCommentWithPosition( commentId, buttonPosition );
         } else {
             console.error('Cannot open comment - missing commentId or EventManager');
         }
