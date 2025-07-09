@@ -169,14 +169,8 @@ class SmartCommentsEvents {
         });
       });
 
-      // Setup jQuery click handlers
-      $(document).on("click", ".sic-enable-commenting", () => {
-        this.triggerCommentsEnabled();
-      });
-
-      $(document).on("click", ".sic-disable-commenting", () => {
-        this.triggerCommentsDisabled();
-      });
+      // Note: Removed jQuery click handlers for .sic-enable-commenting and .sic-disable-commenting
+      // These events are now triggered directly from the Vue component to avoid duplication
     }
   }
 

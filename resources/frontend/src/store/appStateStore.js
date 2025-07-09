@@ -17,7 +17,6 @@ export const useAppStateStore = defineStore("appStore", {
      */
     _updateButtonUI() {
       const toggleElement = document.getElementById("ca-comments");
-      
       if (this.isEnabled) {
         // Update body class regardless of button presence
         document.body.classList.add("smartcomments-enabled");
@@ -55,8 +54,6 @@ export const useAppStateStore = defineStore("appStore", {
       if (toggleElement) {
         // Use arrow function for onclick to preserve 'this' context
         toggleElement.onclick = () => this.toggleAppState();
-        // Set initial button state based on initial isEnabled state
-        this._updateButtonUI();
       } else {
         // Check if we're on a SpecialPage - if so, this is expected behavior
         const isSpecialPage = mw.config.get('wgCanonicalSpecialPageName') === 'SmartComments';
