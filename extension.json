@@ -128,7 +128,8 @@
 				"sic-link-disabled-warn",
 				"sic-link-comment-highlight-warn",
 				"sic-selection-generic-error",
-				"sic-show-screenshot-full-size"
+				"sic-show-screenshot-full-size",
+				"sic-broken-comments-below"
 			]
 		}
 	},

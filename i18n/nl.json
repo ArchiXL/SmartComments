@@ -122,5 +122,6 @@
 	"sic-link-disabled-warn": "Linknavigatie is uitgeschakeld terwijl de opmerkingenmodus actief is.",
 	"sic-link-comment-highlight-warn": "Klik op de gemarkeerde tekst om de opmerking te bekijken, of schakel de opmerkingenmodus uit om de link te volgen.",
 	"sic-selection-generic-error": "Er is een fout opgetreden tijdens tekst selectie.",
-	"sic-show-screenshot-full-size": "Klik om de volledige grootte te bekijken"
+	"sic-show-screenshot-full-size": "Klik om de volledige grootte te bekijken",
+	"sic-broken-comments-below": "Er zijn opmerkingen die niet meer gekoppeld zijn aan een tekstselectie op deze pagina"
 }

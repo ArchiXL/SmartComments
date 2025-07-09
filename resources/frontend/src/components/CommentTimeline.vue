@@ -114,16 +114,31 @@ export default defineComponent({
       positions.value = [];
     };
 
+    // Helper functions
+    const getCommentId = (comment) => comment.data_id || comment.id;
+    
+    const findHighlightElement = (commentId) => {
+      return document.querySelector(`.smartcomment-hl-${commentId}`);
+    };
+    
+    const getContentHeight = () => {
+      const contentElement = document.getElementById('content');
+      return contentElement?.scrollHeight || document.body.scrollHeight;
+    };
+    
+    const calculateBottomPosition = () => getContentHeight() - 150;
+    
+    const isCommentBroken = (comment) => {
+      const commentId = getCommentId(comment);
+      return !findHighlightElement(commentId);
+    };
+
     // Computed properties
     const isEnabled = computed(() => appStateStore.isEnabled);
 
     const comments = computed(() => {
-      // Ensure we have a valid comments array before filtering
       if (!Array.isArray(commentsStore.comments)) {
-        console.warn(
-          "CommentTimeline: commentsStore.comments is not an array:",
-          commentsStore.comments,
-        );
+        console.warn("CommentTimeline: commentsStore.comments is not an array:", commentsStore.comments);
         return [];
       }
       return commentsStore.comments.filter(
@@ -131,27 +146,29 @@ export default defineComponent({
       );
     });
 
-    const brokenCommentMessage = computed(() => {
-      return messages.unlocalizedComment();
+    const brokenCommentMessage = computed(() => messages.unlocalizedComment());
+
+    const brokenComments = computed(() => {
+      if (!comments.value?.length) return [];
+      return comments.value.filter(isCommentBroken);
     });
+
+    const brokenCommentCount = computed(() => brokenComments.value.length);
 
     const brokenIndicatorText = computed(() => {
       const count = brokenCommentCount.value;
       if (count === 0) return '';
       
-      // Try to get the localized message, fallback to English if not available
       const baseMessage = msgWithFallback(
         'sic-broken-comments-below',
         `${count} broken comment${count > 1 ? 's' : ''} below`
       );
       
-      // Replace placeholder with count if message contains it
       return baseMessage.replace('$1', count.toString());
     });
 
     const containerStyle = computed(() => {
-      const bodyElement =
-        document.querySelector(".mw-body") || document.querySelector("body");
+      const bodyElement = document.querySelector(".mw-body") || document.querySelector("body");
       if (!bodyElement) {
         console.warn("CommentTimeline: Could not find body element");
         return { top: "0px" };
@@ -159,27 +176,8 @@ export default defineComponent({
 
       const rect = bodyElement.getBoundingClientRect();
       const topOffset = -rect.top - 80;
-
-      return {
-        top: `${topOffset}px`,
-      };
+      return { top: `${topOffset}px` };
     });
-
-    const brokenComments = computed(() => {
-      if (!comments.value || comments.value.length === 0) {
-        return [];
-      }
-
-      return comments.value.filter((comment) => {
-        const commentId = comment.data_id || comment.id;
-        const highlightElement = document.querySelector(
-          `.smartcomment-hl-${commentId}`,
-        );
-        return !highlightElement;
-      });
-    });
-
-    const brokenCommentCount = computed(() => brokenComments.value.length);
 
     const showBrokenIndicator = computed(() => {
       if (brokenCommentCount.value === 0) return false;
@@ -187,42 +185,27 @@ export default defineComponent({
       // Ensure we react to scroll changes
       scrollPosition.value;
       
-      // Check if any broken comments are off-screen (below viewport)
       const viewportHeight = window.innerHeight;
       const scrollTop = window.scrollY;
       const viewportBottom = scrollTop + viewportHeight;
       
-      // Get the actual position where broken comments are placed
       const contentElement = document.getElementById('content');
       if (!contentElement) return false;
       
-      const contentHeight = contentElement.scrollHeight;
-      const bottomBasePosition = contentHeight - 150;
-      
-      // Add some buffer to ensure proper detection
+      const bottomBasePosition = calculateBottomPosition();
       return bottomBasePosition > (viewportBottom - 100);
     });
 
-    const positionedComments = computed(() => {
-      const processedComments = [];
-      const usedPositions = [];
-      const brokenCommentsArray = [];
+    // Comment positioning functions
+    const separateCommentsByType = (comments) => {
       const normalComments = [];
-
-      // Early return if no comments to avoid unnecessary processing
-      if (!comments.value || comments.value.length === 0) {
-        return [];
-      }
-
-      // First pass: separate broken and normal comments
-      comments.value.forEach((comment) => {
-        const commentId = comment.data_id || comment.id;
-        const highlightElement = document.querySelector(
-          `.smartcomment-hl-${commentId}`,
-        );
+      const brokenCommentsArray = [];
+      
+      comments.forEach((comment) => {
+        const commentId = getCommentId(comment);
+        const highlightElement = findHighlightElement(commentId);
 
         if (highlightElement) {
-          // Normal comment with valid highlight
           const rect = highlightElement.getBoundingClientRect();
           const positionTop = rect.top + window.scrollY;
           normalComments.push({
@@ -231,15 +214,20 @@ export default defineComponent({
             positionTop,
           });
         } else {
-          // Broken comment
           brokenCommentsArray.push({
             ...comment,
             isBroken: true,
           });
         }
       });
-
-      // Process normal comments with layered positioning
+      
+      return { normalComments, brokenCommentsArray };
+    };
+    
+    const processNormalComments = (normalComments) => {
+      const processedComments = [];
+      const usedPositions = [];
+      
       normalComments.forEach((comment) => {
         let adjustedPosition = comment.positionTop;
         while (usedPositions.includes(adjustedPosition)) {
@@ -256,10 +244,13 @@ export default defineComponent({
           },
         });
       });
-
-      // Process broken comments - position them at the bottom of the screen
-      const contentHeight = document.getElementById('content')?.scrollHeight || document.body.scrollHeight;
-      const bottomBasePosition = contentHeight - 150;
+      
+      return processedComments;
+    };
+    
+    const processBrokenComments = (brokenCommentsArray) => {
+      const processedComments = [];
+      const bottomBasePosition = calculateBottomPosition();
 
       brokenCommentsArray.forEach((comment, index) => {
         const bottomPosition = bottomBasePosition - index * 10;
@@ -273,93 +264,107 @@ export default defineComponent({
           },
         });
       });
+      
       return processedComments;
+    };
+
+    const positionedComments = computed(() => {
+      if (!comments.value?.length) return [];
+      
+      const { normalComments, brokenCommentsArray } = separateCommentsByType(comments.value);
+      const processedNormal = processNormalComments(normalComments);
+      const processedBroken = processBrokenComments(brokenCommentsArray);
+      
+      return [...processedNormal, ...processedBroken];
     });
 
-    // Methods
-    const handleCommentClick = (comment) => {
-      const commentId = comment.data_id || comment.id;
-      const highlightElement = document.querySelector(
-        `.smartcomment-hl-${commentId}`,
+    // Click handlers
+    const handleBrokenCommentClick = (comment) => {
+      const timelineItem = document.querySelector(
+        `.sic-timeline-item[data-selection="${comment.posimg}"]`,
       );
+      if (timelineItem) {
+        const rect = timelineItem.getBoundingClientRect();
+        const position = {
+          top: rect.top + window.scrollY,
+          left: rect.left + window.scrollX,
+          bottom: rect.bottom + window.scrollY,
+          right: rect.right + window.scrollX,
+          width: rect.width,
+          height: rect.height,
+        };
+        commentsStore.openCommentDialog(comment, position);
+      }
+    };
+    
+    const handleNormalCommentClick = (highlightElement) => {
+      highlightElement.dispatchEvent(
+        new MouseEvent("click", {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+        }),
+      );
+    };
+
+    const handleCommentClick = (comment) => {
+      const commentId = getCommentId(comment);
+      const highlightElement = findHighlightElement(commentId);
 
       if (comment.isBroken) {
-        // For broken comments, use the timeline item as reference
-        const timelineItem = document.querySelector(
-          `.sic-timeline-item[data-selection="${comment.posimg}"]`,
-        );
-        if (timelineItem) {
-          const rect = timelineItem.getBoundingClientRect();
-          const position = {
-            top: rect.top + window.scrollY,
-            left: rect.left + window.scrollX,
-            bottom: rect.bottom + window.scrollY,
-            right: rect.right + window.scrollX,
-            width: rect.width,
-            height: rect.height,
-          };
-          commentsStore.openCommentDialog(comment, position);
-        }
+        handleBrokenCommentClick(comment);
       } else if (highlightElement) {
-        highlightElement.dispatchEvent(
-          new MouseEvent("click", {
-            bubbles: true,
-            cancelable: true,
-            view: window,
-          }),
-        );
+        handleNormalCommentClick(highlightElement);
       }
     };
 
+    // Hover handlers
+    const showBrokenCommentHover = (comment, event) => {
+      brokenCommentHover.value = {
+        visible: true,
+        selection: comment.posimg,
+        style: {
+          position: "absolute",
+          right: "30px",
+          top: `${event.pageY - 50}px`,
+          border: "2px solid #ff000050",
+          background: "white",
+          padding: "10px",
+          borderRadius: "5px",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+          zIndex: 1000,
+        },
+      };
+    };
+
     const handleMouseOver = (comment, event) => {
-      const commentId = comment.data_id || comment.id;
-      const highlightElement = document.querySelector(
-        `.smartcomment-hl-${commentId}`,
-      );
+      const commentId = getCommentId(comment);
+      const highlightElement = findHighlightElement(commentId);
 
       if (highlightElement) {
         highlightElement.classList.add("active");
       }
 
-      // Handle broken comment hover preview
       if (comment.isBroken && comment.posimg) {
-        brokenCommentHover.value = {
-          visible: true,
-          selection: comment.posimg,
-          style: {
-            position: "absolute",
-            right: "30px",
-            top: `${event.pageY - 50}px`,
-            border: "2px solid #ff000050",
-            background: "white",
-            padding: "10px",
-            borderRadius: "5px",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-            zIndex: 1000,
-          },
-        };
+        showBrokenCommentHover(comment, event);
       }
     };
 
     const handleMouseOut = (comment) => {
-      const commentId = comment.data_id || comment.id;
-      const highlightElement = document.querySelector(
-        `.smartcomment-hl-${commentId}`,
-      );
+      const commentId = getCommentId(comment);
+      const highlightElement = findHighlightElement(commentId);
 
       if (highlightElement) {
         highlightElement.classList.remove("active");
       }
 
-      // Hide broken comment hover
       if (comment.isBroken) {
         brokenCommentHover.value.visible = false;
       }
     };
 
     const scrollToBrokenComments = () => {
-      const contentHeight = document.getElementById('content')?.scrollHeight || document.body.scrollHeight;
-      const bottomBasePosition = contentHeight - 150;
+      const bottomBasePosition = calculateBottomPosition();
       
       window.scrollTo({
         top: bottomBasePosition - window.innerHeight + 100,
