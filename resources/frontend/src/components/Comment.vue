@@ -94,9 +94,10 @@ export default defineComponent({
 
     // Only show screenshot on special pages when positioning failed (fallback position used)
     const shouldShowScreenshot = computed(() => {
-      // Only show on special pages
-      if (!appStore.isSpecialPageMode) return false;
-      return true;
+      const isBroken = document.querySelector(
+          'div.sic-timeline-item.broken[data-comment-id="' + props.comment.id + '"]'
+      ) !== null;
+      return appStore.isSpecialPageMode || isBroken
     });
 
     const panelStyle = computed(() => {

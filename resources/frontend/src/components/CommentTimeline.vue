@@ -17,6 +17,7 @@
       }"
       :style="comment.itemStyle"
       :data-selection="comment.posimg"
+      :data-comment-id="comment.data_id"
       @click="handleCommentClick(comment)"
       @mouseover="handleMouseOver(comment, $event)"
       @mouseout="handleMouseOut(comment)"
