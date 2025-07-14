@@ -16,6 +16,7 @@ Class SemanticInlineComment {
 	const STATUS_COMPLETED = 'completed';
 	const ISO_TIMESTAMPFORMAT = 'Y-m-dTH:i:s';
 	const USER_TIMESTAMPFORMAT = 'Y-m-d H:i:s';
+	const USER_TIMESTAMP_SHORT = 'Y-m-d H:i';
 	
 	private $id = '';
 	private $parent = null;
@@ -37,12 +38,11 @@ Class SemanticInlineComment {
 		foreach ($this->getReplies() as $reply) {
 			$repliesArray[] = $reply->toArray();
 		}
-		
-		$lang = new Language();
-		$mwTimeStamp = MWTimestamp::getLocalInstance($this->getDatetime());
-		$datetime = $lang->getHumanTimestamp($mwTimeStamp, null, $this->getAuthor());
-		$mwTimeStamp = MWTimestamp::getLocalInstance($this->getModifiedDateTime());
-		$modifiedDateTime = $lang->getHumanTimestamp($mwTimeStamp, null, $this->getAuthor());
+
+		$user = $this->getAuthor();
+		if ( !$user || !$user instanceof User ) {
+			$user = MediaWikiServices::getInstance()->getUserFactory()->newAnonymous();
+		}
 				
 		return [
 			'id' => $this->getId(),
@@ -51,12 +51,12 @@ Class SemanticInlineComment {
 			'revision' => $this->getRevision(),
 			'position' => $this->getPosition(),
 			'positionImage' => $this->getPositionImage( false ),
-			'author' => $this->getAuthorAsString(),//($this->getAuthor() instanceof User) ? $this->getAuthor()->getName() : 'invalid user',
+			'author' => $this->getAuthorAsString(),
 			'text' => $this->getText(),
 			'status' => $this->getStatus(),
-			'datetime' => $datetime,
-			'modifiedBy' => $this->getModifiedBy(),//($this->getModifiedBy() instanceof User) ? $this->getModifiedBy()->getName() : 'invalid user',
-			'modifiedDateTime' => $modifiedDateTime,
+			'datetime' => $this->getDatetime( self::USER_TIMESTAMP_SHORT, $user ),
+			'modifiedBy' => $this->getModifiedBy(),
+			'modifiedDateTime' => $this->getModifiedDateTime( self::USER_TIMESTAMP_SHORT, $user ),
 			'replies' => $repliesArray
 		];
 	}
@@ -84,6 +84,9 @@ Class SemanticInlineComment {
 				break;
 			case self::USER_TIMESTAMPFORMAT :
 				$timestamp = vsprintf('%s%s-%s-%s %s:%s:%s', str_split($timestamp, 2));
+				break;
+			case self::USER_TIMESTAMP_SHORT :
+				$timestamp = vsprintf('%s%s-%s-%s %s:%s', str_split($timestamp, 2));
 				break;
 		}
 		return $timestamp;
