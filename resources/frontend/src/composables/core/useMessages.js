@@ -124,6 +124,9 @@ function useMessages() {
 
     // Generic error messages
     selectionGenericError: () => msg("sic-selection-generic-error"),
+
+    // Broken comment indicator
+    brokenCommentsBelow: () => msg("sic-broken-comments-below"),
   };
 
   return {

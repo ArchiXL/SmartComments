@@ -17,6 +17,7 @@
       }"
       :style="comment.itemStyle"
       :data-selection="comment.posimg"
+      :data-comment-id="comment.data_id"
       @click="handleCommentClick(comment)"
       @mouseover="handleMouseOver(comment, $event)"
       @mouseout="handleMouseOut(comment)"
@@ -37,6 +38,19 @@
         width="500"
         alt="Comment selection preview"
       />
+    </div>
+
+    <!-- Sticky indicator badge for broken comments -->
+    <div
+      v-if="showBrokenIndicator"
+      class="sic-broken-indicator"
+      @click="scrollToBrokenComments"
+    >
+      <span class="sic-broken-icon">⚠️</span>
+      <span class="sic-broken-text">
+        {{ brokenIndicatorText }}
+      </span>
+      <span class="sic-broken-arrow">↓</span>
     </div>
   </div>
 </template>
@@ -59,10 +73,11 @@ export default defineComponent({
   setup() {
     const commentsStore = useCommentsStore();
     const appStateStore = useAppStateStore();
-    const { messages } = useMessages();
+    const { messages, msgWithFallback } = useMessages();
 
     // Reactive data
     const positions = ref([]);
+    const scrollPosition = ref(0);
     const brokenCommentHover = ref({
       visible: false,
       style: {},
@@ -93,20 +108,38 @@ export default defineComponent({
         brokenCommentHover.value.visible = false;
       }
 
+      // Update scroll position to trigger reactive updates
+      scrollPosition.value = window.scrollY;
+
       // Force reactivity update to reposition broken comments at bottom of viewport
       positions.value = [];
+    };
+
+    // Helper functions
+    const getCommentId = (comment) => comment.data_id || comment.id;
+    
+    const findHighlightElement = (commentId) => {
+      return document.querySelector(`.smartcomment-hl-${commentId}`);
+    };
+    
+    const getContentHeight = () => {
+      const contentElement = document.getElementById('content');
+      return contentElement?.scrollHeight || document.body.scrollHeight;
+    };
+    
+    const calculateBottomPosition = () => getContentHeight() - 150;
+    
+    const isCommentBroken = (comment) => {
+      const commentId = getCommentId(comment);
+      return !findHighlightElement(commentId);
     };
 
     // Computed properties
     const isEnabled = computed(() => appStateStore.isEnabled);
 
     const comments = computed(() => {
-      // Ensure we have a valid comments array before filtering
       if (!Array.isArray(commentsStore.comments)) {
-        console.warn(
-          "CommentTimeline: commentsStore.comments is not an array:",
-          commentsStore.comments,
-        );
+        console.warn("CommentTimeline: commentsStore.comments is not an array:", commentsStore.comments);
         return [];
       }
       return commentsStore.comments.filter(
@@ -114,13 +147,29 @@ export default defineComponent({
       );
     });
 
-    const brokenCommentMessage = computed(() => {
-      return messages.unlocalizedComment();
+    const brokenCommentMessage = computed(() => messages.unlocalizedComment());
+
+    const brokenComments = computed(() => {
+      if (!comments.value?.length) return [];
+      return comments.value.filter(isCommentBroken);
+    });
+
+    const brokenCommentCount = computed(() => brokenComments.value.length);
+
+    const brokenIndicatorText = computed(() => {
+      const count = brokenCommentCount.value;
+      if (count === 0) return '';
+      
+      const baseMessage = msgWithFallback(
+        'sic-broken-comments-below',
+        `${count} broken comment${count > 1 ? 's' : ''} below`
+      );
+      
+      return baseMessage.replace('$1', count.toString());
     });
 
     const containerStyle = computed(() => {
-      const bodyElement =
-        document.querySelector(".mw-body") || document.querySelector("body");
+      const bodyElement = document.querySelector(".mw-body") || document.querySelector("body");
       if (!bodyElement) {
         console.warn("CommentTimeline: Could not find body element");
         return { top: "0px" };
@@ -128,32 +177,36 @@ export default defineComponent({
 
       const rect = bodyElement.getBoundingClientRect();
       const topOffset = -rect.top - 80;
-
-      return {
-        top: `${topOffset}px`,
-      };
+      return { top: `${topOffset}px` };
     });
 
-    const positionedComments = computed(() => {
-      const processedComments = [];
-      const usedPositions = [];
-      const brokenComments = [];
+    const showBrokenIndicator = computed(() => {
+      if (brokenCommentCount.value === 0) return false;
+      
+      // Ensure we react to scroll changes
+      scrollPosition.value;
+      
+      const viewportHeight = window.innerHeight;
+      const scrollTop = window.scrollY;
+      const viewportBottom = scrollTop + viewportHeight;
+      
+      const contentElement = document.getElementById('content');
+      if (!contentElement) return false;
+      
+      const bottomBasePosition = calculateBottomPosition();
+      return bottomBasePosition > (viewportBottom - 100);
+    });
+
+    // Comment positioning functions
+    const separateCommentsByType = (comments) => {
       const normalComments = [];
-
-      // Early return if no comments to avoid unnecessary processing
-      if (!comments.value || comments.value.length === 0) {
-        return [];
-      }
-
-      // First pass: separate broken and normal comments
-      comments.value.forEach((comment) => {
-        const commentId = comment.data_id || comment.id;
-        const highlightElement = document.querySelector(
-          `.smartcomment-hl-${commentId}`,
-        );
+      const brokenCommentsArray = [];
+      
+      comments.forEach((comment) => {
+        const commentId = getCommentId(comment);
+        const highlightElement = findHighlightElement(commentId);
 
         if (highlightElement) {
-          // Normal comment with valid highlight
           const rect = highlightElement.getBoundingClientRect();
           const positionTop = rect.top + window.scrollY;
           normalComments.push({
@@ -162,15 +215,20 @@ export default defineComponent({
             positionTop,
           });
         } else {
-          // Broken comment
-          brokenComments.push({
+          brokenCommentsArray.push({
             ...comment,
             isBroken: true,
           });
         }
       });
-
-      // Process normal comments with layered positioning
+      
+      return { normalComments, brokenCommentsArray };
+    };
+    
+    const processNormalComments = (normalComments) => {
+      const processedComments = [];
+      const usedPositions = [];
+      
       normalComments.forEach((comment) => {
         let adjustedPosition = comment.positionTop;
         while (usedPositions.includes(adjustedPosition)) {
@@ -187,13 +245,15 @@ export default defineComponent({
           },
         });
       });
+      
+      return processedComments;
+    };
+    
+    const processBrokenComments = (brokenCommentsArray) => {
+      const processedComments = [];
+      const bottomBasePosition = calculateBottomPosition();
 
-      // Process broken comments - position them at the bottom of the screen
-      const viewportHeight = window.innerHeight;
-      const scrollTop = window.scrollY;
-      const bottomBasePosition = scrollTop + viewportHeight - 150;
-
-      brokenComments.forEach((comment, index) => {
+      brokenCommentsArray.forEach((comment, index) => {
         const bottomPosition = bottomBasePosition - index * 10;
 
         processedComments.push({
@@ -205,88 +265,112 @@ export default defineComponent({
           },
         });
       });
+      
       return processedComments;
+    };
+
+    const positionedComments = computed(() => {
+      if (!comments.value?.length) return [];
+      
+      const { normalComments, brokenCommentsArray } = separateCommentsByType(comments.value);
+      const processedNormal = processNormalComments(normalComments);
+      const processedBroken = processBrokenComments(brokenCommentsArray);
+      
+      return [...processedNormal, ...processedBroken];
     });
 
-    // Methods
-    const handleCommentClick = (comment) => {
-      const commentId = comment.data_id || comment.id;
-      const highlightElement = document.querySelector(
-        `.smartcomment-hl-${commentId}`,
+    // Click handlers
+    const handleBrokenCommentClick = (comment) => {
+      const timelineItem = document.querySelector(
+        `.sic-timeline-item[data-selection="${comment.posimg}"]`,
       );
+      if (timelineItem) {
+        const rect = timelineItem.getBoundingClientRect();
+        const position = {
+          top: rect.top + window.scrollY,
+          left: rect.left + window.scrollX,
+          bottom: rect.bottom + window.scrollY,
+          right: rect.right + window.scrollX,
+          width: rect.width,
+          height: rect.height,
+        };
+        commentsStore.openCommentDialog(comment, position);
+      }
+    };
+    
+    const handleNormalCommentClick = (highlightElement) => {
+      highlightElement.dispatchEvent(
+        new MouseEvent("click", {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+        }),
+      );
+    };
+
+    const handleCommentClick = (comment) => {
+      const commentId = getCommentId(comment);
+      const highlightElement = findHighlightElement(commentId);
 
       if (comment.isBroken) {
-        // For broken comments, use the timeline item as reference
-        const timelineItem = document.querySelector(
-          `.sic-timeline-item[data-selection="${comment.posimg}"]`,
-        );
-        if (timelineItem) {
-          const rect = timelineItem.getBoundingClientRect();
-          const position = {
-            top: rect.top + window.scrollY,
-            left: rect.left + window.scrollX,
-            bottom: rect.bottom + window.scrollY,
-            right: rect.right + window.scrollX,
-            width: rect.width,
-            height: rect.height,
-          };
-          commentsStore.openCommentDialog(comment, position);
-        }
+        handleBrokenCommentClick(comment);
       } else if (highlightElement) {
-        highlightElement.dispatchEvent(
-          new MouseEvent("click", {
-            bubbles: true,
-            cancelable: true,
-            view: window,
-          }),
-        );
+        handleNormalCommentClick(highlightElement);
       }
     };
 
+    // Hover handlers
+    const showBrokenCommentHover = (comment, event) => {
+      brokenCommentHover.value = {
+        visible: true,
+        selection: comment.posimg,
+        style: {
+          position: "absolute",
+          right: "30px",
+          top: `${event.pageY - 50}px`,
+          border: "2px solid #ff000050",
+          background: "white",
+          padding: "10px",
+          borderRadius: "5px",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+          zIndex: 1000,
+        },
+      };
+    };
+
     const handleMouseOver = (comment, event) => {
-      const commentId = comment.data_id || comment.id;
-      const highlightElement = document.querySelector(
-        `.smartcomment-hl-${commentId}`,
-      );
+      const commentId = getCommentId(comment);
+      const highlightElement = findHighlightElement(commentId);
 
       if (highlightElement) {
         highlightElement.classList.add("active");
       }
 
-      // Handle broken comment hover preview
       if (comment.isBroken && comment.posimg) {
-        brokenCommentHover.value = {
-          visible: true,
-          selection: comment.posimg,
-          style: {
-            position: "absolute",
-            right: "30px",
-            top: `${event.pageY - 50}px`,
-            border: "2px solid #ff000050",
-            background: "white",
-            padding: "10px",
-            borderRadius: "5px",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-            zIndex: 1000,
-          },
-        };
+        showBrokenCommentHover(comment, event);
       }
     };
 
     const handleMouseOut = (comment) => {
-      const commentId = comment.data_id || comment.id;
-      const highlightElement = document.querySelector(
-        `.smartcomment-hl-${commentId}`,
-      );
+      const commentId = getCommentId(comment);
+      const highlightElement = findHighlightElement(commentId);
 
       if (highlightElement) {
         highlightElement.classList.remove("active");
       }
 
-      // Hide broken comment hover
       if (comment.isBroken) {
         brokenCommentHover.value.visible = false;
       }
+    };
+
+    const scrollToBrokenComments = () => {
+      const bottomBasePosition = calculateBottomPosition();
+      
+      window.scrollTo({
+        top: bottomBasePosition - window.innerHeight + 100,
+        behavior: 'smooth'
+      });
     };
 
     return {
@@ -296,9 +380,13 @@ export default defineComponent({
       containerStyle,
       brokenCommentHover,
       brokenCommentMessage,
+      brokenCommentCount,
+      brokenIndicatorText,
+      showBrokenIndicator,
       handleCommentClick,
       handleMouseOver,
       handleMouseOut,
+      scrollToBrokenComments,
     };
   },
 });
@@ -340,12 +428,12 @@ export default defineComponent({
     }
 
     &.broken {
-      background: #ffe0e0;
-      border-color: #d33;
+      background: #ffe0e0 !important;
+      border-color: #d33 !important;
 
       &:hover {
-        background: #ffb4b4;
-        border-color: #a00;
+        background: #ffb4b4 !important;
+        border-color: #a00 !important;
       }
     }
 
@@ -381,6 +469,61 @@ export default defineComponent({
     max-width: 100%;
     height: auto;
     border: 1px solid #ccc;
+  }
+}
+
+.sic-broken-indicator {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #f9eded;
+  border: 2px solid #d33;
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 1002;
+  font-size: 13px;
+  font-weight: 500;
+  color: #a00;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #a00;
+    background: #ffecec;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .sic-broken-icon {
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .sic-broken-text {
+    max-width: 200px;
+  }
+
+  .sic-broken-arrow {
+    font-size: 14px;
+    font-weight: bold;
+    animation: bounce 2s infinite;
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-3px);
+  }
+  60% {
+    transform: translateY(-2px);
   }
 }
 </style>
