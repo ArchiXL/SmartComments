@@ -6,7 +6,7 @@
 		"Robin van der Wiel",
 		"Yvar Nanlohij"
 	],
-	"version": "2.0.5",
+	"version": "2.1.0",
 	"url": "https://www.archixl.nl",
 	"descriptionmsg": "sic-desc",
 	"license-name": "GPL-2.0+",
@@ -34,27 +34,102 @@
 	"Hooks": {
 		"LoadExtensionSchemaUpdates": "MediaWiki\\Extension\\SmartComments\\SchemaUpdates::onLoadExtensionSchemaUpdates",
 		"BeforePageDisplay": "MediaWiki\\Extension\\SmartComments\\Hooks::onBeforePageDisplay",
+		"SkinAfterBottomScripts": "MediaWiki\\Extension\\SmartComments\\Hooks::onSkinAfterBottomScripts",
 		"SkinTemplateNavigation::Universal": "MediaWiki\\Extension\\SmartComments\\Hooks::onSkinTemplateNavigation",
 		"ResourceLoaderGetConfigVars": "MediaWiki\\Extension\\SmartComments\\Hooks::onResourceLoaderGetConfigVars",
 		"SMW::Property::initProperties": "MediaWiki\\Extension\\SmartComments\\SMWHandler::initProperties",
 		"SMW::SQLStore::BeforeDataUpdateComplete": "MediaWiki\\Extension\\SmartComments\\Hooks::addSubobjectsForComments",
 		"ParserCacheSaveComplete": "MediaWiki\\Extension\\SmartComments\\Hooks::onParserCacheSaveComplete",
 		"MediaWikiServices": "MediaWiki\\Extension\\SmartComments\\Hooks::onMediaWikiServices",
-		"ArticleDeleteAfterSuccess": "MediaWiki\\Extension\\SmartComments\\Hooks::onArticleDeleteAfterSuccess",
-		"ResourceLoaderRegisterModules": "MediaWiki\\Extension\\SmartComments\\JavascriptLoader::register"
+		"ArticleDeleteAfterSuccess": "MediaWiki\\Extension\\SmartComments\\Hooks::onArticleDeleteAfterSuccess"
+	},
+	"ResourceFileModulePaths": {
+		"localBasePath": "",
+		"remoteExtPath": "SmartComments"
 	},
 	"ResourceModules": {
-		"ext.SmartComments.Special": {
-			"localBasePath": "",
-			"remoteExtPath": "SmartComments",
+		"ext.smartcomments": {
+			"group": "ext.smartcomments",
+			"dependencies": [
+				"ext.smartcomments.frontend"
+			]
+		},
+		"ext.smartcomments.special": {
+			"group": "ext.smartcomments",
 			"styles": [
-				"resources/css/specialPage.less"
+				"resources/special/less/smartcomments.less"
 			],
 			"scripts": [
-				"resources/js/SmartComments.special.js"
+				"resources/special/js/smartcomments.js"
 			],
 			"messages": [
 				"sic-sp-adminbutton-confirm"
+			]
+		},
+		"ext.smartcomments.frontend": {
+			"es6": true,
+			"group": "ext.smartcomments",
+			"scripts": [
+				"resources/frontend/dist/smartcomments.min.js"
+			],
+			"styles": [
+				"resources/frontend/dist/smartcomments.min.css"
+			],
+			"dependencies": [
+				"mediawiki.api",
+				"mediawiki.user"
+			],
+			"targets": [
+				"desktop",
+				"mobile"
+			],
+			"messages": [
+				"sic-title-new",
+				"sic-button-new-comment",
+				"sic-button-new-reply",
+				"sic-button-save",
+				"sic-button-cancel",
+				"sic-button-close",
+				"sic-button-complete",
+				"sic-button-delete",
+				"sic-button-overview",
+				"sic-button-edit",
+				"sic-button-reopen",
+				"sic-input-newcomment",
+				"sic-input-commenttext",
+				"sic-error-empty",
+				"sic-error-title",
+				"sic-date-justnow",
+				"sic-added-comment",
+				"sic-added-comment-refreshing",
+				"sic-unlocalized-comment",
+				"api-error",
+				"sic-selection-error-1",
+				"sic-selection-error-2",
+				"sic-selection-error-3",
+				"sic-selection-error-4",
+				"sic-selection-error-5",
+				"sic-selected-text",
+				"sic-selected-image",
+				"sic-comment-placeholder",
+				"sic-saving",
+				"sic-reply-header",
+				"sic-reply-placeholder",
+				"sic-reply-submit",
+				"sic-reply-aria-label",
+				"sic-previous-comment",
+				"sic-next-comment",
+				"sic-actions",
+				"sic-mark-complete",
+				"sic-mark-delete",
+				"sic-view-overview",
+				"sic-annotate-tooltip",
+				"sic-button-open",
+				"sic-link-disabled-warn",
+				"sic-link-comment-highlight-warn",
+				"sic-selection-generic-error",
+				"sic-show-screenshot-full-size",
+				"sic-broken-comments-below"
 			]
 		}
 	},
@@ -73,28 +148,15 @@
 		}
 	},
 	"config": {
-		"SmartCommentsBodyContainer": {
-			"value": "div#mw-content-text"
-		},
 		"SmartCommentsSelectLinksOnClick": {
-			"value": true
-		},
-		"SmartCommentsOpenPopupOnSelect": {
-			"value": false
+			"value": true,
+			"@description": "If commenting mode is enabled, clicking on links will select the link text for commenting and thus opening a new comment dialog."
 		},
 		"SmartCommentsDirectComment": {
 			"value": true
 		},
-		"SmartCommentsPopupTimeout": {
-			"value": 6500
-		},
 		"SmartCommentsSpecialMaxItems": {
 			"value": 25
-		},
-		"SmartCommentsEnabledAddons": {
-			"value": [
-				"SmartConnectArchiMate"
-			]
 		}
 	},
 	"requires": {

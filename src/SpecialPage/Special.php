@@ -3,16 +3,15 @@
 namespace MediaWiki\Extension\SmartComments\SpecialPage;
 
 use Html;
-use MediaWiki\Extension\SmartComments\Utils;
+use MediaWiki\Extension\SmartComments\DBHandler;
+use MediaWiki\Extension\SmartComments\SemanticInlineComment as SIC;
+use MediaWiki\Extension\SmartComments\Settings\Handler;
 use MediaWiki\MediaWikiServices;
 use MWException;
 use OOUI;
 use OOUI\ButtonWidget;
 use OOUI\Exception;
 use RequestContext;
-use MediaWiki\Extension\SmartComments\DBHandler;
-use MediaWiki\Extension\SmartComments\SemanticInlineComment as SIC;
-use MediaWiki\Extension\SmartComments\Settings\Handler;
 use SpecialPage;
 use Title;
 use Xml;
@@ -40,15 +39,15 @@ class Special extends SpecialPage {
 	/**
 	 * @inheritDoc
 	 */
-    public function __construct() {
+	public function __construct() {
 		parent::__construct( 'SmartComments' );
-    }
+	}
 
 	/**
 	 * @inheritDoc
 	 * @throws MWException|Exception
 	 */
-    public function execute( $title ) {
+	public function execute( $title ) {
 		$user = RequestContext::getMain()->getUser();
 		$out = $this->getOutput();
 		$request = $this->getRequest();
@@ -58,7 +57,7 @@ class Special extends SpecialPage {
 			$out->addWikiTextAsContent( "<small>{{int: sic-rn-backto}} [[Special:SmartComments]]</small>" );
 			$out->addWikiTextAsContent( file_get_contents( __DIR__ . "/../../ReleaseNotes.wiki" ) );
 			return;
-		} else if ( $title == ( $manualTitle = wfMessage( "sic-manual" )->text() ) ) { // Show manual
+		} elseif ( $title == ( $manualTitle = wfMessage( "sic-manual" )->text() ) ) { // Show manual
 			$out->setPageTitle( 'SmartComments ' . $manualTitle );
 			$out->addHTML( $this->getHelpTab() );
 			return;
@@ -67,8 +66,7 @@ class Special extends SpecialPage {
 		$out->setPageTitle( wfMessage( 'sic-sp-title' )->text() );
 		$out->enableOOUI();
 		$out->addModuleStyles( [ 'oojs-ui-core', 'oojs-ui.styles.icons-moderation', 'oojs-ui.styles.icons-alerts', 'oojs-ui.styles.icons-interactions' ] );
-		$out->addModules( 'ext.smartcomments' );
-		$out->addModules( 'ext.SmartComments.Special' );
+		$out->addModules( [ 'ext.smartcomments.special', 'ext.smartcomments.frontend' ] );
 
 		$mwPermissionManager = MediaWikiServices::getInstance()->getPermissionManager();
 		$canView = $mwPermissionManager->userHasRight( $user, self::PERMISSION_VIEW_SIC );
@@ -80,15 +78,15 @@ class Special extends SpecialPage {
 			if ( $this->canManage && $request->wasPosted() ) {
 				if ( $request->getCheck( self::REQ_BLOCKED_MODE ) ) {
 					Handler::toggleBlockedMode();
-				} else if ( $request->getCheck( self::REQ_DELETE_COMPLETED ) ) {
+				} elseif ( $request->getCheck( self::REQ_DELETE_COMPLETED ) ) {
 					$this->deleteComments( self::FILTER_COMPLETED );
-				} else if ( $request->getCheck( self::REQ_DELETE_ALL ) ) {
+				} elseif ( $request->getCheck( self::REQ_DELETE_ALL ) ) {
 					$this->deleteComments( self::FILTER_ALL );
 				}
 
 				$out->redirect( $out->getTitle()->getFullURL( $this->commentsFilter->toUrlParams() ) );
-			} else if ( $this->canManage && ( $action = $request->getText( 'action' ) ) !== '' && ( $commentId = $request->getText('id' ) ) !== '' ) {
-				$this->doAction( $action, (int) $commentId );
+			} elseif ( $this->canManage && ( $action = $request->getText( 'action' ) ) !== '' && ( $commentId = $request->getText( 'id' ) ) !== '' ) {
+				$this->doAction( $action, (int)$commentId );
 				$out->redirect( $out->getTitle()->getFullURL( $this->commentsFilter->toUrlParams() ) );
 			} else {
 				$this->showMain();
@@ -96,7 +94,7 @@ class Special extends SpecialPage {
 		} else {
 			$out->showErrorPage( 'smartcomments', 'sic-sp-no-access' );
 		}
-    }
+	}
 
 	/**
 	 * Show the main HTML for the special page
@@ -104,7 +102,7 @@ class Special extends SpecialPage {
 	 * @return void
 	 * @throws Exception
 	 */
-	private function showMain() : void {
+	private function showMain(): void {
 		$out = $this->getOutput();
 
 		$tabLabels = Xml::openElement( 'div', [ 'class' => 'sc-tabs' ] );
@@ -127,7 +125,7 @@ class Special extends SpecialPage {
 	 * @return string
 	 * @throws OOUI\Exception
 	 */
-	private function showOverview() : string {
+	private function showOverview(): string {
 		return $this->generateTopBar() . $this->generateCommentTable();
 	}
 
@@ -137,11 +135,11 @@ class Special extends SpecialPage {
 	 * @return string
 	 * @throws OOUI\Exception
 	 */
-	private function generateTopBar() : string {
+	private function generateTopBar(): string {
 		$html = '';
 
 		if ( $this->canManage ) {
-			$buttonToggleComments = new OOUI\ButtonInputWidget([
+			$buttonToggleComments = new OOUI\ButtonInputWidget( [
 				'label' => wfMessage( Handler::isCommentModeBlocked() ? 'sic-sp-adminbutton-unblock-comments' : 'sic-sp-adminbutton-block-comments' )->text(),
 				'title' => wfMessage( Handler::isCommentModeBlocked() ? 'sic-sp-adminbutton-unblock-comments-tooltip' : 'sic-sp-adminbutton-block-comments-tooltip' )->text(),
 				'name' => self::REQ_BLOCKED_MODE,
@@ -149,41 +147,41 @@ class Special extends SpecialPage {
 				'flags' => [ 'progressive' ],
 				'icon' => Handler::isCommentModeBlocked() ? 'unLock' : 'lock',
 				'classes' => [ 'sic-sp-admin-buttons' ]
-			]);
+			] );
 
-			$buttonDeleteCompleted = new OOUI\ButtonInputWidget([
+			$buttonDeleteCompleted = new OOUI\ButtonInputWidget( [
 				'label' => wfMessage( 'sic-sp-adminbutton-delete-completed' )->text(),
 				'name' => self::REQ_DELETE_COMPLETED,
 				'type' => 'submit',
 				'flags' => [ 'destructive' ],
 				'icon' => 'checkAll',
 				'classes' => [ 'sic-sp-admin-buttons' ]
-			]);
+			] );
 
-			$buttonDeleteAll = new OOUI\ButtonInputWidget([
+			$buttonDeleteAll = new OOUI\ButtonInputWidget( [
 				'label' => wfMessage( 'sic-sp-adminbutton-delete-all' )->text(),
 				'name' => self::REQ_DELETE_ALL,
 				'type' => 'submit',
 				'flags' => [ 'destructive' ],
 				'icon' => 'clear',
 				'classes' => [ 'sic-sp-admin-buttons' ]
-			]);
+			] );
 
-			$fieldsetLayout = new OOUI\FieldsetLayout([
+			$fieldsetLayout = new OOUI\FieldsetLayout( [
 				'label' => wfMessage( 'sic-sp-admin-actions' )->text(),
 				'classes' => [ 'sic-sp-admin-buttons' ]
-			]);
+			] );
 
-			$fieldsetLayout->addItems([
+			$fieldsetLayout->addItems( [
 				new OOUI\FieldLayout( $buttonToggleComments, [] ),
 				new OOUI\FieldLayout( $buttonDeleteCompleted, [] ),
 				new OOUI\FieldLayout( $buttonDeleteAll, [] )
-			]);
+			] );
 
-			$formLayout = new OOUI\FormLayout([
+			$formLayout = new OOUI\FormLayout( [
 				'items' => [ $fieldsetLayout ],
 				'method' => 'POST'
-			]);
+			] );
 
 			$formLayout->addClasses( [ 'sic-sp-admin-buttons' ] );
 
@@ -205,7 +203,7 @@ class Special extends SpecialPage {
 		$html .= Xml::label( wfMessage( 'sic-sp-filter-status' )->parse(), 'sic-lb-filter-status' ) . ' : ';
 		$html .= Xml::openElement( 'select', [ "name" => "sic-sp-flt-status", "id" => "sic-sp-flt-status", "class" => "sic-filter-dd" ] );
 		$html .= Xml::element( 'option', [ "value" => "other", ( $this->commentsFilter->getStatus() == "other" ? "selected" : "" ) => "" ], "" );
-		$html .= Xml::element( 'option', [ "value" => SIC::STATUS_OPEN, ( $this->commentsFilter->getStatus() == SIC::STATUS_OPEN ? "selected" : "" ) => ""  ], wfMessage( "sic-status-open" )->text() );
+		$html .= Xml::element( 'option', [ "value" => SIC::STATUS_OPEN, ( $this->commentsFilter->getStatus() == SIC::STATUS_OPEN ? "selected" : "" ) => "" ], wfMessage( "sic-status-open" )->text() );
 		$html .= Xml::element( 'option', [ "value" => SIC::STATUS_COMPLETED, ( $this->commentsFilter->getStatus() == SIC::STATUS_COMPLETED ? "selected" : "" ) => "" ], wfMessage( "sic-status-completed" )->text() );
 		$html .= Xml::closeElement( 'select' );
 		$html .= Xml::closeElement( 'td' );
@@ -228,7 +226,7 @@ class Special extends SpecialPage {
 	 *
 	 * @return string
 	 */
-	private function generateCommentTable() : string {
+	private function generateCommentTable(): string {
 		$columns = [
 			'status', 'author', 'text', 'replies', 'datetime', 'modifiedBy', 'modifiedDateTime', 'page', ''
 		];
@@ -244,11 +242,11 @@ class Special extends SpecialPage {
 		$hasMoreComments = $result[ 2 ];
 
 		$rowClass = 'sic-sp-rw';
-		$algnr = ['style'=>'text-align: right;'];
+		$algnr = [ 'style' => 'text-align: right;' ];
 		$i = 1;
 
 		$tableHtml = $this->generatePaginationButtons( $totalCount, $hasMoreComments, true );
-		$tableHtml .=	Xml::openElement( 'table', [ 'class' => 'wikitable sic-tb-allcomments' ] );
+		$tableHtml .= Xml::openElement( 'table', [ 'class' => 'wikitable sic-tb-allcomments' ] );
 		$tableHtml .= Xml::openElement( 'tr' );
 		foreach ( $columns as $column ) {
 			$tableHtml .= Xml::element( 'th', [ 'class' => "sic-tb-col-$column" ],
@@ -265,16 +263,16 @@ class Special extends SpecialPage {
 				'data-author' => $sic->getAuthor()->getName(),
 				'data-page' => $sic->getPage(),
 				'data-status' => $sic->getStatus()
-			]);
-			$tableHtml .= Xml::element( 'td', null, $sic->getStatus() );
+			] );
+			$tableHtml .= Xml::element( 'td', null, wfMessage('sc-status-' . $sic->getStatus() ) );
 			$tableHtml .= Xml::openElement( 'td' );
-			$tableHtml .= Xml::element( 'a', [ 'href' => htmlspecialchars( $this->getPageUrl( 'User:'.$sic->getAuthor() ) ) ], $sic->getAuthor());
+			$tableHtml .= Xml::element( 'a', [ 'href' => htmlspecialchars( $this->getPageUrl( 'User:' . $sic->getAuthor() ) ) ], $sic->getAuthor() );
 			$tableHtml .= Xml::closeElement( 'td' );
 			$tableHtml .= Xml::element( 'td', null, trim( strip_tags( htmlspecialchars_decode( $sic->getText(), ENT_QUOTES ) ) ) );
 			$tableHtml .= Xml::element( 'td', $algnr, ( $sic->getNumberOfReplies() > 0 ) ? $sic->getNumberOfReplies() : '' );
 			$tableHtml .= Xml::element( 'td', null, $sic->getDatetime( SIC::USER_TIMESTAMPFORMAT, $this->getUser() ) );
 			$tableHtml .= Xml::openElement( 'td' );
-			$tableHtml .= Xml::element( 'a', [ 'href' => htmlspecialchars( $this->getPageUrl( 'User:'.$sic->getModifiedBy() ) ) ], $sic->getModifiedBy() );
+			$tableHtml .= Xml::element( 'a', [ 'href' => htmlspecialchars( $this->getPageUrl( 'User:' . $sic->getModifiedBy() ) ) ], $sic->getModifiedBy() );
 			$tableHtml .= Xml::closeElement( 'td' );
 			$tableHtml .= Xml::element( 'td', null, $sic->getModifiedDateTime( SIC::USER_TIMESTAMPFORMAT, $this->getUser() ) );
 			$tableHtml .= Xml::openElement( 'td' );
@@ -286,7 +284,7 @@ class Special extends SpecialPage {
 					$displaytitle = \MediaWiki\MediaWikiServices::getInstance()->getPageProps()->getProperties( $title, 'displaytitle' );
 				}
 				if ( !empty( $displaytitle ) ) {
-					$linkTitle = $displaytitle[ $title->getArticleID( ) ] ?? $linkTitle;
+					$linkTitle = $displaytitle[ $title->getArticleID() ] ?? $linkTitle;
 				}
 			}
 
@@ -297,12 +295,13 @@ class Special extends SpecialPage {
 			}
 			$tableHtml .= Xml::closeElement( 'td' );
 
-			$openButton = new ButtonWidget([
+			$openButton = new ButtonWidget( [
 				'infusable' => true,
 				'id' => 'openComment-' . $this->getValidCssName( $sic->getId() ),
 				'icon' => 'ongoingConversation',
 				'title' => wfMessage( 'sic-button-open' )->parse()
-			]);
+			] );
+			$openButton->setAttributes( [ 'data-comment-id' => $sic->getId() ] );
 			$openButton->addClasses( [ 'specialOpenCommentButton' ] );
 			$tableHtml .= Xml::openElement( 'td' );
 			$tableHtml .= $openButton->toString();
@@ -310,7 +309,7 @@ class Special extends SpecialPage {
 
 			if ( $this->canManage ) {
 				if ( $sic->getStatus() == SIC::STATUS_OPEN ) {
-					$completeButton = new ButtonWidget([
+					$completeButton = new ButtonWidget( [
 						'infusable' => true,
 						'id' => 'complete-' . $this->getValidCssName( $sic->getId() ),
 						'icon' => 'check',
@@ -319,9 +318,9 @@ class Special extends SpecialPage {
 							'action' => self::ACTION_COMPLETED,
 							'id' => $sic->getId()
 						], $this->commentsFilter->toUrlParams() ) )
-					]);
+					] );
 				} else {
-					$completeButton = new ButtonWidget([
+					$completeButton = new ButtonWidget( [
 						'infusable' => true,
 						'id' => 'reopen-' . $this->getValidCssName( $sic->getId() ),
 						'icon' => 'undo',
@@ -330,7 +329,7 @@ class Special extends SpecialPage {
 							'action' => self::ACTION_REOPEN,
 							'id' => $sic->getId()
 						], $this->commentsFilter->toUrlParams() ) )
-					]);
+					] );
 				}
 
 				$deleteButton = new ButtonWidget( [
@@ -369,7 +368,7 @@ class Special extends SpecialPage {
 	 * @param bool $shorthandNotation
 	 * @return string
 	 */
-	private function generatePaginationButtons( int $totalCount, bool $hasMoreComments, bool $shorthandNotation = false ) : string {
+	private function generatePaginationButtons( int $totalCount, bool $hasMoreComments, bool $shorthandNotation = false ): string {
 		$html = Xml::openElement( 'div', [ 'class' => 'sic-table-footer' ] );
 		if ( $this->commentsFilter->getOffset() > 0 ) {
 			$html .= Xml::element( 'button', [ 'id' => 'sic-sp-showprevious' ], $shorthandNotation ? "<" : wfMessage( "sic-sp-filter-showprevious" )->text() );
@@ -377,8 +376,9 @@ class Special extends SpecialPage {
 
 		global $wgSmartCommentsSpecialMaxItems;
 		$indexLastShownComment = $hasMoreComments ? ( $this->commentsFilter->getOffset() + $wgSmartCommentsSpecialMaxItems ) : $totalCount;
-		if ( !$shorthandNotation )
+		if ( !$shorthandNotation ) {
 			$html .= Xml::element( 'span', [ 'id' => 'sic-sp-display-count' ], wfMessage( 'sic-sp-display-count', $totalCount > 0 ? $this->commentsFilter->getOffset() + 1 : 0, $indexLastShownComment, $totalCount )->text() );
+		}
 
 		if ( $hasMoreComments ) {
 			$html .= Xml::element( 'button', [ 'id' => 'sic-sp-shownext' ], $shorthandNotation ? ">" : wfMessage( "sic-sp-filter-shownext" )->text() );
@@ -393,7 +393,7 @@ class Special extends SpecialPage {
 	 *
 	 * @return string
 	 */
-	private function getHelpTab() : string {
+	private function getHelpTab(): string {
 		$languageCode = MediaWikiServices::getInstance()->getContentLanguage()->getCode();
 
 		if ( !in_array( $languageCode, [ 'nl', 'en' ] ) ) {
@@ -423,7 +423,7 @@ class Special extends SpecialPage {
 			return;
 		}
 
-		switch( $action ) {
+		switch ( $action ) {
 			case self::ACTION_DELETE:
 				DBHandler::deleteComment( $commentId );
 				break;
@@ -454,12 +454,12 @@ class Special extends SpecialPage {
 	 * @param string $filter
 	 * @return void
 	 */
-	private function deleteComments( string $filter ) : void {
+	private function deleteComments( string $filter ): void {
 		$sics = [];
 
 		if ( $filter == self::FILTER_COMPLETED ) {
 			$sics = DBHandler::selectCompletedComments();
-		} else if ( $filter == self::FILTER_ALL ) {
+		} elseif ( $filter == self::FILTER_ALL ) {
 			$sics = DBHandler::selectAllComments();
 		}
 
@@ -481,7 +481,7 @@ class Special extends SpecialPage {
 	 * @param $pageName
 	 * @return string
 	 */
-	private function getPageUrl( $pageName ) : string {
+	private function getPageUrl( $pageName ): string {
 		$title = Title::newFromText( $pageName );
 		return ( $title instanceof Title ) ? $title->getLinkUrl() : '';
 	}
@@ -491,7 +491,7 @@ class Special extends SpecialPage {
 	 * @param $commentId
 	 * @return string
 	 */
-	private function getPageUrlFocused( $pageName, $commentId ) : string {
+	private function getPageUrlFocused( $pageName, $commentId ): string {
 		$title = Title::newFromText( $pageName );
 		return ( $title instanceof Title ) ? $title->getLinkUrl( [ 'scenabled' => 1, 'focusId' => $commentId ] ) : '';
 	}

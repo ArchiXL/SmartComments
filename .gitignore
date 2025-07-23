@@ -1,3 +1,6 @@
-vendor
-.composer.lock
-.sass-cache
+vendor/
+resources/frontend/node_modules/
+resources/js/node_modules/
+composer.lock
+.sass-cache/
+.idea/

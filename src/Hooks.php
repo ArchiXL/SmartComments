@@ -2,13 +2,13 @@
 
 namespace MediaWiki\Extension\SmartComments;
 
-use OutputPage;
 use MediaWiki\Extension\SmartComments\Settings\Handler;
 use MediaWiki\Extension\SmartComments\Updater\Page;
+use OutputPage;
+use SMW\SemanticData;
+use SMW\Store;
 use SMW\Subobject;
 use Title;
-use SMW\Store;
-use SMW\SemanticData;
 
 class Hooks {
 
@@ -26,8 +26,8 @@ class Hooks {
 
 		self::$imageSaveDirectory = $wgUploadDirectory . "/sic-images/";
 		if ( !is_dir( self::$imageSaveDirectory ) ) {
-			if ( ! mkdir ( self::$imageSaveDirectory ) ) {
-				throw new \Exception( "Could not create directory for images (". self::$imageSaveDirectory .")." );
+			if ( !mkdir( self::$imageSaveDirectory ) ) {
+				throw new \Exception( "Could not create directory for images (" . self::$imageSaveDirectory . ")." );
 			}
 		}
 	}
@@ -40,9 +40,27 @@ class Hooks {
 	 * @return bool
 	 */
 	public static function onBeforePageDisplay( \OutputPage $out, \Skin $skin ) {
-		if( $out->getUser()->isRegistered() && $out->isArticle() ) {
+		if ( $out->getUser()->isRegistered() && $out->isArticle() && !Handler::isCommentModeBlocked() ) {
 			$out->addModuleStyles( [ 'oojs-ui.styles.icons-editing-core', 'oojs-ui.styles.icons-moderation', 'oojs-ui.styles.icons-alerts' ] );
-			$out->addModules( 'ext.smartcomments' );
+			$out->addModules( 'ext.smartcomments.frontend' );
+		}
+		return true;
+	}
+
+	/**
+	 * Adds the SmartComments app div at the bottom of the body tag
+	 *
+	 * @param \Skin $skin
+	 * @param string &$text
+	 * @return bool
+	 */
+	public static function onSkinAfterBottomScripts( \Skin $skin, &$text ) {
+		$out = $skin->getOutput();
+		if (
+			( $out->getUser()->isRegistered() && $out->isArticle() && !Handler::isCommentModeBlocked() ) ||
+			( $out->getTitle()->equals( \SpecialPage::getTitleFor( 'SmartComments' ) ) )
+		) {
+			$text .= '<div id="smartcomments-app"></div>';
 		}
 		return true;
 	}
@@ -62,46 +80,39 @@ class Hooks {
 	/**
 	 * Passes config variables to the resource loader
 	 *
-	 * @param $vars
+	 * @param &$vars
 	 * @return bool
 	 */
 	public static function onResourceLoaderGetConfigVars( &$vars ) {
-		global $wgSmartCommentsBodyContainer, $wgSmartCommentsSelectLinksOnClick,
-			   $wgSmartCommentsOpenPopupOnSelect, $wgSmartCommentsDirectComment, $wgSmartCommentsPopupTimeout,
-				$wgSmartCommentsSpecialMaxItems, $wgSmartCommentsEnabledAddons;
+		global $wgSmartCommentsSelectLinksOnClick, $wgSmartCommentsSpecialMaxItems;
 
 		$vars[ 'wgSmartComments' ] = [
-		    'bodyContainer' => $wgSmartCommentsBodyContainer,
-		    'selectOnLinkClick' => $wgSmartCommentsSelectLinksOnClick,
-			'commentOnSelect' => $wgSmartCommentsOpenPopupOnSelect,
-			'directComment' => $wgSmartCommentsDirectComment,
-			'popupTimeout' => $wgSmartCommentsPopupTimeout,
 			'maxCommentsShownOnSpecial' => $wgSmartCommentsSpecialMaxItems,
-			'enabledAddons' => $wgSmartCommentsEnabledAddons
-        ];
+			'selectLinksOnClick' => $wgSmartCommentsSelectLinksOnClick,
+		];
 		return true;
 	}
 
 	/**
 	 * This function creates subobjects for all comments posted on the page.
-	 * 
+	 *
 	 * @param Store $store
 	 * @param SemanticData $semanticData
 	 * @return bool
 	 */
-	public static function addSubobjectsForComments($store, \SMW\SemanticData $semanticData) {
+	public static function addSubobjectsForComments( $store, \SMW\SemanticData $semanticData ) {
 		$subject = $semanticData->getSubject();
 		$title = $subject->getTitle();
 		$pageName = $title->getPrefixedText();
 		$filter = 'all';
-		
-		//Retrieve all comments for this page from the database and create subobjects
-		$sics = DBHandler::selectCommentsByPage($pageName, $filter);
-		$subobjects = SMWHandler::createSubobjectsFromArrayOfSics($sics);
-		foreach ($subobjects as $subobject) {
-			if ($subobject instanceof Subobject) {
-				//Add the subobject to the page's SemanticData object
-				$semanticData->addSubobject($subobject);
+
+		// Retrieve all comments for this page from the database and create subobjects
+		$sics = DBHandler::selectCommentsByPage( $pageName, $filter );
+		$subobjects = SMWHandler::createSubobjectsFromArrayOfSics( $sics );
+		foreach ( $subobjects as $subobject ) {
+			if ( $subobject instanceof Subobject ) {
+				// Add the subobject to the page's SemanticData object
+				$semanticData->addSubobject( $subobject );
 			}
 		}
 		return true;
@@ -110,24 +121,24 @@ class Hooks {
 	/**
 	 * Adds the "Add comment" button
 	 *
-	 * @param \SkinTemplate $skinTemplate
-	 * @param array $links
+	 * @param \SkinTemplate &$skinTemplate
+	 * @param array &$links
 	 * @return bool
 	 */
 	public static function onSkinTemplateNavigation( \SkinTemplate &$skinTemplate, array &$links ) {
-		$action = $skinTemplate->getRequest()->getVal('action');
+		$action = $skinTemplate->getRequest()->getVal( 'action' );
 		if ( $action != null || $skinTemplate->getTitle() && !$skinTemplate->getTitle()->exists() || !$skinTemplate->getUser()->isRegistered() || Handler::isCommentModeBlocked() ) {
 			return true;
 		}
 
 		$links['views']['comments'] = [
-			'text' => wfMessage("sic-action-text"),
+			'text' => wfMessage( "sic-action-text" ),
 			'href' => '#',
 			'class' => 'sic-enable-commenting'
 		];
 
 		// We want the 'comments'-tab on the left side of the 'watch'/star button
-		if ( isset ( $links['views'] ) && isset ( $links['views']['watch'] ) ) {
+		if ( isset( $links['views'] ) && isset( $links['views']['watch'] ) ) {
 			$watch = $links['views']['watch'];
 			unset( $links['views']['watch'] );
 			$links['views']['watch'] = $watch;
@@ -154,4 +165,3 @@ class Hooks {
 	}
 
 }
-
