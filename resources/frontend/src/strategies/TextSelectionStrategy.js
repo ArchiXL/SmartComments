@@ -191,18 +191,19 @@ class TextSelectionStrategy extends BaseSelectionStrategy {
         }
 
         const selectionPos = rangy.serializeRange(range);
-        const searchText = this.sanitizeText(range.toString());
+        const rawText = range.toString(); // Keep raw text for searching
+        const sanitizedText = this.sanitizeText(rawText); // Sanitized text for storage
         const searchHtml = range.toHtml();
 
-        // Validate content length
-        if (searchText.length > SELECTION_LIMITS.MAX_TEXT_LENGTH) {
+        // Validate content length on sanitized text
+        if (sanitizedText.length > SELECTION_LIMITS.MAX_TEXT_LENGTH) {
           reject(
-            new Error(`Selection too long: ${searchText.length} characters`),
+            new Error(`Selection too long: ${sanitizedText.length} characters`),
           );
           return;
         }
 
-        if (!searchText && !searchHtml) {
+        if (!rawText && !searchHtml) {
           reject(new Error("Selection is empty"));
           return;
         }
@@ -212,19 +213,21 @@ class TextSelectionStrategy extends BaseSelectionStrategy {
           this.searchHTMLContent(
             baseEl,
             range,
-            searchText,
+            rawText, // Use raw text for searching
             searchHtml,
             resolve,
             reject,
+            sanitizedText, // Pass sanitized text for final result
           );
         } else {
           this.searchPlainText(
             baseEl,
             range,
-            searchText,
+            rawText, // Use raw text for searching
             selectionPos,
             resolve,
             reject,
+            sanitizedText, // Pass sanitized text for final result
           );
         }
       } catch (error) {
@@ -241,8 +244,9 @@ class TextSelectionStrategy extends BaseSelectionStrategy {
    * @param {string} selectionPos - Serialized range position
    * @param {Function} resolve - Promise resolve
    * @param {Function} reject - Promise reject
+   * @param {string} sanitizedText - Sanitized text for final result
    */
-  searchPlainText(baseEl, range, searchText, selectionPos, resolve, reject) {
+  searchPlainText(baseEl, range, searchText, selectionPos, resolve, reject, sanitizedText) {
     const searchRange = rangy.createRange();
     searchRange.selectNodeContents(baseEl);
 
@@ -259,6 +263,7 @@ class TextSelectionStrategy extends BaseSelectionStrategy {
       return;
     }
 
+
     // Find the exact occurrence
     this.findTextOccurrence(
       baseEl,
@@ -267,6 +272,7 @@ class TextSelectionStrategy extends BaseSelectionStrategy {
       0,
       resolve,
       reject,
+      sanitizedText || searchText
     );
   }
 
@@ -278,8 +284,9 @@ class TextSelectionStrategy extends BaseSelectionStrategy {
    * @param {string} searchHtml - HTML version
    * @param {Function} resolve - Promise resolve
    * @param {Function} reject - Promise reject
+   * @param {string} sanitizedText - Sanitized text for final result
    */
-  searchHTMLContent(baseEl, range, searchText, searchHtml, resolve, reject) {
+  searchHTMLContent(baseEl, range, searchText, searchHtml, resolve, reject, sanitizedText) {
     // For HTML content, use a safer approach with DOM walker
     const walker = document.createTreeWalker(
       baseEl,
@@ -303,7 +310,7 @@ class TextSelectionStrategy extends BaseSelectionStrategy {
             // Found complete match, check if it's our target
             if (this.isTargetMatch(currentNode, range)) {
               resolve({
-                text: this.sanitizeText(searchHtml),
+                text: sanitizedText || this.sanitizeText(searchHtml),
                 index: foundOccurrences,
                 type: "text",
               });
@@ -329,6 +336,7 @@ class TextSelectionStrategy extends BaseSelectionStrategy {
    * @param {number} occurrenceIndex - Current occurrence count
    * @param {Function} resolve - Promise resolve
    * @param {Function} reject - Promise reject
+   * @param {string} sanitizedText - Sanitized text for final result
    */
   findTextOccurrence(
     baseEl,
@@ -337,6 +345,7 @@ class TextSelectionStrategy extends BaseSelectionStrategy {
     occurrenceIndex,
     resolve,
     reject,
+    sanitizedText,
   ) {
     const range = rangy.createRange();
     const searchRange = rangy.createRange();
@@ -356,9 +365,10 @@ class TextSelectionStrategy extends BaseSelectionStrategy {
 
       try {
         if (range.findText(searchText, findOptions)) {
-          if (rangy.serializeRange(range) === targetPos) {
+          const currentPos = rangy.serializeRange(range);
+          if (currentPos === targetPos) {
             resolve({
-              text: searchText,
+              text: sanitizedText || searchText, // Use sanitized text for final result
               index: occurrenceIndex,
               type: "text",
             });

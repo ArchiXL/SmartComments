@@ -5,7 +5,7 @@
       v-if="commentsStore.isCommentDialogVisible"
       :comment="commentsStore.activeComment"
       :position="commentsStore.commentPosition"
-      :allow-replies="!store.isSpecialPageMode"
+      :allow-replies="true"
       @close="commentsStore.closeCommentDialog"
       @delete="commentsStore.deleteComment"
       @complete="commentsStore.completeComment"

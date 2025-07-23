@@ -264,7 +264,7 @@ class Special extends SpecialPage {
 				'data-page' => $sic->getPage(),
 				'data-status' => $sic->getStatus()
 			] );
-			$tableHtml .= Xml::element( 'td', null, $sic->getStatus() );
+			$tableHtml .= Xml::element( 'td', null, wfMessage('sc-status-' . $sic->getStatus() ) );
 			$tableHtml .= Xml::openElement( 'td' );
 			$tableHtml .= Xml::element( 'a', [ 'href' => htmlspecialchars( $this->getPageUrl( 'User:' . $sic->getAuthor() ) ) ], $sic->getAuthor() );
 			$tableHtml .= Xml::closeElement( 'td' );

@@ -42,8 +42,8 @@
 
     <!-- Sticky indicator badge for broken comments -->
     <div
-      v-if="showBrokenIndicator"
       class="sic-broken-indicator"
+      :class="{ visible: showBrokenIndicator }"
       @click="scrollToBrokenComments"
     >
       <span class="sic-broken-icon">⚠️</span>
@@ -399,7 +399,7 @@ export default defineComponent({
 
   .sic-timeline-item {
     width: 24px;
-    height: 18px;
+    height: 24px;
     background: #ffffe0;
     border: 1px solid rgba(0, 0, 0, 0.5);
     display: flex;
@@ -412,10 +412,10 @@ export default defineComponent({
     border-radius: 2px;
 
     .oo-ui-iconElement-icon {
-      width: 14px;
-      height: 14px;
-      min-width: 14px;
-      min-height: 14px;
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      min-height: 18px;
       padding-top: 5px;
       pointer-events: none;
       opacity: 0.6;
@@ -480,7 +480,7 @@ export default defineComponent({
   border: 2px solid #d33;
   border-radius: 8px;
   padding: 8px 12px;
-  display: flex;
+  display: none;
   align-items: center;
   gap: 8px;
   cursor: pointer;
@@ -491,6 +491,10 @@ export default defineComponent({
   color: #a00;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transition: all 0.2s ease;
+
+  &.visible {
+    display: flex;
+  }
 
   &:hover {
     border-color: #a00;
