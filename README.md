@@ -1,10 +1,4 @@
 # SmartComments
-
-## Please note!
-* This is a beta release.
-* Comment images are not displayed correctly when using img_auth.php
-* The UI and JavaScript framework will be refactored to work with Codex.
-
 ## Introduction
 SmartComments is an extension that enables wiki users to post inline comments  
 attached to text fragments on wiki pages, comparable to posting review comments  
@@ -29,9 +23,6 @@ To enable SmartComments, the following actions are needed:
 * Run `composer update` so that Composer will recalculate the dependencies and the changes will take effect
 * Run the MediaWiki 'update.php' maintenance script to add the database tables
 * Manage user permissions if needed (see below) 
-
-### Migration to 2.0.0
-See [Migrating to SmartComments 2.0.0](docs/migrating-to-v2.md)
 
 ## Wiki manual
 Please consult the manual under the "Manual"-tab on the page Special:SmartComments.
@@ -78,22 +69,3 @@ for actual database interactions.
 After posting a comment the API queues a page data update job. If SMW has been  
 installed, the *BeforeDataUpdateComplete* hook invokes a routine that stores  
 comments data as subobjects attached to the respective wiki page.
-
-## Managing JavaScript Files in the Extension
-This MediaWiki extension includes a significant JavaScript library that is bundled into a single minified file for production use. To make adjustments to the included JavaScript files, you can modify the `JavascriptLoader` class provided in the extension.
-
-### Modifying JavaScript Files
-The `JavascriptLoader` class handles the loading and inclusion of JavaScript files for this extension. If you need to add or remove specific JavaScript files, follow these steps:
-
-1. Locate the `JavascriptLoader` class in your extension's source code. This class is responsible for managing the loading of JavaScript files.
-
-2. To **add** or remove a new JavaScript file:
-  - Place your JavaScript file in a suitable location within your extension's directory structure.
-  - Open the `JavascriptLoader` class and find the relevant method responsible for adding JavaScript files.
-  - Inside this class, use the appropriate static $packageFiles to include or remove your new JavaScript file.
-
-### Minification and Deployment
-Run the maintenance script 'minifier.php' if you made any changes to the JavaScript resources. This is necessary to reflect any changes!
-
-### Debugging Mode
-You can enable debugging mode by appending `?debug=true` to the URL query parameters. When debugging mode is enabled, the individual script files will be loaded instead of the minified bundle. This can be useful for development and debugging purposes.
