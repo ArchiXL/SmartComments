@@ -123,5 +123,7 @@
 	"sic-link-comment-highlight-warn": "Click on the highlighted text to view the comment, or disable comment mode to follow the link.",
 	"sic-selection-generic-error": "An error occurred during text selection.",
 	"sic-show-screenshot-full-size": "Click to view full size",
-	"sic-broken-comments-below": "Some comments couldn't be attached"
+	"sic-broken-comments-below": "Some comments couldn't be attached",
+	"sc-status-open": "Open",
+	"sc-status-completed": "Completed"
 }
