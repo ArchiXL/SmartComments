@@ -1,4 +1,7 @@
-; Version 2.1.0 (TBA)
+; Version 2.1.1 (Jul 25, 2025)
+* Added missing translation strings on the SpecialPage
+
+; Version 2.1.0 (Jul 24, 2025)
 * Refactored frontend -- now using Vue
 * Improved UI
 * Added SVG and image support
