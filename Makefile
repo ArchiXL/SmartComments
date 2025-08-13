@@ -20,6 +20,9 @@ DB_IMAGE?=""
 SMW_VERSION?=4.1.3
 MM_VERSION ?= 3.1.0
 
+# PHP extensions
+PHP_EXTENSIONS?=gd zlib
+
 # composer
 # Enables "composer update" inside of extension
 COMPOSER_EXT?=true
