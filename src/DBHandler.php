@@ -385,7 +385,7 @@ class DBHandler {
 		foreach ( $res as $page ) {
 			$title = Title::newFromID( $page );
 			if ( $title ) {
-				$pages[] = $title->getText();
+				$pages[] = $title->getFullText();
 			}
 		}
 
