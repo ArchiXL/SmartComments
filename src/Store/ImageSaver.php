@@ -44,7 +44,7 @@ class ImageSaver {
 			$data = base64_decode($data);
 
 			try {
-				$image = imagecreatefromstring( $data );
+				$image = \imagecreatefromstring( $data );
 			} catch ( \Exception $e ) {
 				return null;
 			}
