@@ -24,12 +24,14 @@ jobs:
             database_image: "mariadb:10"
             coverage: false
             experimental: true
+            php_extensions: "gd"
     env:
       MW_VERSION: ${{ matrix.mediawiki_version }}
       SMW_VERSION: ${{ matrix.smw_version }}
       PHP_VERSION: ${{ matrix.php_version }}
       DB_TYPE: ${{ matrix.database_type }}
       DB_IMAGE: ${{ matrix.database_image }}
+      PHP_EXTENSIONS: ${{ matrix.php_extensions }}
 
 
     steps:
