@@ -24,7 +24,7 @@ jobs:
             database_image: "mariadb:10"
             coverage: false
             experimental: true
-            php_extensions: "gd, zlib"
+            php_extensions: "gd"
     env:
       MW_VERSION: ${{ matrix.mediawiki_version }}
       SMW_VERSION: ${{ matrix.smw_version }}
