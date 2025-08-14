@@ -124,6 +124,7 @@
 	"sic-selection-generic-error": "Er is een fout opgetreden tijdens tekst selectie.",
 	"sic-show-screenshot-full-size": "Klik om de volledige grootte te bekijken",
 	"sic-broken-comments-below": "Er zijn opmerkingen die niet meer gekoppeld zijn aan een tekstselectie op deze pagina",
-	"sc-status-open": "Open",
-	"sc-status-completed": "Afgesloten"
+	"sc-status-open": "open",
+	"sc-status-completed": "afgehandeld"
 }
+

@@ -43,6 +43,16 @@ class ImageSaver {
 			$data = str_replace( ' ', '+', $data );
 			$data = base64_decode($data);
 
+			try {
+				$image = \imagecreatefromstring( $data );
+			} catch ( \Exception $e ) {
+				return null;
+			}
+
+			if ( $image === false ) {
+				return null;
+			}
+
 			if ( $data === false ) {
 				return null;
 			}
