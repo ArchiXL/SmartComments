@@ -14,8 +14,6 @@ function useKeyboardShortcuts(commentsStore) {
         // Otherwise close the comment dialog
         commentsStore.closeCommentDialog();
       }
-    } else if (event.key === "Delete" && commentsStore.activeComment) {
-      commentsStore.deleteComment(commentsStore.activeComment);
     } else if (event.key === "ArrowDown" && commentsStore.hasNextComment) {
       commentsStore.navigateComment("next");
     } else if (event.key === "ArrowUp" && commentsStore.hasPreviousComment) {

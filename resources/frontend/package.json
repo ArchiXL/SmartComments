@@ -1,6 +1,6 @@
 {
     "name": "@smartcomments/frontend",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "SmartComments Frontend Library - Vue 3 components and utilities for MediaWiki",
     "type": "module",
     "scripts": {
