@@ -67,7 +67,7 @@ export default defineComponent({
       const authorName = props.comment.author
         ? props.comment.author.replace(/<[^>]*>/g, "") // Strip HTML tags
         : "comment";
-      return msg("sic-reply-aria-label", `Reply to ${authorName}`, authorName);
+      return msg("sc-reply-aria-label", `Reply to ${authorName}`, authorName);
     });
 
     return {

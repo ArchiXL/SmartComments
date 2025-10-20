@@ -5,6 +5,7 @@ export const useAppStateStore = defineStore("appStore", {
   state: () => ({
     isEnabled: false,
     isSpecialPageMode: false,
+    notification: null,
   }),
   getters: {
     getIsEnabled: (state) => state.isEnabled,
@@ -17,10 +18,12 @@ export const useAppStateStore = defineStore("appStore", {
      */
     _updateButtonUI() {
       const toggleElement = document.getElementById("ca-comments");
+      this.notifyUserOfState();
+
       if (this.isEnabled) {
         // Update body class regardless of button presence
         document.body.classList.add("smartcomments-enabled");
-        
+
         if (toggleElement) {
           // Comments are enabled, button should offer to disable
           toggleElement.classList.add("selected");
@@ -113,5 +116,31 @@ export const useAppStateStore = defineStore("appStore", {
         this.enableAppState();
       }
     },
+    notifyUserOfState() {
+      if ( this.isEnabled ) {
+        this.notification = mw.notify(
+            mw.message( 'sc-enabled-smartcomments' ).text(),
+            {
+              autoHide: false,
+              tag: 'smartcomments-notification',
+              type: 'warn'
+            }
+        );
+
+        // We want the notification to be undismissable so remove the click handler and handle the closing of the notification ourselves
+        setTimeout( function() {
+          $( '.mw-notification-tag-smartcomments-notification' ).click( function ( e ) {
+            e.stopImmediatePropagation();
+            return false;
+          } );
+        }, 100 );
+      } else {
+        let $notif = $( '.mw-notification-tag-smartcomments-notification' );
+        let notifObj = $notif.data( 'mw-notification' );
+        if ( notifObj ) {
+          notifObj.close();
+        }
+      }
+    }
   },
 });

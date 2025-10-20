@@ -5,7 +5,7 @@ namespace MediaWiki\Extension\SmartComments\Updater;
 use MediaWiki\Extension\SmartComments\DBHandler;
 use MediaWiki\Extension\SmartComments\Positioning\TextLocation;
 use MediaWiki\Extension\SmartComments\Positioning\TextLocationUpdater;
-use MediaWiki\Extension\SmartComments\SemanticInlineComment;
+use MediaWiki\Extension\SmartComments\SmartComment;
 use MWContentSerializationException;
 use MWException;
 use ParserOutput;
@@ -31,7 +31,7 @@ class Page {
 		$this->parserOutput = $parserOutput;
 		$this->anchorStore = new AnchorStore( DBHandler::selectAnchorsByPage(
 			$this->page->getTitle()->getFullText(),
-			SemanticInlineComment::STATUS_OPEN
+			SmartComment::STATUS_OPEN
 		) );
 	}
 

@@ -3,7 +3,7 @@
 namespace MediaWiki\Extension\SmartComments;
 
 use ApiBase;
-use MediaWiki\Extension\SmartComments\SemanticInlineComment as SIC;
+use MediaWiki\Extension\SmartComments\SmartComment as SmartComment;
 use MediaWiki\Extension\SmartComments\Settings\Handler;
 use MediaWiki\Extension\SmartComments\Store\ImageSaver;
 use MWException;
@@ -105,35 +105,35 @@ class Api extends ApiBase {
 				if ( !$title->exists() ) {
 					$this->addError( 'smartcomments-api-new-error-invalid-page' );
 				} else {
-					$sic = new SIC();
-					$sic->setPage( $page );
-					$sic->setPosition( $pos );
-					$sic->setRevision( $title->getLatestRevID() );
-					$sic->setStatus( SIC::STATUS_OPEN );
+					$comment = new SmartComment();
+					$comment->setPage( $page );
+					$comment->setPosition( $pos );
+					$comment->setRevision( $title->getLatestRevID() );
+					$comment->setStatus( SmartComment::STATUS_OPEN );
 
 					$imageName = $imageSaver->save( $img );
 					if ( $imageName === null ) {
 						$this->addError( 'smartcomments-api-new-error-invalid-image' );
-						unset( $sic );
+						unset( $comment );
 					} else {
-						$sic->setPositionImage( $imageName );
+						$comment->setPositionImage( $imageName );
 					}
 				}
 			} else {
 				// Reply comment
-				$sic = new SIC();
-				$sic->setParent( $parent );
+				$comment = new SmartComment();
+				$comment->setParent( $parent );
 			}
 
-			if ( isset( $sic ) ) {
-				$sic->setAuthor( $this->getUser() );
-				$sic->setDatetime( wfTimestampNow() );
-				$sic->setModifiedBy( $this->getUser() );
-				$sic->setModifiedDateTime( $sic->getDatetime() );
-				$sic->setText( $text );
+			if ( isset( $comment ) ) {
+				$comment->setAuthor( $this->getUser() );
+				$comment->setDatetime( wfTimestampNow() );
+				$comment->setModifiedBy( $this->getUser() );
+				$comment->setModifiedDateTime( $comment->getDatetime() );
+				$comment->setText( $text );
 
 				// Insert comment into the database
-				$result = DBHandler::insertComment( $sic );
+				$result = DBHandler::insertComment( $comment );
 				if ( !$result ) {
 					$this->addError( 'smartcomments-api-new-error-insert' );
 				} else {
@@ -166,8 +166,8 @@ class Api extends ApiBase {
 
 		// User must have manage-inlinecomments permission or must be comment owner to change comment text
 		if ( !$this->getUser()->isAllowed( self::PERMISSION_MANAGE_COMMENTS ) ) {
-			$sic = DBHandler::selectCommentById( $commentId );
-			if ( !( $sic instanceof SIC ) || ( $sic->getAuthor() != $this->getUser() ) ) {
+			$comment = DBHandler::selectCommentById( $commentId );
+			if ( !( $comment instanceof SmartComment ) || ( $comment->getAuthor() != $this->getUser() ) ) {
 				$this->addError( 'smartcomments-api-update-error-no-permission' );
 				return;
 			}
@@ -176,7 +176,7 @@ class Api extends ApiBase {
 		// Check validity of parameters
 		$text = $this->getRequest()->getVal( self::PARAM_TEXT, '' );
 		if ( $commentId === null || !( empty( $text ) xor empty( $status ) ) ||
-			( empty( $text ) && !in_array( $status, [ SIC::STATUS_OPEN, SIC::STATUS_COMPLETED ] ) ) ) {
+			( empty( $text ) && !in_array( $status, [ SmartComment::STATUS_OPEN, SmartComment::STATUS_COMPLETED ] ) ) ) {
 			$this->addError( "smartcomments-api-update-error-incorrect-parms ($commentId)" );
 			return;
 		}
@@ -212,8 +212,8 @@ class Api extends ApiBase {
 		$commentId = $this->getRequest()->getVal( self::PARAM_COMMENT );
 		// User must have manage-inlinecomments permission or must be comment owner
 		if ( !$this->getUser()->isAllowed( self::PERMISSION_MANAGE_COMMENTS ) ) {
-			$sic = DBHandler::selectCommentById( $commentId );
-			if ( !( $sic instanceof SIC ) || ( $sic->getAuthor() != $this->getUser() ) ) {
+			$comment = DBHandler::selectCommentById( $commentId );
+			if ( !( $comment instanceof SmartComment ) || ( $comment->getAuthor() != $this->getUser() ) ) {
 				$this->addError( 'smartcomments-api-delete-error-no-permission' );
 				return;
 			}
@@ -252,10 +252,10 @@ class Api extends ApiBase {
 			return;
 		}
 
-		$sic = DBHandler::selectCommentById( $commentId );
-		if ( $sic instanceof SIC ) {
+		$comment = DBHandler::selectCommentById( $commentId );
+		if ( $comment instanceof SmartComment ) {
 			$this->getResult()->addValue( self::RES_MODULE, self::RES_SUCCESS, '1' );
-			$this->getResult()->addValue( self::RES_MODULE, self::RES_COMMENT, $sic->toArray() );
+			$this->getResult()->addValue( self::RES_MODULE, self::RES_COMMENT, $comment->toArray() );
 		} else {
 			$this->addError( "smartcomments-api-get-error-comment-not-found" );
 		}
@@ -264,13 +264,13 @@ class Api extends ApiBase {
 	private function doListComments() {
 		$pageName = $this->getRequest()->getText( self::PARAM_PAGE, '' );
 		$filter = $this->getRequest()->getVal( self::PARAM_STATUS, '' );
-		if ( empty( $pageName ) || !in_array( $filter, [ SIC::STATUS_OPEN, SIC::STATUS_COMPLETED, '' ] ) ) {
+		if ( empty( $pageName ) || !in_array( $filter, [ SmartComment::STATUS_OPEN, SmartComment::STATUS_COMPLETED, '' ] ) ) {
 			$this->addError( "smartcomments-api-list-error-incorrect-parms" );
 		} else {
-			$sics = DBHandler::selectCommentsByPage( $pageName, $filter );
+			$comments = DBHandler::selectCommentsByPage( $pageName, $filter );
 			$comments = [];
-			foreach ( $sics as $sic ) {
-				$comments[] = $sic->toArray();
+			foreach ( $comments as $comment ) {
+				$comments[] = $comment->toArray();
 			}
 
 			$this->getResult()->addValue( self::RES_MODULE, self::RES_SUCCESS, '1' );
@@ -282,7 +282,7 @@ class Api extends ApiBase {
 		$pageName = $this->getRequest()->getText( self::PARAM_PAGE, '' );
 		$filter = $this->getRequest()->getVal( self::PARAM_STATUS, '' );
 		$rev = $this->getRequest()->getVal( self::PARAM_REV, '' );
-		if ( empty( $pageName ) || !in_array( $filter, [ SIC::STATUS_OPEN, SIC::STATUS_COMPLETED, '' ] ) ) {
+		if ( empty( $pageName ) || !in_array( $filter, [ SmartComment::STATUS_OPEN, SmartComment::STATUS_COMPLETED, '' ] ) ) {
 			$this->addError( "smartcomments-api-list-error-incorrect-parms" );
 		} else {
 			$anchors = (array)DBHandler::selectAnchorsByPage( $pageName, $filter );
@@ -346,7 +346,7 @@ class Api extends ApiBase {
 				ParamValidator::PARAM_ISMULTI => false
 			],
 			self::PARAM_STATUS => [
-				ParamValidator::PARAM_TYPE => [ SIC::STATUS_OPEN, SIC::STATUS_COMPLETED ],
+				ParamValidator::PARAM_TYPE => [ SmartComment::STATUS_OPEN, SmartComment::STATUS_COMPLETED ],
 				ParamValidator::PARAM_ISMULTI => false,
 			]
 		];

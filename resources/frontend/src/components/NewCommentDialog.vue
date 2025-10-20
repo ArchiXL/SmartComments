@@ -130,13 +130,13 @@ export default defineComponent({
     // Translation helper function for inline use
     const t = (key) => {
       const translations = {
-        selectedText: msg("sic-selected-text", "Selected text"),
-        selectedImage: msg("sic-selected-image", "Selected image"),
+        selectedText: msg("sc-selected-text", "Selected text"),
+        selectedImage: msg("sc-selected-image", "Selected image"),
         commentPlaceholder: msg(
           "sic-comment-placeholder",
           "Enter your comment...",
         ),
-        saving: msg("sic-saving", "Saving..."),
+        saving: msg("sc-saving", "Saving..."),
       };
       return translations[key] || key;
     };

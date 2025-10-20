@@ -9,7 +9,7 @@ use SMW\Subobject;
 use SMW\DIProperty;
 use SMW\DataValueFactory;
 use SMW\MediaWiki\Jobs\UpdateJob;
-use MediaWiki\Extension\SmartComments\SemanticInlineComment as SIC;
+use MediaWiki\Extension\SmartComments\SmartComment as SmartComment;
 
 class SMWHandler {
 	const PROPERTY_SUBOTYPE = 'Subotype';
@@ -71,44 +71,44 @@ class SMWHandler {
 		}
 	}
 	
-	public static function createSubobjectsFromArrayOfSics($sics) {
+	public static function createSubobjectsFromArrayOfComments( $comments ) {
 		$subobjects = [];
-		foreach($sics as $sic) {
-			if (($sic instanceof SIC) && empty($sic->getParent())) {
+		foreach( $comments  as $comment ) {
+			if (($comment instanceof SmartComment) && empty($comment->getParent())) {
 				//Create subobject only for root comments, not for replies
-				$subobjects[] = self::createSubobjectFromSic($sic);
+				$subobjects[] = self::createSubobjectFromComment($comment);
 			}
 		}
 		return $subobjects;
 	}
 	
-	public static function createSubobjectFromSic(SIC $sic) {
-		$title = Title::newFromText($sic->getPage());
+	public static function createSubobjectFromComment(SmartComment $comment) {
+		$title = Title::newFromText($comment->getPage());
 		if (($title instanceof Title) && $title->exists()) {
 			//Create subobject to contain comment data
 			$subobject = new Subobject($title);
-			$subobjectName = 'SIC-'. $sic->getId();
+			$subobjectName = 'SIC-'. $comment->getId();
 			$subobject->setEmptyContainerForId($subobjectName);
 			
-			$authorName = ($sic->getAuthor() instanceof User) ? 'User:'.$sic->getAuthor()->getName() : 'invalid user';
-			$modifiedByName = ($sic->getModifiedBy() instanceof User) ? 'User:'.$sic->getModifiedBy()->getName() : 'invalid user';
+			$authorName = ($comment->getAuthor() instanceof User) ? 'User:'.$comment->getAuthor()->getName() : 'invalid user';
+			$modifiedByName = ($comment->getModifiedBy() instanceof User) ? 'User:'.$comment->getModifiedBy()->getName() : 'invalid user';
 
 			$subobject->addDataValue(self::getDataValue(self::PROPERTY_SUBOTYPE, 'SemanticInlineComment'));
-			$subobject->addDataValue(self::getDataValue(self::PROPERTY_ID, $sic->getId()));
+			$subobject->addDataValue(self::getDataValue(self::PROPERTY_ID, $comment->getId()));
 			$subobject->addDataValue(self::getDataValue(self::PROPERTY_AUTHOR, $authorName));
-			$subobject->addDataValue(self::getDataValue(self::PROPERTY_TEXT, $sic->getText()));
-			$subobject->addDataValue(self::getDataValue(self::PROPERTY_DATETIME, $sic->getDatetime(SIC::ISO_TIMESTAMPFORMAT)));
+			$subobject->addDataValue(self::getDataValue(self::PROPERTY_TEXT, $comment->getText()));
+			$subobject->addDataValue(self::getDataValue(self::PROPERTY_DATETIME, $comment->getDatetime(SmartComment::ISO_TIMESTAMPFORMAT)));
 			$subobject->addDataValue(self::getDataValue(self::PROPERTY_MODIFIEDBY, $modifiedByName));
-			$subobject->addDataValue(self::getDataValue(self::PROPERTY_MODIFIEDDATETIME, $sic->getModifiedDateTime(SIC::ISO_TIMESTAMPFORMAT)));
-			$subobject->addDataValue(self::getDataValue(self::PROPERTY_REPLIES, $sic->getNumberOfReplies()));
+			$subobject->addDataValue(self::getDataValue(self::PROPERTY_MODIFIEDDATETIME, $comment->getModifiedDateTime(SmartComment::ISO_TIMESTAMPFORMAT)));
+			$subobject->addDataValue(self::getDataValue(self::PROPERTY_REPLIES, $comment->getNumberOfReplies()));
 			
-			if (empty($sic->getParent())) {
-				$subobject->addDataValue(self::getDataValue(self::PROPERTY_PAGE, $sic->getPage()));
-				$subobject->addDataValue(self::getDataValue(self::PROPERTY_REVISIONID, $sic->getRevision()));
-				$subobject->addDataValue(self::getDataValue(self::PROPERTY_POSITION, $sic->getPosition()));
-				$subobject->addDataValue(self::getDataValue(self::PROPERTY_STATUS, $sic->getStatus()));
+			if (empty($comment->getParent())) {
+				$subobject->addDataValue(self::getDataValue(self::PROPERTY_PAGE, $comment->getPage()));
+				$subobject->addDataValue(self::getDataValue(self::PROPERTY_REVISIONID, $comment->getRevision()));
+				$subobject->addDataValue(self::getDataValue(self::PROPERTY_POSITION, $comment->getPosition()));
+				$subobject->addDataValue(self::getDataValue(self::PROPERTY_STATUS, $comment->getStatus()));
 			} else {
-				$subobject->addDataValue(self::getDataValue(self::PROPERTY_PARENT, $sic->getParent()));
+				$subobject->addDataValue(self::getDataValue(self::PROPERTY_PARENT, $comment->getParent()));
 			}
 		} else {
 			//Title does not exist
@@ -124,57 +124,57 @@ class SMWHandler {
 	}
 	
 	public static function getCommentsByPageName($pageName, $filter = null) {
-		$sics = [];
+		$comments = [];
 		$title = Title::newFromText($pageName);
 		if ($title instanceof Title) {
 			$queryString = "[[{self::PROPERTY_SUBOTYPE}::{__CLASS__}]] [[{self::PROPERTY_PAGE}::$pageName]]";
-			if (($filter == SIC::STATUS_OPEN) || ($filter == SIC::STATUS_COMPLETED)) {
+			if (($filter == SmartComment::STATUS_OPEN) || ($filter == SmartComment::STATUS_COMPLETED)) {
 				$queryString .= "[[{self::PROPERTY_STATUS}::$filter]]";
 			}
 			$subos = Utils::queryForPages($queryString);
 			foreach ($subos as $subo) {
-				$sic = new SIC();
-				self::initializeFromSubobject($sic, $subo);
-				$sic->setReplies(self::getCommentsByParent($sic->getId(), $filter));
-				$sics[] = $sic;
+				$comment = new SmartComment();
+				self::initializeFromSubobject($comment, $subo);
+				$comment->setReplies(self::getCommentsByParent($comment->getId(), $filter));
+				$comments[] = $comment;
 			}
 		} else {
 			//Invalid title/pagename
 		}
-		return $sics;
+		return $comments;
 	}
 	
 	private static function getCommentsByParent($parent) {
 		$queryString = "[[{self::PROPERTY_PARENT}::$parent]]";
 		$subos = Utils::queryForPages($queryString);
-		$sics = [];
+		$comments = [];
 		foreach ($subos as $subo) {
-			$sic = new SIC();
-			self::initializeFromSubobject($sic, $subo);
-			$sics[] = $sic;
+			$comment = new SmartComment();
+			self::initializeFromSubobject($comment, $subo);
+			$comments[] = $comment;
 		}
-		return $sics;
+		return $comments;
 	}
 	
-	private static function initializeFromSubobject($sic, $subo) {
+	private static function initializeFromSubobject($comment, $subo) {
 		$author = User::newFromName(self::getPropertyValueFromSubObject($subo, self::PROPERTY_AUTHOR));
 		$modifiedBy = User::newFromName(self::getPropertyValueFromSubObject($subo, self::PROPERTY_MODIFIEDBY));
-		$sic->setId(self::getPropertyValueFromSubObject($subo, self::PROPERTY_ID));
-		$sic->setParent(self::getPropertyValueFromSubObject($subo, self::PROPERTY_PARENT));
-		$sic->setAuthor($author);
-		$sic->setText(self::getPropertyValueFromSubObject($subo, self::PROPERTY_TEXT));
-		$sic->setDatetime(self::getPropertyValueFromSubObject($subo, self::PROPERTY_DATETIME));
-		$sic->setModifiedBy($modifiedBy);
-		$sic->setModifiedDateTime(self::getPropertyValueFromSubObject($subo, self::PROPERTY_MODIFIEDDATETIME));
+		$comment->setId(self::getPropertyValueFromSubObject($subo, self::PROPERTY_ID));
+		$comment->setParent(self::getPropertyValueFromSubObject($subo, self::PROPERTY_PARENT));
+		$comment->setAuthor($author);
+		$comment->setText(self::getPropertyValueFromSubObject($subo, self::PROPERTY_TEXT));
+		$comment->setDatetime(self::getPropertyValueFromSubObject($subo, self::PROPERTY_DATETIME));
+		$comment->setModifiedBy($modifiedBy);
+		$comment->setModifiedDateTime(self::getPropertyValueFromSubObject($subo, self::PROPERTY_MODIFIEDDATETIME));
 
-		if (is_null($sic->getParent())) {
+		if (is_null($comment->getParent())) {
 			$pageId = self::getPropertyValueFromSubObject($subo, self::PROPERTY_ID);
 			$title = Title::newFromID($pageId);
 			$pageName = ($title instanceof Title) ? $title->getPrefixedText() : "invalid page name";
-			$sic->setPage($pageName);
-			$sic->setRevision(self::getPropertyValueFromSubObject($subo, self::PROPERTY_REVISIONID));
-			$sic->setPosition(self::getPropertyValueFromSubObject($subo, self::PROPERTY_POSITION));
-			$sic->setStatus(self::getPropertyValueFromSubObject($subo, self::PROPERTY_STATUS));
+			$comment->setPage($pageName);
+			$comment->setRevision(self::getPropertyValueFromSubObject($subo, self::PROPERTY_REVISIONID));
+			$comment->setPosition(self::getPropertyValueFromSubObject($subo, self::PROPERTY_POSITION));
+			$comment->setStatus(self::getPropertyValueFromSubObject($subo, self::PROPERTY_STATUS));
 		}
 	}
 	

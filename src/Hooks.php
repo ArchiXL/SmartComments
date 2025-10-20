@@ -107,8 +107,8 @@ class Hooks {
 		$filter = 'all';
 
 		// Retrieve all comments for this page from the database and create subobjects
-		$sics = DBHandler::selectCommentsByPage( $pageName, $filter );
-		$subobjects = SMWHandler::createSubobjectsFromArrayOfSics( $sics );
+		$comments = DBHandler::selectCommentsByPage( $pageName, $filter );
+		$subobjects = SMWHandler::createSubobjectsFromArrayOfComments( $comments );
 		foreach ( $subobjects as $subobject ) {
 			if ( $subobject instanceof Subobject ) {
 				// Add the subobject to the page's SemanticData object
@@ -132,7 +132,7 @@ class Hooks {
 		}
 
 		$links['views']['comments'] = [
-			'text' => wfMessage( "sic-action-text" ),
+			'text' => wfMessage( "sc-action-text" ),
 			'href' => '#',
 			'class' => 'sic-enable-commenting'
 		];
@@ -153,13 +153,13 @@ class Hooks {
 		$pageId = DBHandler::getPageIdFromArchive( $titleText, $titleNS );
 
 		if ( $pageId != 0 ) {
-			$sics = DBHandler::selectCommentsByPageId( $pageId );
+			$comments = DBHandler::selectCommentsByPageId( $pageId );
 			DBHandler::deleteDiffTableEntry( $pageId );
 
-			/* @var SemanticInlineComment $sic */
-			foreach ( $sics as $sic ) {
-				$sicId = $sic->getId();
-				$success = DBHandler::deleteComment( $sicId );
+			/* @var SmartComment $comment */
+			foreach ( $comments as $comment ) {
+				$commentId = $comment->getId();
+				$success = DBHandler::deleteComment( $commentId );
 			}
 		}
 	}

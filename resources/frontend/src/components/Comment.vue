@@ -13,7 +13,7 @@
       ></comment-actions>
 
       <!-- Screenshot - only show on special pages when positioning failed -->
-      <div v-if="shouldShowScreenshot" class="smartcomments-screenshot tt-center" :data-tooltip="messages.sicShowScreenshotFullSize()">
+      <div v-if="shouldShowScreenshot" class="smartcomments-screenshot tt-center" :data-tooltip="messages.CommentsShowScreenshotFullSize()">
         <img 
           :src="comment.positionImage" 
           alt="Comment screenshot" 

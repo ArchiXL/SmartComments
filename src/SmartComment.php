@@ -11,7 +11,7 @@ use Wikimedia\Timestamp\TimestampException;
  * Class defining the properties and methods of an inline semantic comment.
  * 
  */
-Class SemanticInlineComment {
+Class SmartComment {
 	const STATUS_OPEN = 'open';
 	const STATUS_COMPLETED = 'completed';
 	const ISO_TIMESTAMPFORMAT = 'Y-m-dTH:i:s';
@@ -95,11 +95,11 @@ Class SemanticInlineComment {
 	/**
 	 * Adds a reply to this object
 	 *
-	 * @param SemanticInlineComment $sic
+	 * @param SmartComment $comment
 	 * @return void
 	 */
-	public function addReply(SemanticInlineComment $sic) {
-		$this->replies[] = $sic;
+	public function addReply(SmartComment $comment) {
+		$this->replies[] = $comment;
 	}
 
 	/**
@@ -123,7 +123,7 @@ Class SemanticInlineComment {
 	/**
 	 * Returns the parent of this comment
 	 *
-	 * @return null|SemanticInlineComment
+	 * @return null|SmartComment
 	 */
 	public function getParent() {
 		return $this->parent;
@@ -246,7 +246,7 @@ Class SemanticInlineComment {
 	}
 
 	/**
-	 * @return SemanticInlineComment[]
+	 * @return SmartComment[]
 	 */
 	public function getReplies() {
 		return $this->replies;
@@ -351,7 +351,7 @@ Class SemanticInlineComment {
 	}
 
 	/**
-	 * @param SemanticInlineComment[] $replies
+	 * @param SmartComment[] $replies
 	 * @return void
 	 */
 	public function setReplies($replies) {
