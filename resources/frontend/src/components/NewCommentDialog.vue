@@ -133,7 +133,7 @@ export default defineComponent({
         selectedText: msg("sc-selected-text", "Selected text"),
         selectedImage: msg("sc-selected-image", "Selected image"),
         commentPlaceholder: msg(
-          "sic-comment-placeholder",
+          "sc-comment-placeholder",
           "Enter your comment...",
         ),
         saving: msg("sc-saving", "Saving..."),

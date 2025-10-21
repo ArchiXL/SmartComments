@@ -203,16 +203,16 @@ class Special extends SpecialPage {
 		$html .= Xml::label( wfMessage( 'sc-sp-filter-status' )->parse(), 'sic-lb-filter-status' ) . ' : ';
 		$html .= Xml::openElement( 'select', [ "name" => "sic-sp-flt-status", "id" => "sic-sp-flt-status", "class" => "sic-filter-dd" ] );
 		$html .= Xml::element( 'option', [ "value" => "other", ( $this->commentsFilter->getStatus() == "other" ? "selected" : "" ) => "" ], "" );
-		$html .= Xml::element( 'option', [ "value" => SmartComments::STATUS_OPEN, ( $this->commentsFilter->getStatus() == SmartComments::STATUS_OPEN ? "selected" : "" ) => "" ], wfMessage( "sic-status-open" )->text() );
-		$html .= Xml::element( 'option', [ "value" => SmartComments::STATUS_COMPLETED, ( $this->commentsFilter->getStatus() == SmartComments::STATUS_COMPLETED ? "selected" : "" ) => "" ], wfMessage( "sic-status-completed" )->text() );
+		$html .= Xml::element( 'option', [ "value" => SmartComments::STATUS_OPEN, ( $this->commentsFilter->getStatus() == SmartComments::STATUS_OPEN ? "selected" : "" ) => "" ], wfMessage( "sc-status-open" )->text() );
+		$html .= Xml::element( 'option', [ "value" => SmartComments::STATUS_COMPLETED, ( $this->commentsFilter->getStatus() == SmartComments::STATUS_COMPLETED ? "selected" : "" ) => "" ], wfMessage( "sc-status-completed" )->text() );
 		$html .= Xml::closeElement( 'select' );
 		$html .= Xml::closeElement( 'td' );
 		$html .= Xml::openElement( 'td', [ 'class' => 'sic-sp-filter' ] );
-		$html .= Xml::label( wfMessage( 'sic-sp-filter-page' )->parse(), 'sic-lb-filter-page' ) . ' : ';
+		$html .= Xml::label( wfMessage( 'sc-sp-filter-page' )->parse(), 'sic-lb-filter-page' ) . ' : ';
 		$html .= Xml::listDropDown( "sic-sp-flt-page", implode( "\n", $filterPageOptions ), '', $commentFilterPage ?: 'other', 'sic-filter-dd' );
 		$html .= Xml::closeElement( 'td' );
 		$html .= Xml::openElement( 'td', [ 'class' => 'sic-sp-filter' ] );
-		$html .= Xml::label( wfMessage( 'sic-sp-filter-author' )->parse(), 'sic-lb-filter-author' ) . ' : ';
+		$html .= Xml::label( wfMessage( 'sc-sp-filter-author' )->parse(), 'sic-lb-filter-author' ) . ' : ';
 		$html .= Xml::listDropDown( "sic-sp-flt-author", implode( "\n", $filterAuthorOptions ), '', $this->commentsFilter->getAuthor() ?: 'other', 'sic-filter-dd' );
 		$html .= Xml::closeElement( 'td' );
 		$html .= Xml::closeElement( 'tr' );
@@ -289,7 +289,7 @@ class Special extends SpecialPage {
 			}
 
 			if ( empty( $linkTitle ) ) {
-				$tableHtml .= Xml::element( 'p', [], wfMessage( 'sic-page-not-found' )->text() );
+				$tableHtml .= Xml::element( 'p', [], wfMessage( 'sc-page-not-found' )->text() );
 			} else {
 				$tableHtml .= Xml::element( 'a', [ 'href' => $this->getPageUrlFocused( htmlspecialchars( $comment->getPage() ), $comment->getId() ) ], $linkTitle );
 			}
@@ -299,7 +299,7 @@ class Special extends SpecialPage {
 				'infusable' => true,
 				'id' => 'openComment-' . $this->getValidCssName( $comment->getId() ),
 				'icon' => 'ongoingConversation',
-				'title' => wfMessage( 'sic-button-open' )->parse()
+				'title' => wfMessage( 'sc-button-open' )->parse()
 			] );
 			$openButton->setAttributes( [ 'data-comment-id' => $comment->getId() ] );
 			$openButton->addClasses( [ 'specialOpenCommentButton' ] );
@@ -313,7 +313,7 @@ class Special extends SpecialPage {
 						'infusable' => true,
 						'id' => 'complete-' . $this->getValidCssName( $comment->getId() ),
 						'icon' => 'check',
-						'title' => wfMessage( 'sic-button-complete' )->parse(),
+						'title' => wfMessage( 'sc-button-complete' )->parse(),
 						'href' => $this->getOutput()->getTitle()->getFullURL( array_merge( [
 							'action' => self::ACTION_COMPLETED,
 							'id' => $comment->getId()
@@ -324,7 +324,7 @@ class Special extends SpecialPage {
 						'infusable' => true,
 						'id' => 'reopen-' . $this->getValidCssName( $comment->getId() ),
 						'icon' => 'undo',
-						'title' => wfMessage( 'sic-button-reopen' )->parse(),
+						'title' => wfMessage( 'sc-button-reopen' )->parse(),
 						'href' => $this->getOutput()->getTitle()->getFullURL( array_merge( [
 							'action' => self::ACTION_REOPEN,
 							'id' => $comment->getId()
@@ -336,7 +336,7 @@ class Special extends SpecialPage {
 					'infusable' => true,
 					'id' => 'delete-' . $this->getValidCssName( $comment->getId() ),
 					'icon' => 'trash',
-					'title' => wfMessage( 'sic-button-delete' )->parse(),
+					'title' => wfMessage( 'sc-button-delete' )->parse(),
 					'href' => $this->getOutput()->getTitle()->getFullURL( array_merge( [
 						'action' => self::ACTION_DELETE,
 						'id' => $comment->getId()
@@ -371,17 +371,17 @@ class Special extends SpecialPage {
 	private function generatePaginationButtons( int $totalCount, bool $hasMoreComments, bool $shorthandNotation = false ): string {
 		$html = Xml::openElement( 'div', [ 'class' => 'sic-table-footer' ] );
 		if ( $this->commentsFilter->getOffset() > 0 ) {
-			$html .= Xml::element( 'button', [ 'id' => 'sic-sp-showprevious' ], $shorthandNotation ? "<" : wfMessage( "sic-sp-filter-showprevious" )->text() );
+			$html .= Xml::element( 'button', [ 'id' => 'sic-sp-showprevious' ], $shorthandNotation ? "<" : wfMessage( "sc-sp-filter-showprevious" )->text() );
 		}
 
 		global $wgSmartCommentsSpecialMaxItems;
 		$indexLastShownComment = $hasMoreComments ? ( $this->commentsFilter->getOffset() + $wgSmartCommentsSpecialMaxItems ) : $totalCount;
 		if ( !$shorthandNotation ) {
-			$html .= Xml::element( 'span', [ 'id' => 'sic-sp-display-count' ], wfMessage( 'sic-sp-display-count', $totalCount > 0 ? $this->commentsFilter->getOffset() + 1 : 0, $indexLastShownComment, $totalCount )->text() );
+			$html .= Xml::element( 'span', [ 'id' => 'sic-sp-display-count' ], wfMessage( 'sc-sp-display-count', $totalCount > 0 ? $this->commentsFilter->getOffset() + 1 : 0, $indexLastShownComment, $totalCount )->text() );
 		}
 
 		if ( $hasMoreComments ) {
-			$html .= Xml::element( 'button', [ 'id' => 'sic-sp-shownext' ], $shorthandNotation ? ">" : wfMessage( "sic-sp-filter-shownext" )->text() );
+			$html .= Xml::element( 'button', [ 'id' => 'sic-sp-shownext' ], $shorthandNotation ? ">" : wfMessage( "sc-sp-filter-shownext" )->text() );
 		}
 		$html .= Xml::closeElement( 'div' );
 
@@ -414,9 +414,9 @@ class Special extends SpecialPage {
 	 */
 	private function doAction( string $action, int $commentId ): void {
 		$message = [
-			self::ACTION_DELETE => wfMessage( 'sic-sp-message-deleted' ),
-			self::ACTION_REOPEN => wfMessage( 'sic-sp-message-reopened' ),
-			self::ACTION_COMPLETED => wfMessage( 'sic-sp-message-complete' )
+			self::ACTION_DELETE => wfMessage( 'sc-sp-message-deleted' ),
+			self::ACTION_REOPEN => wfMessage( 'sc-sp-message-reopened' ),
+			self::ACTION_COMPLETED => wfMessage( 'sc-sp-message-complete' )
 		];
 
 		if ( DBHandler::selectCommentById( $commentId ) === false || !array_key_exists( $action, $message ) ) {
