@@ -60,7 +60,7 @@ $(document).ready(function () {
 });
 
 function buttonConfirm(e) {
-    const response = confirm(mw.msg("sic-sp-adminbutton-confirm"));
+    const response = confirm(mw.msg("sc-sp-adminbutton-confirm"));
 
     if (!response) {
         e.preventDefault();

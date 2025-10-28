@@ -28,8 +28,8 @@ function useCustomProperties(messages) {
    * Setup watchers for CSS custom properties
    */
   const setupCustomPropertiesWatchers = () => {
-    const annotateTooltipText = () => messages.msg("sic-annotate-tooltip");
-    const buttonOpenText = () => messages.msg("sic-button-open");
+    const annotateTooltipText = () => messages.msg("sc-annotate-tooltip");
+    const buttonOpenText = () => messages.msg("sc-button-open");
 
     // Initial setup
     updateAnnotateTooltipText(annotateTooltipText());

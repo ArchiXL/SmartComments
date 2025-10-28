@@ -66,67 +66,67 @@ function useMessages() {
    */
   const messages = {
     // Buttons
-    save: () => msg("sic-button-save"),
-    cancel: () => msg("sic-button-cancel"),
-    close: () => msg("sic-button-close"),
-    complete: () => msg("sic-button-complete"),
-    delete: () => msg("sic-button-delete"),
-    edit: () => msg("sic-button-edit"),
-    reopen: () => msg("sic-button-reopen"),
-    overview: () => msg("sic-button-overview"),
-    newComment: () => msg("sic-button-new-comment"),
-    newReply: () => msg("sic-button-new-reply"),
-    sicShowScreenshotFullSize: () => msg("sic-show-screenshot-full-size"),
+    save: () => msg("sc-button-save"),
+    cancel: () => msg("sc-button-cancel"),
+    close: () => msg("sc-button-close"),
+    complete: () => msg("sc-button-complete"),
+    delete: () => msg("sc-button-delete"),
+    edit: () => msg("sc-button-edit"),
+    reopen: () => msg("sc-button-reopen"),
+    overview: () => msg("sc-button-overview"),
+    newComment: () => msg("sc-button-new-comment"),
+    newReply: () => msg("sc-button-new-reply"),
+    CommentsShowScreenshotFullSize: () => msg("sc-show-screenshot-full-size"),
 
     // Input labels
-    commentInput: () => msg("sic-input-newcomment"),
-    replyInput: () => msg("sic-input-commenttext"),
+    commentInput: () => msg("sc-input-newcomment"),
+    replyInput: () => msg("sc-input-commenttext"),
 
     // Titles
-    newCommentTitle: () => msg("sic-title-new"),
+    newCommentTitle: () => msg("sc-title-new"),
 
     // Errors
-    errorTitle: () => msg("sic-error-title"),
-    errorEmpty: () => msg("sic-error-empty"),
+    errorTitle: () => msg("sc-error-title"),
+    errorEmpty: () => msg("sc-error-empty"),
     apiError: () => msg("api-error"),
 
     // Status messages
-    justNow: () => msg("sic-date-justnow"),
-    commentAdded: () => msg("sic-added-comment"),
-    commentAddedRefreshing: () => msg("sic-added-comment-refreshing"),
+    justNow: () => msg("sc-date-justnow"),
+    commentAdded: () => msg("sc-added-comment"),
+    commentAddedRefreshing: () => msg("sc-added-comment-refreshing"),
 
     // Special messages
-    unlocalizedComment: () => msg("sic-unlocalized-comment"),
+    unlocalizedComment: () => msg("sc-unlocalized-comment"),
 
     // Selection errors
-    selectionError1: () => msg("sic-selection-error-1"),
-    selectionError2: () => msg("sic-selection-error-2"),
-    selectionError3: () => msg("sic-selection-error-3"),
-    selectionError4: () => msg("sic-selection-error-4"),
-    selectionError5: () => msg("sic-selection-error-5"),
+    selectionError1: () => msg("sc-selection-error-1"),
+    selectionError2: () => msg("sc-selection-error-2"),
+    selectionError3: () => msg("sc-selection-error-3"),
+    selectionError4: () => msg("sc-selection-error-4"),
+    selectionError5: () => msg("sc-selection-error-5"),
 
     // Reply form messages
-    replyHeader: () => msg("sic-reply-header"),
-    replyPlaceholder: () => msg("sic-reply-placeholder"),
-    replySubmit: () => msg("sic-reply-submit"),
+    replyHeader: () => msg("sc-reply-header"),
+    replyPlaceholder: () => msg("sc-reply-placeholder"),
+    replySubmit: () => msg("sc-reply-submit"),
 
     // Comment actions
-    previousComment: () => msg("sic-previous-comment"),
-    nextComment: () => msg("sic-next-comment"),
-    actions: () => msg("sic-actions"),
-    markComplete: () => msg("sic-mark-complete"),
-    markDelete: () => msg("sic-mark-delete"),
-    viewOverview: () => msg("sic-view-overview"),
+    previousComment: () => msg("sc-previous-comment"),
+    nextComment: () => msg("sc-next-comment"),
+    actions: () => msg("sc-actions"),
+    markComplete: () => msg("sc-mark-complete"),
+    markDelete: () => msg("sc-mark-delete"),
+    viewOverview: () => msg("sc-view-overview"),
 
     // Link prevention messages
-    linkDisabledWarn: () => msg("sic-link-disabled-warn"),
-    linkCommentHighlightWarn: () => msg("sic-link-comment-highlight-warn"),
+    linkDisabledWarn: () => msg("sc-link-disabled-warn"),
+    linkCommentHighlightWarn: () => msg("sc-link-comment-highlight-warn"),
 
     // Generic error messages
-    selectionGenericError: () => msg("sic-selection-generic-error"),
+    selectionGenericError: () => msg("sc-selection-generic-error"),
 
     // Broken comment indicator
-    brokenCommentsBelow: () => msg("sic-broken-comments-below"),
+    brokenCommentsBelow: () => msg("sc-broken-comments-below"),
   };
 
   return {
