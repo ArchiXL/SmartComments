@@ -57,27 +57,27 @@ export class SelectionErrorHandler {
 
     switch (validationResult) {
       case SELECTION_ENUMS.INVALID_SELECTION_ALREADY_COMMENTED:
-        messageKey = "sic-selection-error-1";
+        messageKey = "sc-selection-error-1";
         errorMessage = "Selection contains already commented block";
         break;
       case SELECTION_ENUMS.INVALID_SELECTION_INCLUDES_DYNAMIC_CONTENT:
-        messageKey = "sic-selection-error-2";
+        messageKey = "sc-selection-error-2";
         errorMessage = "Selection contains dynamic content";
         break;
       case SELECTION_ENUMS.INVALID_SELECTION_CONTAINS_LINEBREAKS:
-        messageKey = "sic-selection-error-3";
+        messageKey = "sc-selection-error-3";
         errorMessage = "Selection contains line breaks";
         break;
       case SELECTION_ENUMS.INVALID_SELECTION_CONTAINS_HTML:
-        messageKey = "sic-selection-error-4";
+        messageKey = "sc-selection-error-4";
         errorMessage = "Selection contains HTML code";
         break;
       case SELECTION_ENUMS.INVALID_SELECTION_IS_EMPTY:
-        messageKey = "sic-selection-error-5";
+        messageKey = "sc-selection-error-5";
         errorMessage = "Selection is empty";
         break;
       default:
-        messageKey = "sic-selection-generic-error";
+        messageKey = "sc-selection-generic-error";
         errorMessage = "An error occurred during selection";
     }
 
