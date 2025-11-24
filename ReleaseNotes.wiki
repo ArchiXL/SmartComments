@@ -1,3 +1,7 @@
+; Version 2.1.5 (Nov 24, 2025)
+* Changed dutch i18n strings
+* Fixed where if an error occured the i18n key instead of msg gets shown
+
 ; Version 2.1.4 (Oct 1, 2025)
 * Added better visual for when comment mode is enabled
 * Refactored old classes and prefixe's
