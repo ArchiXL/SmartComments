@@ -3,6 +3,8 @@
 namespace MediaWiki\Extension\SmartComments\Store;
 
 use MediaWiki\Extension\SmartComments\Hooks;
+use MediaWiki\Logger\LoggerFactory;
+use UploadBase;
 
 class ImageSaver {
 
@@ -14,6 +16,8 @@ class ImageSaver {
 
 	/** @var string */
 	private $imageName;
+
+	public const tmpPath = 'tmp';
 
 	/**
 	 * @param \Title $title
@@ -60,6 +64,11 @@ class ImageSaver {
 			return null;
 		}
 
+		if ( !$this->scanFile( $data ) ) {
+			return null;
+		}
+
+
 		if ( ! file_put_contents( Hooks::$imageSaveDirectory . "/{$this->imageName}.{$this->imageType}", $data) ) {
 			return null;
 		}
@@ -67,4 +76,40 @@ class ImageSaver {
 		return "{$this->imageName}.{$this->imageType}";
 	}
 
+	private function scanFile( string $data ): bool {
+		$logger = LoggerFactory::getInstance( 'upload' );
+
+		// Generate a safe random filename
+		$filename = bin2hex( openssl_random_pseudo_bytes( 16 ) ) . ".{$this->imageType}";
+		$path = Hooks::$imageSaveDirectory . self::tmpPath . "/{$filename}";
+
+		// Write temp file
+		if ( file_put_contents( $path, $data ) === false ) {
+			$logger->error( 'Failed to write temp upload file', [
+				'path' => $path,
+			] );
+			return false;
+		}
+
+		// Virus scan
+		$virus = UploadBase::detectVirus( $path );
+		if ( $virus !== false ) {
+			// Remove infected file
+			if ( !@unlink( $path ) ) {
+				$logger->warning( 'Failed to delete infected upload file', [
+					'path' => $path,
+					'virus' => $virus,
+				] );
+			}
+
+			$logger->warning( 'Virus detected in upload', [
+				'path' => $path,
+				'virus' => $virus,
+			] );
+
+			return false;
+		}
+
+		return true;
+	}
 }

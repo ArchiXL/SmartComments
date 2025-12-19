@@ -3,6 +3,7 @@
 namespace MediaWiki\Extension\SmartComments;
 
 use MediaWiki\Extension\SmartComments\Settings\Handler;
+use MediaWiki\Extension\SmartComments\Store\ImageSaver;
 use MediaWiki\Extension\SmartComments\Updater\Page;
 use OutputPage;
 use SMW\SemanticData;
@@ -28,6 +29,12 @@ class Hooks {
 		if ( !is_dir( self::$imageSaveDirectory ) ) {
 			if ( !mkdir( self::$imageSaveDirectory ) ) {
 				throw new \Exception( "Could not create directory for images (" . self::$imageSaveDirectory . ")." );
+			}
+		} else {
+			if ( !is_dir( self::$imageSaveDirectory . ImageSaver::tmpPath ) ) {
+				if ( !mkdir( self::$imageSaveDirectory . ImageSaver::tmpPath ) ) {
+					throw new \Exception( "Could not create directory for images (" . self::$imageSaveDirectory . ImageSaver::tmpPath . ")." );
+				}
 			}
 		}
 	}

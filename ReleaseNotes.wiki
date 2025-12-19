@@ -1,3 +1,5 @@
+; Version 2.1.6 (Dec 19, 2025)
+* Change logic to how an image gets uploaded
 ; Version 2.1.5 (Nov 24, 2025)
 * Changed dutch i18n strings
 * Fixed where if an error occured the i18n key instead of msg gets shown
