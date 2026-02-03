@@ -46,17 +46,17 @@ mw.loader.using(["mediawiki.util"]).then(() => {
     import("./store/appStateStore.js")
       .then(({ useAppStateStore }) => {
         const store = useAppStateStore();
-        
+
         // Check if we're on the SmartComments SpecialPage
         const isSpecialPage = mw.config.get('wgCanonicalSpecialPageName') === 'SmartComments';
-        
+
         if (isSpecialPage) {
           // SpecialPage mode: view-only, always enabled for comment viewing
           store.initializeSpecialPageState();
         } else {
           // Regular page mode: full functionality with toggle
           store.initializeState();
-          
+
           // Set initial state based on URL parameter
           const initialIsEnabled = mw.util.getParamValue("scenabled") === "1";
           if (initialIsEnabled) {
