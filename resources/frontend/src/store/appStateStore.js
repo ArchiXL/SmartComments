@@ -66,6 +66,9 @@ export const useAppStateStore = defineStore("appStore", {
           );
         }
       }
+
+      // Notify user if there are comments on this page (even when mode is disabled)
+      this.notifyCommentsExist();
     },
 
     /**
@@ -140,6 +143,54 @@ export const useAppStateStore = defineStore("appStore", {
         if ( notifObj ) {
           notifObj.close();
         }
+      }
+    },
+
+    /**
+     * Show a notification if there are comments on the page.
+     * This runs regardless of whether comment mode is enabled.
+     * Only shown to users with the add-inlinecomments right.
+     * @returns {Promise<void>}
+     */
+    async notifyCommentsExist() {
+      // Only show notification to users who can view/add comments
+      const userStore = useUserStore();
+      if (!userStore.canAddComments) {
+        return;
+      }
+
+      try {
+        const api = new mw.Api();
+        const data = await api.post({
+          action: "smartcomments",
+          method: "lista",
+          format: "json",
+          page: mw.config.get("wgPageName"),
+          status: "open",
+        });
+
+        const anchors = data.smartcomments?.anchors || [];
+        const count = anchors.length;
+
+        if (count > 0) {
+          const message = mw.message("sc-popup-msg", count).parse();
+
+          mw.notify($("<span>").html(message), {
+            autoHide: true,
+            autoHideSeconds: 5,
+            tag: "smartcomments-count-notification",
+            type: "info",
+          });
+
+          // Make the notification clickable to enable SmartComments
+          setTimeout(() => {
+            $(".mw-notification-tag-smartcomments-count-notification").css("cursor", "pointer").on("click", () => {
+              this.enableAppState();
+            });
+          }, 100);
+        }
+      } catch (err) {
+        mw.log.warn("SmartComments: Failed to check for existing comments:", err);
       }
     }
   },

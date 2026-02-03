@@ -6,7 +6,7 @@
 		"Robin van der Wiel",
 		"Yvar Nanlohij"
 	],
-	"version": "2.1.7",
+	"version": "2.2.0",
 	"url": "https://www.archixl.nl",
 	"descriptionmsg": "sc-desc",
 	"license-name": "GPL-2.0+",
@@ -130,7 +130,8 @@
 				"sc-selection-generic-error",
 				"sc-show-screenshot-full-size",
 				"sc-broken-comments-below",
-                "sc-enabled-smartcomments"
+				"sc-enabled-smartcomments",
+				"sc-popup-msg"
 			]
 		}
 	},
