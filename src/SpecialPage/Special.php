@@ -261,7 +261,7 @@ class Special extends SpecialPage {
 			$tableHtml .= Xml::openElement( 'tr', [
 				'class' => "$rowClass",
 				'data-author' => $comment->getAuthor()->getName(),
-				'data-page' => $comment->getPage(),
+				'data-page' => $comment->getPage() ?? wfMessage( 'sc-page-not-found' )->text(),
 				'data-status' => $comment->getStatus()
 			] );
 			$tableHtml .= Xml::element( 'td', null, wfMessage('sc-status-' . $comment->getStatus() ) );
@@ -483,6 +483,9 @@ class Special extends SpecialPage {
 	 */
 	private function getPageUrl( $pageName ): string {
 		$title = Title::newFromText( $pageName );
+		if ( $pageName === null ) {
+			return wfMessage( 'sc-page-not-found' )->text();
+		}
 		return ( $title instanceof Title ) ? $title->getLinkUrl() : '';
 	}
 
