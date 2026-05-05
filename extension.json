@@ -6,7 +6,7 @@
 		"Robin van der Wiel",
 		"Yvar Nanlohij"
 	],
-	"version": "2.2.1",
+	"version": "2.2.2",
 	"url": "https://www.archixl.nl",
 	"descriptionmsg": "sc-desc",
 	"license-name": "GPL-2.0+",
@@ -18,6 +18,9 @@
 	},
 	"AutoloadNamespaces": {
 		"MediaWiki\\Extension\\SmartComments\\": "src"
+	},
+	"MaintenanceScripts": {
+		"CheckOrphanedComments": "maintenance/CheckOrphanedComments.php"
 	},
 	"SpecialPages": {
 		"SmartComments": "MediaWiki\\Extension\\SmartComments\\SpecialPage\\Special"
