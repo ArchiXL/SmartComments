@@ -155,7 +155,10 @@ class Hooks {
 	}
 
 	public static function onArticleDeleteAfterSuccess( Title $title, OutputPage $output ) {
-		$titleText = $title->getText();
+		/**
+		 * You need to use DBKey here, otherwise it will search for "Test Page" while inside the archive table its "Test_Page"
+		 */
+		$titleText = $title->getDBkey();
 		$titleNS = $title->getNamespace();
 		$pageId = DBHandler::getPageIdFromArchive( $titleText, $titleNS );
 

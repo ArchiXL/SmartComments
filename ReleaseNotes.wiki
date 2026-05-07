@@ -1,4 +1,8 @@
 ; Version 2.2.1 (May 4, 2026)
+* Fixed underlying issue where page's would not be removed from the database
+* Added maintenance script to be able to remove orphaned comments quickly  
+
+; Version 2.2.1 (May 4, 2026)
 * Fixed issue where if page did not exist it would cause a fatal error on special:SmartComments
 
 ; Version 2.2.0 (Feb 3, 2026)
