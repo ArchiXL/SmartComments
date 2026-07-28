@@ -18,7 +18,7 @@ use Xml;
 
 class Special extends SpecialPage {
 
-	private const PERMISSION_VIEW_SIC = 'add-inlinecomments';
+	private const PERMISSION_VIEW_SIC = 'view-inlinecomments';
 	private const PERMISSION_MANAGE_SIC = 'manage-inlinecomments';
 
 	private const REQ_BLOCKED_MODE = 'toggleBlockedMode';

@@ -12,6 +12,8 @@ use SMW\Subobject;
 use Title;
 
 class Hooks {
+	private const PERMISSION_VIEW_COMMENTS = 'view-inlinecomments';
+	private const PERMISSION_MANAGE_COMMENTS = 'manage-inlinecomments';
 
 	/** @var string */
 	public static $imageSaveDirectory;
@@ -47,7 +49,7 @@ class Hooks {
 	 * @return bool
 	 */
 	public static function onBeforePageDisplay( \OutputPage $out, \Skin $skin ) {
-		if ( $out->getUser()->isRegistered() && $out->isArticle() && !Handler::isCommentModeBlocked() ) {
+		if ( self::canViewComments( $out->getUser() ) && $out->isArticle() && !Handler::isCommentModeBlocked() ) {
 			$out->addModuleStyles( [ 'oojs-ui.styles.icons-editing-core', 'oojs-ui.styles.icons-moderation', 'oojs-ui.styles.icons-alerts' ] );
 			$out->addModules( 'ext.smartcomments.frontend' );
 		}
@@ -64,7 +66,7 @@ class Hooks {
 	public static function onSkinAfterBottomScripts( \Skin $skin, &$text ) {
 		$out = $skin->getOutput();
 		if (
-			( $out->getUser()->isRegistered() && $out->isArticle() && !Handler::isCommentModeBlocked() ) ||
+			( self::canViewComments( $out->getUser() ) && $out->isArticle() && !Handler::isCommentModeBlocked() ) ||
 			( $out->getTitle()->equals( \SpecialPage::getTitleFor( 'SmartComments' ) ) )
 		) {
 			$text .= '<div id="smartcomments-app"></div>';
@@ -134,7 +136,7 @@ class Hooks {
 	 */
 	public static function onSkinTemplateNavigation( \SkinTemplate &$skinTemplate, array &$links ) {
 		$action = $skinTemplate->getRequest()->getVal( 'action' );
-		if ( $action != null || $skinTemplate->getTitle() && !$skinTemplate->getTitle()->exists() || !$skinTemplate->getUser()->isRegistered() || Handler::isCommentModeBlocked() ) {
+		if ( $action != null || $skinTemplate->getTitle() && !$skinTemplate->getTitle()->exists() || !self::canViewComments( $skinTemplate->getUser() ) || Handler::isCommentModeBlocked() ) {
 			return true;
 		}
 
@@ -172,6 +174,11 @@ class Hooks {
 				$success = DBHandler::deleteComment( $commentId );
 			}
 		}
+	}
+
+	private static function canViewComments( \User $user ): bool {
+		return $user->isAllowed( self::PERMISSION_VIEW_COMMENTS ) ||
+			$user->isAllowed( self::PERMISSION_MANAGE_COMMENTS );
 	}
 
 }

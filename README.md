@@ -29,8 +29,10 @@ Please consult the manual under the "Manual"-tab on the page Special:SmartCommen
 
 ## configuration
 The extension does not need any configuration. It might be useful though to set  
-user rights. The extension adds two permissions: 
+user rights. The extension adds three permissions: 
 
+* view-inlinecomments. Users with this permission are allowed to view comments.  
+By default assigned to the group 'user'.
 * add-inlinecomments. Users with this permission are allowed to post comments.  
 By default assigned to the group 'user'.
 * manage-inlinecomments. Users with this permission are allowed to manage comments.  

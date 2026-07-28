@@ -33,6 +33,7 @@ class Api extends ApiBase {
 	const PARAM_STATUS = 'status';
 	const PARAM_COMMENT = 'comment';
 	const PARAM_IMAGE = 'image';
+	const PERMISSION_VIEW_COMMENTS = 'view-inlinecomments';
 	const PERMISSION_MANAGE_COMMENTS = 'manage-inlinecomments';
 	const PERMISSION_ADD_COMMENTS = 'add-inlinecomments';
 
@@ -241,7 +242,7 @@ class Api extends ApiBase {
 	}
 
 	private function doGet() {
-		if ( !$this->getUser()->isRegistered() ) {
+		if ( !$this->canViewComments() ) {
 			$this->addError( 'smartcomments-api-get-error-no-session' );
 			return;
 		}
@@ -262,6 +263,11 @@ class Api extends ApiBase {
 	}
 
 	private function doListComments() {
+		if ( !$this->canViewComments() ) {
+			$this->addError( 'smartcomments-api-list-error-no-permission' );
+			return;
+		}
+
 		$pageName = $this->getRequest()->getText( self::PARAM_PAGE, '' );
 		$filter = $this->getRequest()->getVal( self::PARAM_STATUS, '' );
 		if ( empty( $pageName ) || !in_array( $filter, [ SmartComment::STATUS_OPEN, SmartComment::STATUS_COMPLETED, '' ] ) ) {
@@ -279,6 +285,11 @@ class Api extends ApiBase {
 	}
 
 	private function doListAnchors() {
+		if ( !$this->canViewComments() ) {
+			$this->addError( 'smartcomments-api-list-error-no-permission' );
+			return;
+		}
+
 		$pageName = $this->getRequest()->getText( self::PARAM_PAGE, '' );
 		$filter = $this->getRequest()->getVal( self::PARAM_STATUS, '' );
 		$rev = $this->getRequest()->getVal( self::PARAM_REV, '' );
@@ -305,6 +316,12 @@ class Api extends ApiBase {
 			self::RES_MESSAGE,
 			$status ? 'true' : 'false'
 		);
+	}
+
+	private function canViewComments(): bool {
+		$user = $this->getUser();
+		return $user->isAllowed( self::PERMISSION_VIEW_COMMENTS ) ||
+			$user->isAllowed( self::PERMISSION_MANAGE_COMMENTS );
 	}
 
 	/**
