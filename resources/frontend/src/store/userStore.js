@@ -8,6 +8,10 @@ export default defineStore("userStore", {
   }),
 
   getters: {
+    canViewComments: (state) => {
+      return state.userRights.includes("view-inlinecomments") || state.userRights.includes("manage-inlinecomments");
+    },
+
     canManageComments: (state) => {
       return state.userRights.includes("manage-inlinecomments");
     },
