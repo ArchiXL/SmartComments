@@ -23,6 +23,11 @@ class ImageSaverTest extends TestCase {
 		$this->titleMock->method( 'getId' )->willReturn( 123 );
 
 		Hooks::$imageSaveDirectory = sys_get_temp_dir();
+
+		$tmpDir = Hooks::$imageSaveDirectory . '/' . ImageSaver::tmpPath;
+		if ( !is_dir( $tmpDir ) ) {
+			mkdir( $tmpDir );
+		}
 	}
 
 	/**
