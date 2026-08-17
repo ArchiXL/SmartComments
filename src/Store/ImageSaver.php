@@ -81,7 +81,7 @@ class ImageSaver {
 
 		// Generate a safe random filename
 		$filename = bin2hex( openssl_random_pseudo_bytes( 16 ) ) . ".{$this->imageType}";
-		$path = Hooks::$imageSaveDirectory . self::tmpPath . "/{$filename}";
+		$path = rtrim( Hooks::$imageSaveDirectory, '/' ) . '/' . self::tmpPath . "/{$filename}";
 
 		// Write temp file
 		if ( file_put_contents( $path, $data ) === false ) {
@@ -91,9 +91,10 @@ class ImageSaver {
 			return false;
 		}
 
-		// Virus scan
+		// Virus scan. detectVirus() returns null when no scanner is configured,
+		// which is not the same as an infected file.
 		$virus = UploadBase::detectVirus( $path );
-		if ( $virus !== false ) {
+		if ( $virus !== false && $virus !== null ) {
 			// Remove infected file
 			if ( !@unlink( $path ) ) {
 				$logger->warning( 'Failed to delete infected upload file', [

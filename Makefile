@@ -20,8 +20,14 @@ DB_IMAGE?=""
 SMW_VERSION?=4.1.3
 MM_VERSION ?= 3.1.0
 
+# OS packages
+# libgd-dev pulls in the zlib/libpng dev headers gd's configure step needs.
+# Keep this to a single package: build/Makefile's environment macro doesn't
+# quote OS_PACKAGES, so a space-separated value breaks the shell command.
+OS_PACKAGES?=libgd-dev
+
 # PHP extensions
-PHP_EXTENSIONS?=gd,zlib
+PHP_EXTENSIONS?=gd
 
 # composer
 # Enables "composer update" inside of extension
