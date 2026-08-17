@@ -7,5 +7,6 @@
 	},
 	"smartcomments": "{{name}}",
 	"sc-rn-backto": "Bug: it's a lego message. See https://github.com/ArchiXL/SmartComments/issues/4\n\nAt the moment, the code inserts <nowiki>[[Special:SmartComments]]</nowiki> after this message.",
-	"sc-selection-error-title": "Fout"
+	"sc-selection-error-title": "Fout",
+	"sc-api-list-error-no-permission": "API error shown when a user tries to list comments or comment anchors without permission."
 }

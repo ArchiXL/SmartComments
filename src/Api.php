@@ -264,7 +264,7 @@ class Api extends ApiBase {
 
 	private function doListComments() {
 		if ( !$this->canViewComments() ) {
-			$this->addError( 'smartcomments-api-list-error-no-permission' );
+			$this->addError( 'sc-api-list-error-no-permission' );
 			return;
 		}
 
@@ -286,7 +286,7 @@ class Api extends ApiBase {
 
 	private function doListAnchors() {
 		if ( !$this->canViewComments() ) {
-			$this->addError( 'smartcomments-api-list-error-no-permission' );
+			$this->addError( 'sc-api-list-error-no-permission' );
 			return;
 		}
 
@@ -321,6 +321,7 @@ class Api extends ApiBase {
 	private function canViewComments(): bool {
 		$user = $this->getUser();
 		return $user->isAllowed( self::PERMISSION_VIEW_COMMENTS ) ||
+			$user->isAllowed( self::PERMISSION_ADD_COMMENTS ) ||
 			$user->isAllowed( self::PERMISSION_MANAGE_COMMENTS );
 	}
 

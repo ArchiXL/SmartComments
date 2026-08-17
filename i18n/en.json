@@ -85,6 +85,7 @@
 	"action-view-inlinecomments": "view comments",
 	"action-add-inlinecomments": "add comments",
 	"action-manage-inlinecomments": "change the status of comments",
+	"sc-api-list-error-no-permission": "You do not have permission to view comments.",
 	"api-error": "An error occurred trying to save the data.",
 	"apihelp-smartcomments-description": "API for adding and managing inline comments",
 	"apihelp-smartcomments-param-method": "Action to perform",

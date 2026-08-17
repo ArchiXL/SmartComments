@@ -19,6 +19,7 @@ use Xml;
 class Special extends SpecialPage {
 
 	private const PERMISSION_VIEW_SIC = 'view-inlinecomments';
+	private const PERMISSION_ADD_SIC = 'add-inlinecomments';
 	private const PERMISSION_MANAGE_SIC = 'manage-inlinecomments';
 
 	private const REQ_BLOCKED_MODE = 'toggleBlockedMode';
@@ -69,7 +70,8 @@ class Special extends SpecialPage {
 		$out->addModules( [ 'ext.smartcomments.special', 'ext.smartcomments.frontend' ] );
 
 		$mwPermissionManager = MediaWikiServices::getInstance()->getPermissionManager();
-		$canView = $mwPermissionManager->userHasRight( $user, self::PERMISSION_VIEW_SIC );
+		$canView = $mwPermissionManager->userHasRight( $user, self::PERMISSION_VIEW_SIC ) ||
+			$mwPermissionManager->userHasRight( $user, self::PERMISSION_ADD_SIC );
 		$this->canManage = $mwPermissionManager->userHasRight( $user, self::PERMISSION_MANAGE_SIC );
 
 		if ( $canView || $this->canManage ) {

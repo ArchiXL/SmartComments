@@ -13,6 +13,7 @@ use Title;
 
 class Hooks {
 	private const PERMISSION_VIEW_COMMENTS = 'view-inlinecomments';
+	private const PERMISSION_ADD_COMMENTS = 'add-inlinecomments';
 	private const PERMISSION_MANAGE_COMMENTS = 'manage-inlinecomments';
 
 	/** @var string */
@@ -178,6 +179,7 @@ class Hooks {
 
 	private static function canViewComments( \User $user ): bool {
 		return $user->isAllowed( self::PERMISSION_VIEW_COMMENTS ) ||
+			$user->isAllowed( self::PERMISSION_ADD_COMMENTS ) ||
 			$user->isAllowed( self::PERMISSION_MANAGE_COMMENTS );
 	}
 
