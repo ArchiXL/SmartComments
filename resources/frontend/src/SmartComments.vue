@@ -84,6 +84,7 @@ export default defineComponent({
     return {
       smartCommentsSetup,
       store,
+      userStore,
       commentsStore,
       smartCommentsEvents,
       EVENTS,
