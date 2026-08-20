@@ -5,7 +5,7 @@
       v-if="commentsStore.isCommentDialogVisible"
       :comment="commentsStore.activeComment"
       :position="commentsStore.commentPosition"
-      :allow-replies="userStore.canAddComments"
+      :allow-replies="canAddComments"
       @close="commentsStore.closeCommentDialog"
       @delete="commentsStore.deleteComment"
       @complete="commentsStore.completeComment"
@@ -16,7 +16,7 @@
 
     <!-- New Comment Dialog - only show in regular page mode -->
     <new-comment-dialog
-      v-if="!store.isSpecialPageMode && userStore.canAddComments"
+      v-if="!store.isSpecialPageMode && canAddComments"
       :is-visible="commentsStore.isNewCommentDialogVisible"
       :selection-data="commentsStore.newCommentSelection"
       @close="commentsStore.closeNewCommentDialog"
@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
+import { computed, defineComponent } from "vue";
 import useSmartCommentsSetup from "./composables/setup/useSmartCommentsSetup.js";
 import { useSelectionEvents } from "./composables/selection/useSelectionEvents.js";
 import { useLinkPrevention } from "./composables/features/useLinkPrevention.js";
@@ -59,6 +59,7 @@ export default defineComponent({
     const smartCommentsSetup = useSmartCommentsSetup();
     const store = useAppStateStore();
     const userStore = useUserStore();
+    const canAddComments = computed(() => userStore.canAddComments === true);
     const commentsStore = useCommentsStore();
     const messages = useMessages();
     const linkPrevention = store.isSpecialPageMode ? null : useLinkPrevention();
@@ -75,7 +76,6 @@ export default defineComponent({
       smartCommentsEvents,
       EVENTS,
       store,
-      userStore,
       commentsStore,
       highlightsManager,
     );
@@ -85,6 +85,7 @@ export default defineComponent({
       smartCommentsSetup,
       store,
       userStore,
+      canAddComments,
       commentsStore,
       smartCommentsEvents,
       EVENTS,
@@ -110,7 +111,7 @@ export default defineComponent({
   },
   mounted() {
     // Only initialize selection events in regular page mode
-    if (!this.store.isSpecialPageMode && this.userStore.canAddComments) {
+    if (!this.store.isSpecialPageMode && this.canAddComments) {
       this.selectionEvents = useSelectionEvents();
       
       // Handle selection events - delegate to store
@@ -180,7 +181,7 @@ export default defineComponent({
         this.smartCommentsEvents.triggerCommentsEnabled();
 
         if (!this.store.isSpecialPageMode) {
-          if (this.userStore.canAddComments) {
+          if (this.canAddComments) {
             // Only enable selection and interaction features for users who can add comments
             if (this.selectionEvents) this.selectionEvents.bindEvents();
 
@@ -232,7 +233,7 @@ export default defineComponent({
      * Handle new selection - delegate to store
      */
     handleNewSelection(selectionData) {
-      if (!this.userStore.canAddComments) {
+      if (!this.canAddComments) {
         return;
       }
 
