@@ -23,8 +23,7 @@ initializeScreenshotTargetManager();
 // Make SmartComments event manager globally available for special page
 window.SmartCommentsEventManager = smartCommentsEvents;
 
-// Use MediaWiki's resource loader to ensure dependencies are loaded
-mw.loader.using(["mediawiki.util"]).then(() => {
+async function initializeSmartCommentsApp() {
   const appElement = document.getElementById("smartcomments-app");
 
   if (!appElement) {
@@ -42,37 +41,36 @@ mw.loader.using(["mediawiki.util"]).then(() => {
     // Use Pinia
     app.use(pinia);
 
-    // Initialize store state before mounting
-    import("./store/appStateStore.js")
-      .then(({ useAppStateStore }) => {
-        const store = useAppStateStore();
+    const { useAppStateStore } = await import("./store/appStateStore.js");
+    const store = useAppStateStore();
 
-        // Check if we're on the SmartComments SpecialPage
-        const isSpecialPage = mw.config.get('wgCanonicalSpecialPageName') === 'SmartComments';
+    // Check if we're on the SmartComments SpecialPage
+    const isSpecialPage = mw.config.get("wgCanonicalSpecialPageName") === "SmartComments";
 
-        if (isSpecialPage) {
-          // SpecialPage mode: view-only, always enabled for comment viewing
-          store.initializeSpecialPageState();
-        } else {
-          // Regular page mode: full functionality with toggle
-          store.initializeState();
+    if (isSpecialPage) {
+      // SpecialPage mode: view-only, always enabled for comment viewing
+      await store.initializeSpecialPageState();
+    } else {
+      // Regular page mode: full functionality with toggle
+      await store.initializeState();
 
-          // Set initial state based on URL parameter
-          const initialIsEnabled = mw.util.getParamValue("scenabled") === "1";
-          if (initialIsEnabled) {
-            store.enableAppState();
-          } else {
-            store.disableAppState();
-          }
-        }
+      // Set initial state based on URL parameter
+      const initialIsEnabled = mw.util.getParamValue("scenabled") === "1";
+      if (initialIsEnabled) {
+        store.enableAppState();
+      } else {
+        store.disableAppState();
+      }
+    }
 
-        // Mount the app
-        app.mount(appElement);
-      })
-      .catch((error) => {
-        mw.log.error("SmartComments: Failed to load store:", error);
-      });
+    // Mount the app after store initialization so mounted hooks see loaded rights.
+    app.mount(appElement);
   } catch (error) {
     mw.log.error("SmartComments: Failed to initialize:", error);
   }
+}
+
+// Use MediaWiki's resource loader to ensure dependencies are loaded
+mw.loader.using(["mediawiki.util"]).then(() => {
+  initializeSmartCommentsApp();
 });

@@ -149,13 +149,13 @@ export const useAppStateStore = defineStore("appStore", {
     /**
      * Show a notification if there are comments on the page.
      * This runs regardless of whether comment mode is enabled.
-     * Only shown to users with the add-inlinecomments right.
+     * Only shown to users with the view-inlinecomments right.
      * @returns {Promise<void>}
      */
     async notifyCommentsExist() {
-      // Only show notification to users who can view/add comments
+      // Only show notification to users who can view comments
       const userStore = useUserStore();
-      if (!userStore.canAddComments) {
+      if (!userStore.canViewComments) {
         return;
       }
 
