@@ -47,7 +47,7 @@ class SMWHandler {
 			$propKey = '___' . $propName;
 			if (!$propertyRegistry->isRegistered($propKey)) {
 				$propertyRegistry->registerProperty($propKey, $propType, $propName, true);
-				$propertyRegistry->registerPropertyDescriptionMsgKeyById($propKey, 'sic-props-description');
+				$propertyRegistry->registerPropertyDescriptionByMsgKey($propKey, 'sic-props-description');
 			}
 		}
 		return true;
