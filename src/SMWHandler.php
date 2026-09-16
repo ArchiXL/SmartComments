@@ -118,9 +118,7 @@ class SMWHandler {
 	}
 	
 	private static function getDataValue($propertyName, $propertyValue) {
-		$property = DIProperty::newFromUserLabel($propertyName);
-		$dataValue = DataValueFactory::getInstance()->newPropertyValue($property, $propertyValue, false);
-		return $dataValue;
+		return DataValueFactory::getInstance()->newDataValueByText($propertyName, $propertyValue, false);
 	}
 	
 	public static function getCommentsByPageName($pageName, $filter = null) {
