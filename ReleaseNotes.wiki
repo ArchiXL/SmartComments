@@ -1,4 +1,8 @@
-; Version 2.2.1 (May 4, 2026)
+; Version 2.3.0 (Nov 20, 2026)
+* Added compatibility with Semantic MediaWiki 7 (remains compatible with SMW 6)
+* Added special page alias file to fix missing alias warning for Special:SmartComments
+
+; Version 2.2.2 (May 4, 2026)
 * Fixed underlying issue where page's would not be removed from the database
 * Added maintenance script to be able to remove orphaned comments quickly  
 

@@ -47,7 +47,7 @@ class SMWHandler {
 			$propKey = '___' . $propName;
 			if (!$propertyRegistry->isRegistered($propKey)) {
 				$propertyRegistry->registerProperty($propKey, $propType, $propName, true);
-				$propertyRegistry->registerPropertyDescriptionMsgKeyById($propKey, 'sic-props-description');
+				$propertyRegistry->registerPropertyDescriptionByMsgKey($propKey, 'sic-props-description');
 			}
 		}
 		return true;
@@ -118,9 +118,7 @@ class SMWHandler {
 	}
 	
 	private static function getDataValue($propertyName, $propertyValue) {
-		$property = DIProperty::newFromUserLabel($propertyName);
-		$dataValue = DataValueFactory::getInstance()->newPropertyValue($property, $propertyValue, false);
-		return $dataValue;
+		return DataValueFactory::getInstance()->newDataValueByText($propertyName, $propertyValue, false);
 	}
 	
 	public static function getCommentsByPageName($pageName, $filter = null) {
