@@ -16,6 +16,9 @@
 			"i18n"
 		]
 	},
+	"ExtensionMessagesFiles": {
+		"SmartCommentsAlias": "SmartComments.alias.php"
+	},
 	"AutoloadNamespaces": {
 		"MediaWiki\\Extension\\SmartComments\\": "src"
 	},
